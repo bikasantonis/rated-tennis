@@ -1,0 +1,60 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    name: Analyze & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── Checkout ─────────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
+
+      # ── Flutter ──────────────────────────────────────────────────────────────
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      # ── Dependencies ─────────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: flutter pub get
+
+      # ── Code generation ───────────────────────────────────────────────────────
+      # Freezed, Riverpod, and JSON serialisation artefacts must be up-to-date
+      # before analysis; generated files are committed, so this is a drift check.
+      - name: Run build_runner (conflict-free)
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # ── l10n ─────────────────────────────────────────────────────────────────
+      - name: Generate localisations
+        run: flutter gen-l10n
+
+      # ── Static analysis ───────────────────────────────────────────────────────
+      # Fail on any error or warning; info hints are allowed.
+      - name: flutter analyze
+        run: flutter analyze --fatal-infos=false --fatal-warnings
+
+      # ── Unit tests ───────────────────────────────────────────────────────────
+      - name: Unit tests
+        run: flutter test test/models/ --reporter=github
+
+      # ── Build (Android debug, compile-only smoke test) ────────────────────────
+      # No signing needed for a debug APK; this confirms the app compiles end-to-end.
+      # Secrets are injected as env vars so the build doesn't fail on missing keys.
+      - name: Build Android debug APK
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: flutter build apk --debug --no-pub

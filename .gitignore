@@ -1,0 +1,36 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+
+# Environment secrets — never commit
+.env.dev
+.env.staging
+.env.production
+*.env
+
+# Dart/Flutter generated
+*.freezed.dart
+*.g.dart
+lib/gen/
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
+# Supabase
+.branches
+.temp
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+
+# macOS
+.DS_Store

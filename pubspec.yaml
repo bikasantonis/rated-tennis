@@ -1,0 +1,77 @@
+name: rated
+description: Universal tennis ranking system for club players.
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Backend
+  supabase_flutter: ^2.5.6
+
+  # Auth
+  sign_in_with_apple: ^7.0.1
+
+  # Push notifications
+  onesignal_flutter: ^5.2.5
+
+  # State management
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
+
+  # Navigation
+  go_router: ^17.1.0
+
+  # Secure storage
+  flutter_secure_storage: ^10.0.0
+
+  # Fonts & UI
+  google_fonts: ^8.0.2
+
+  # Charts (ELO sparkline)
+  fl_chart: ^1.2.0
+
+  # Image caching
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+
+  # Models
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+
+  # Error monitoring
+  sentry_flutter: ^9.16.0
+
+  # i18n
+  intl: ^0.20.2
+
+  # Preferences persistence
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.12
+  freezed: ^3.2.3
+  riverpod_generator: ^4.0.0+1
+  json_serializable: ^6.8.0
+  custom_lint: ^0.8.1
+  riverpod_lint: ^3.1.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/images/
+
+flutter_gen:
+  output: lib/gen/

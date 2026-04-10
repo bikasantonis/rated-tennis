@@ -1,0 +1,41 @@
+# Supabase local dev configuration
+# Run `supabase start` to spin up local stack
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+shadow_port = 54320
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[storage]
+file_size_limit = "5MiB"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_reuse_interval = 10
+
+# PRD §6.1 — rate limits (local dev mirror; set matching values in Dashboard → Auth → Rate Limits for production)
+# email_sent: max OTP/magic-link emails per hour; token_refresh: per hour per user
+[auth.rate_limit]
+email_sent = 10
+sms_sent = 10
+token_refresh = 150
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_SECRET)"
+
+[auth.external.apple]
+enabled = true
+client_id = "env(APPLE_CLIENT_ID)"
+secret = "env(APPLE_SECRET)"
