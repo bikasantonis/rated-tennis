@@ -10,6 +10,10 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Auth fixes (web + register tab)**:
+  - Google OAuth now passes `redirectTo: Uri.base.origin` on web so the flow completes instead of silently returning.
+  - Apple Sign-In hidden on web (`kIsWeb` guard) — `sign_in_with_apple` is native-only; previously threw an immediate error in Chrome.
+  - OAuth buttons (Google + Apple) added to the Register tab — previously only on the Login tab.
 - **Notification triggers — migration 010 (NF-01, NF-03, NF-04, NF-05)** — four DB triggers insert rows into `notifications` on match/request events; DB webhook fires `send-notification` Edge Function → OneSignal push:
   - `trg_notify_match_submitted` (NF-01): notifies opponent when a match result is submitted
   - `trg_notify_match_disputed` (NF-03): notifies submitter when opponent disputes

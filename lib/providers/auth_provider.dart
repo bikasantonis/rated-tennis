@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:rated/models/profile.dart';
 import 'package:rated/services/notification_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -89,16 +90,23 @@ class AuthActions extends _$AuthActions {
     );
   }
 
-  /// Google OAuth sign-in via Supabase's built-in browser flow (PKCE).
+  /// Google OAuth — browser redirect on web, system sheet on native.
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => _client.auth.signInWithOAuth(OAuthProvider.google),
+      () => _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb
+            ? Uri.base.origin  // returns to the same origin after OAuth
+            : null,
+      ),
     );
   }
 
-  /// Apple Sign-In. Required by App Store when any OAuth login is offered.
+  /// Apple Sign-In — native only (sign_in_with_apple package does not support web).
+  /// On web this method should never be called — callers must guard with [kIsWeb].
   Future<void> signInWithApple() async {
+    if (kIsWeb) return; // safety guard
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final credential = await SignInWithApple.getAppleIDCredential(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -148,12 +149,14 @@ class _LoginTabState extends ConsumerState<_LoginTab> {
               icon: const Icon(Icons.login),
               label: Text(l.loginContinueGoogle),
             ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isLoading ? null : _signInWithApple,
-              icon: const Icon(Icons.apple),
-              label: Text(l.loginContinueApple),
-            ),
+            if (!kIsWeb) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: isLoading ? null : _signInWithApple,
+                icon: const Icon(Icons.apple),
+                label: Text(l.loginContinueApple),
+              ),
+            ],
           ],
         ),
       ),
@@ -318,10 +321,36 @@ class _RegisterTabState extends ConsumerState<_RegisterTab> {
                     )
                   : Text(l.actionCreateAccount),
             ),
+            const SizedBox(height: 16),
+            const _Divider(),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: isLoading ? null : _registerWithGoogle,
+              icon: const Icon(Icons.login),
+              label: Text(l.loginContinueGoogle),
+            ),
+            if (!kIsWeb) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: isLoading ? null : _registerWithApple,
+                icon: const Icon(Icons.apple),
+                label: Text(l.loginContinueApple),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _registerWithGoogle() async {
+    await ref.read(authActionsProvider.notifier).signInWithGoogle();
+    _showResultMessage();
+  }
+
+  Future<void> _registerWithApple() async {
+    await ref.read(authActionsProvider.notifier).signInWithApple();
+    _showResultMessage();
   }
 }
 
