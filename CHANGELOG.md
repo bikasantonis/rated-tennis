@@ -10,6 +10,11 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Notification triggers — migration 010 (NF-01, NF-03, NF-04, NF-05)** — four DB triggers insert rows into `notifications` on match/request events; DB webhook fires `send-notification` Edge Function → OneSignal push:
+  - `trg_notify_match_submitted` (NF-01): notifies opponent when a match result is submitted
+  - `trg_notify_match_disputed` (NF-03): notifies submitter when opponent disputes
+  - `trg_notify_match_request_received` (NF-04): notifies recipient of a new match request
+  - `trg_notify_match_request_responded` (NF-05): notifies requester when request is accepted/declined. Migration deployed.
 - **CI/CD — `.github/workflows/pr.yml`** — runs on every PR to `main` and every push to `main`: `flutter pub get` → `build_runner` (drift check) → `flutter gen-l10n` → `flutter analyze` (warnings fatal) → `flutter test test/models/` → `flutter build apk --debug` (compile smoke test). Concurrent runs on the same ref are cancelled. `SUPABASE_URL` and `SUPABASE_ANON_KEY` injected from repo secrets for the build step.
 - **Unit tests — 54 tests, all passing** (`flutter test test/models/`):
   - `elo_tier_test.dart` (16): every tier boundary on the [5.0, 10.0] scale — exact boundary, just-below, mid-band.
