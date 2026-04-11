@@ -60,7 +60,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           if (rows.isEmpty && _page == 0) {
             return Center(child: Text(l.leaderboardNoPlayers));
           }
-          final startRank = _page * kLeaderboardPageSize;
           return Column(
             children: [
               if (_clubId != null)
@@ -78,7 +77,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   child: ListView.builder(
                     itemCount: rows.length,
                     itemBuilder: (context, i) => _LeaderboardRow(
-                      rank: startRank + i + 1,
+                      rank: (rows[i]['global_rank'] as int?) ??
+                          (_page * kLeaderboardPageSize + i + 1),
                       row: rows[i],
                     ),
                   ),

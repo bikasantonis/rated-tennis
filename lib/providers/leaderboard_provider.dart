@@ -9,29 +9,22 @@ const int kLeaderboardPageSize = 50;
 
 /// Returns one page of leaderboard rows, optionally filtered by [clubId].
 /// [page] is 0-based.
+/// Delegates to the `get_leaderboard_page` RPC so that RATED players
+/// (elo_rating = 10.0) are ranked by prestige_score and the pre-computed
+/// global_rank column is correct across pages.
 @riverpod
 Future<List<Map<String, dynamic>>> leaderboardPage(
   Ref ref, {
   int page = 0,
   String? clubId,
 }) async {
-  var query = _db
-      .from('profiles')
-      .select('id, display_name, avatar_url, elo_rating, elo_tier, '
-          'matches_played, matches_won, club_id')
-      .eq('is_public', true)
-      .isFilter('deleted_at', null);
+  final params = <String, dynamic>{
+    'p_page': page,
+    'p_page_size': kLeaderboardPageSize,
+  };
+  if (clubId != null) params['p_club_id'] = clubId;
 
-  if (clubId != null) {
-    query = query.eq('club_id', clubId);
-  }
-
-  final results = await query
-      .order('elo_rating', ascending: false)
-      .range(
-        page * kLeaderboardPageSize,
-        (page + 1) * kLeaderboardPageSize - 1,
-      );
+  final results = await _db.rpc('get_leaderboard_page', params: params);
 
   return List<Map<String, dynamic>>.from(results as List);
 }
