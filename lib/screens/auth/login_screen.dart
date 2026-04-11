@@ -406,8 +406,12 @@ String _friendlyError(Object error) {
     return 'Incorrect email or password.';
   }
   if (msg.contains('email already registered') ||
-      msg.contains('user already registered')) {
+      msg.contains('user already registered') ||
+      msg.contains('already been registered')) {
     return 'An account with this email already exists.';
+  }
+  if (msg.contains('email not confirmed')) {
+    return 'Please confirm your email address before signing in.';
   }
   if (msg.contains('network') || msg.contains('socketexception')) {
     return 'No internet connection. Please try again.';
@@ -415,5 +419,14 @@ String _friendlyError(Object error) {
   if (msg.contains('too many requests') || msg.contains('rate limit')) {
     return 'Too many attempts. Please wait a moment and try again.';
   }
+  if (msg.contains('invalid api key') || msg.contains('invalid_api_key') ||
+      msg.contains('no api key') || msg.contains('supabaseurl')) {
+    return 'App configuration error — contact support.';
+  }
+  // In debug mode show the raw error so issues are visible during development
+  assert(() {
+    debugPrint('[Auth error] $error');
+    return true;
+  }());
   return 'Something went wrong. Please try again.';
 }

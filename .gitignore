@@ -13,6 +13,7 @@ build/
 .env.staging
 .env.production
 *.env
+dart_defines*.json
 
 # Dart/Flutter generated
 *.freezed.dart
