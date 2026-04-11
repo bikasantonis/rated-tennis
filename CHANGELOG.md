@@ -10,6 +10,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Fix registration ("Database error saving new user") — migration 011**: `profiles` table had RLS enabled (migration 003) but no INSERT policy. PostgreSQL blocks all INSERTs when no policy matches. Added `profiles_insert_trigger` policy (`WITH CHECK (true)`), set `handle_new_user` owner to `postgres` (BYPASSRLS), and granted INSERT to `postgres`/`service_role`. Migration deployed.
 - **Web startup fixes**:
   - Sentry zone mismatch resolved — all initialisation (bindings, OneSignal, Supabase) moved inside `SentryFlutter.init`'s `appRunner` so `ensureInitialized` and `runApp` share the same zone.
   - OneSignal guarded with `!kIsWeb` — `onesignal_flutter` has no web implementation; `initialize`, `requestPermission`, and `NotificationService.init()` now skip entirely on web.
