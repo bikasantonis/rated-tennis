@@ -90,7 +90,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorTournamentNotFound => 'Tournament not found.';
 
   @override
-  String get errorCouldNotLoadHistory => 'Could not load ELO history.';
+  String get errorCouldNotLoadHistory => 'Could not load rating history.';
 
   @override
   String get errorCouldNotLoadMatches => 'Could not load matches.';
@@ -113,7 +113,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingBody1 =>
-      'Get your personal ELO rating based on real match results.';
+      'Get your personal rating based on real match results.';
 
   @override
   String get onboardingTitle2 => 'Challenge Players';
@@ -286,13 +286,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileMyProfile => 'My Profile';
 
   @override
-  String get profileEloHistory => 'ELO History';
+  String get profileEloHistory => 'Rating History';
 
   @override
   String get profileMatchHistory => 'Match History';
 
   @override
-  String get profileNoEloHistory => 'No ELO history yet.';
+  String get profileNoEloHistory => 'No rating history yet.';
 
   @override
   String get profileNoMatches => 'No confirmed matches yet.';
@@ -313,7 +313,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileStatWinPct => 'Win %';
 
   @override
-  String get profileStatElo => 'ELO';
+  String get profileStatElo => 'Rating';
 
   @override
   String get submitMatchTitle => 'Submit Match Result';
@@ -408,7 +408,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inboxNoPendingRequests => 'No pending match requests.';
 
   @override
-  String get inboxConfirmSuccess => 'Match confirmed — ELO updated!';
+  String get inboxConfirmSuccess => 'Match confirmed — Rating updated!';
 
   @override
   String get inboxRequestAccepted => 'Request accepted!';
@@ -462,7 +462,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleMessageHint => 'e.g. \"Warm-up at 09:45?\"';
 
   @override
-  String get scheduleNoPlayersInRange => 'No players found in your ELO range.';
+  String get scheduleNoPlayersInRange =>
+      'No players found in your rating range.';
 
   @override
   String get scheduleRequestSent => 'Match request sent!';
@@ -513,7 +514,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String tournamentEloRange(String min, String max) {
-    return 'ELO $min – $max';
+    return 'Rating $min – $max';
   }
 
   @override
@@ -541,10 +542,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentDetailMaxPlayersLabel => 'Max players';
 
   @override
-  String get tournamentDetailEloRangeLabel => 'ELO range';
+  String get tournamentDetailEloRangeLabel => 'Rating range';
 
   @override
-  String get tournamentDetailMultiplierLabel => 'ELO multiplier';
+  String get tournamentDetailMultiplierLabel => 'Rating multiplier';
 
   @override
   String get organizerTitle => 'Organizer Dashboard';
@@ -562,16 +563,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organizerFormatLabel => 'Format';
 
   @override
-  String get organizerEloMinLabel => 'ELO min';
+  String get organizerEloMinLabel => 'Rating min';
 
   @override
-  String get organizerEloMaxLabel => 'ELO max';
+  String get organizerEloMaxLabel => 'Rating max';
 
   @override
   String get organizerMaxPlayersLabel => 'Max players';
 
   @override
-  String get organizerMultiplierLabel => 'ELO multiplier';
+  String get organizerMultiplierLabel => 'Rating multiplier';
 
   @override
   String get organizerPickStartDate => 'Pick start date';
@@ -642,10 +643,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disputeAcceptDispute => 'Accept dispute';
 
   @override
-  String get disputeAcceptedSuccess => 'Dispute accepted — ELO updated.';
+  String get disputeAcceptedSuccess => 'Dispute accepted — Rating updated.';
 
   @override
-  String get disputeOverriddenSuccess => 'Original score kept — ELO updated.';
+  String get disputeOverriddenSuccess =>
+      'Original score kept — Rating updated.';
 
   @override
   String get tierBeginner => 'Beginner';
@@ -689,7 +691,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String eloLabel(String value) {
-    return 'ELO $value';
+    return 'Rating $value';
   }
 
   @override

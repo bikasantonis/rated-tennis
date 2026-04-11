@@ -90,7 +90,8 @@ class AppLocalizationsEl extends AppLocalizations {
   String get errorTournamentNotFound => 'Το τουρνουά δεν βρέθηκε.';
 
   @override
-  String get errorCouldNotLoadHistory => 'Αδύνατη φόρτωση ιστορικού ELO.';
+  String get errorCouldNotLoadHistory =>
+      'Αδύνατη φόρτωση ιστορικού βαθμολογίας.';
 
   @override
   String get errorCouldNotLoadMatches => 'Αδύνατη φόρτωση αγώνων.';
@@ -113,7 +114,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get onboardingBody1 =>
-      'Αποκτήστε προσωπική βαθμολογία ELO βάσει πραγματικών αποτελεσμάτων.';
+      'Αποκτήστε προσωπική βαθμολογία βάσει πραγματικών αποτελεσμάτων.';
 
   @override
   String get onboardingTitle2 => 'Προκάλεσε Παίκτες';
@@ -285,13 +286,13 @@ class AppLocalizationsEl extends AppLocalizations {
   String get profileMyProfile => 'Το Προφίλ μου';
 
   @override
-  String get profileEloHistory => 'Ιστορικό ELO';
+  String get profileEloHistory => 'Ιστορικό Βαθμολογίας';
 
   @override
   String get profileMatchHistory => 'Ιστορικό Αγώνων';
 
   @override
-  String get profileNoEloHistory => 'Δεν υπάρχει ιστορικό ELO ακόμα.';
+  String get profileNoEloHistory => 'Δεν υπάρχει ιστορικό βαθμολογίας ακόμα.';
 
   @override
   String get profileNoMatches => 'Δεν υπάρχουν επιβεβαιωμένοι αγώνες ακόμα.';
@@ -312,7 +313,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get profileStatWinPct => 'Νίκες %';
 
   @override
-  String get profileStatElo => 'ELO';
+  String get profileStatElo => 'Βαθμολογία';
 
   @override
   String get submitMatchTitle => 'Υποβολή Αποτελέσματος';
@@ -409,7 +410,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get inboxConfirmSuccess =>
-      'Ο αγώνας επιβεβαιώθηκε — το ELO ενημερώθηκε!';
+      'Ο αγώνας επιβεβαιώθηκε — η βαθμολογία ενημερώθηκε!';
 
   @override
   String get inboxRequestAccepted => 'Το αίτημα έγινε αποδεκτό!';
@@ -464,7 +465,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get scheduleNoPlayersInRange =>
-      'Δεν βρέθηκαν παίκτες στο εύρος ELO σας.';
+      'Δεν βρέθηκαν παίκτες στο εύρος βαθμολογίας σας.';
 
   @override
   String get scheduleRequestSent => 'Το αίτημα αγώνα εστάλη!';
@@ -515,7 +516,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String tournamentEloRange(String min, String max) {
-    return 'ELO $min – $max';
+    return 'Βαθμολογία $min – $max';
   }
 
   @override
@@ -544,10 +545,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tournamentDetailMaxPlayersLabel => 'Μέγ. παίκτες';
 
   @override
-  String get tournamentDetailEloRangeLabel => 'Εύρος ELO';
+  String get tournamentDetailEloRangeLabel => 'Εύρος Βαθμολογίας';
 
   @override
-  String get tournamentDetailMultiplierLabel => 'Πολλαπλασιαστής ELO';
+  String get tournamentDetailMultiplierLabel => 'Πολλαπλασιαστής Βαθμολογίας';
 
   @override
   String get organizerTitle => 'Πίνακας Διοργανωτή';
@@ -565,16 +566,16 @@ class AppLocalizationsEl extends AppLocalizations {
   String get organizerFormatLabel => 'Μορφή';
 
   @override
-  String get organizerEloMinLabel => 'ELO ελάχιστο';
+  String get organizerEloMinLabel => 'Βαθμολογία ελάχιστο';
 
   @override
-  String get organizerEloMaxLabel => 'ELO μέγιστο';
+  String get organizerEloMaxLabel => 'Βαθμολογία μέγιστο';
 
   @override
   String get organizerMaxPlayersLabel => 'Μέγ. παίκτες';
 
   @override
-  String get organizerMultiplierLabel => 'Πολλαπλασιαστής ELO';
+  String get organizerMultiplierLabel => 'Πολλαπλασιαστής Βαθμολογίας';
 
   @override
   String get organizerPickStartDate => 'Επιλέξτε ημερομηνία έναρξης';
@@ -646,11 +647,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get disputeAcceptedSuccess =>
-      'Η αμφισβήτηση έγινε δεκτή — το ELO ενημερώθηκε.';
+      'Η αμφισβήτηση έγινε δεκτή — η βαθμολογία ενημερώθηκε.';
 
   @override
   String get disputeOverriddenSuccess =>
-      'Το αρχικό σκορ διατηρήθηκε — το ELO ενημερώθηκε.';
+      'Το αρχικό σκορ διατηρήθηκε — η βαθμολογία ενημερώθηκε.';
 
   @override
   String get tierBeginner => 'Αρχάριος';
@@ -694,7 +695,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String eloLabel(String value) {
-    return 'ELO $value';
+    return 'Βαθμολογία $value';
   }
 
   @override

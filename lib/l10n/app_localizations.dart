@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotLoadHistory.
   ///
   /// In en, this message translates to:
-  /// **'Could not load ELO history.'**
+  /// **'Could not load rating history.'**
   String get errorCouldNotLoadHistory;
 
   /// No description provided for @errorCouldNotLoadMatches.
@@ -305,7 +305,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingBody1.
   ///
   /// In en, this message translates to:
-  /// **'Get your personal ELO rating based on real match results.'**
+  /// **'Get your personal rating based on real match results.'**
   String get onboardingBody1;
 
   /// No description provided for @onboardingTitle2.
@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEloHistory.
   ///
   /// In en, this message translates to:
-  /// **'ELO History'**
+  /// **'Rating History'**
   String get profileEloHistory;
 
   /// No description provided for @profileMatchHistory.
@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileNoEloHistory.
   ///
   /// In en, this message translates to:
-  /// **'No ELO history yet.'**
+  /// **'No rating history yet.'**
   String get profileNoEloHistory;
 
   /// No description provided for @profileNoMatches.
@@ -683,7 +683,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileStatElo.
   ///
   /// In en, this message translates to:
-  /// **'ELO'**
+  /// **'Rating'**
   String get profileStatElo;
 
   /// No description provided for @submitMatchTitle.
@@ -857,7 +857,7 @@ abstract class AppLocalizations {
   /// No description provided for @inboxConfirmSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Match confirmed — ELO updated!'**
+  /// **'Match confirmed — Rating updated!'**
   String get inboxConfirmSuccess;
 
   /// No description provided for @inboxRequestAccepted.
@@ -953,7 +953,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleNoPlayersInRange.
   ///
   /// In en, this message translates to:
-  /// **'No players found in your ELO range.'**
+  /// **'No players found in your rating range.'**
   String get scheduleNoPlayersInRange;
 
   /// No description provided for @scheduleRequestSent.
@@ -1049,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @tournamentEloRange.
   ///
   /// In en, this message translates to:
-  /// **'ELO {min} – {max}'**
+  /// **'Rating {min} – {max}'**
   String tournamentEloRange(String min, String max);
 
   /// No description provided for @tournamentDetailTitle.
@@ -1103,13 +1103,13 @@ abstract class AppLocalizations {
   /// No description provided for @tournamentDetailEloRangeLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO range'**
+  /// **'Rating range'**
   String get tournamentDetailEloRangeLabel;
 
   /// No description provided for @tournamentDetailMultiplierLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO multiplier'**
+  /// **'Rating multiplier'**
   String get tournamentDetailMultiplierLabel;
 
   /// No description provided for @organizerTitle.
@@ -1145,13 +1145,13 @@ abstract class AppLocalizations {
   /// No description provided for @organizerEloMinLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO min'**
+  /// **'Rating min'**
   String get organizerEloMinLabel;
 
   /// No description provided for @organizerEloMaxLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO max'**
+  /// **'Rating max'**
   String get organizerEloMaxLabel;
 
   /// No description provided for @organizerMaxPlayersLabel.
@@ -1163,7 +1163,7 @@ abstract class AppLocalizations {
   /// No description provided for @organizerMultiplierLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO multiplier'**
+  /// **'Rating multiplier'**
   String get organizerMultiplierLabel;
 
   /// No description provided for @organizerPickStartDate.
@@ -1301,13 +1301,13 @@ abstract class AppLocalizations {
   /// No description provided for @disputeAcceptedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Dispute accepted — ELO updated.'**
+  /// **'Dispute accepted — Rating updated.'**
   String get disputeAcceptedSuccess;
 
   /// No description provided for @disputeOverriddenSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Original score kept — ELO updated.'**
+  /// **'Original score kept — Rating updated.'**
   String get disputeOverriddenSuccess;
 
   /// No description provided for @tierBeginner.
@@ -1391,7 +1391,7 @@ abstract class AppLocalizations {
   /// No description provided for @eloLabel.
   ///
   /// In en, this message translates to:
-  /// **'ELO {value}'**
+  /// **'Rating {value}'**
   String eloLabel(String value);
 
   /// No description provided for @setLabel.
