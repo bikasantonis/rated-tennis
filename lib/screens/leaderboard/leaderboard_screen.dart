@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:rated/providers/leaderboard_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/tier_badge.dart';
 import 'package:rated/models/profile.dart';
 
@@ -49,6 +50,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     }),
                   ),
           ),
+          const AppBarActions(),
         ],
       ),
       body: pageAsync.when(

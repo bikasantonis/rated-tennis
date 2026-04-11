@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rated/models/match_result.dart';
 import 'package:rated/providers/match_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/app_bar_actions.dart';
 
 /// SCR-08 — Match inbox.
 /// Tab 1: Pending results submitted by opponent (confirm / dispute).
@@ -19,6 +20,7 @@ class MatchInboxScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.inboxTitle),
+          actions: const [AppBarActions()],
           bottom: TabBar(
             tabs: [
               Tab(text: l.inboxTabToConfirm),

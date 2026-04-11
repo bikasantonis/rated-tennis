@@ -9,6 +9,7 @@ import 'package:rated/providers/match_provider.dart';
 import 'package:rated/providers/questionnaire_prompt_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/elo_score_card.dart';
 
 /// SCR-04 — Home / Dashboard.
@@ -39,7 +40,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.homeTitle)),
+      appBar: AppBar(
+        title: Text(l.homeTitle),
+        actions: const [AppBarActions()],
+      ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),

@@ -7,6 +7,7 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/app_bar_actions.dart';
 
 /// SCR-10 — Tournament list with status tabs.
 class TournamentsListScreen extends ConsumerStatefulWidget {
@@ -58,6 +59,7 @@ class _TournamentsListScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(l.tournamentsTitle),
+        actions: const [AppBarActions()],
         bottom: TabBar(
           controller: _tabs,
           tabs: filterLabels.map((label) => Tab(text: label)).toList(),
@@ -108,7 +110,7 @@ class _TournamentTab extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: list.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, i) => const SizedBox(height: 10),
             itemBuilder: (context, i) => _TournamentCard(t: list[i]),
           ),
         );

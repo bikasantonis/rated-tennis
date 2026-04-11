@@ -29,11 +29,6 @@ class BottomNavShell extends StatelessWidget {
       selectedIcon: Icon(Icons.emoji_events),
       label: 'Tournaments',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.person_outlined),
-      selectedIcon: Icon(Icons.person),
-      label: 'Profile',
-    ),
   ];
 
   static const _routes = [
@@ -41,7 +36,6 @@ class BottomNavShell extends StatelessWidget {
     AppRoutes.leaderboard,
     AppRoutes.matchInbox,
     AppRoutes.tournaments,
-    AppRoutes.profile,
   ];
 
   int _selectedIndex(BuildContext context) {
