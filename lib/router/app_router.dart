@@ -136,6 +136,12 @@ GoRouter appRouter(Ref ref) {
               ),
             ],
           ),
+          // Own profile — inside shell so bottom nav remains visible
+          GoRoute(
+            path: AppRoutes.profile,
+            pageBuilder: (context, state) =>
+                _slide(state, const ProfileScreen()),
+          ),
         ],
       ),
 
@@ -149,11 +155,6 @@ GoRouter appRouter(Ref ref) {
         path: AppRoutes.scheduleMatch,
         pageBuilder: (context, state) =>
             _slide(state, const ScheduleMatchScreen()),
-      ),
-      GoRoute(
-        path: AppRoutes.profile,
-        pageBuilder: (context, state) =>
-            _slide(state, const ProfileScreen()),
       ),
       GoRoute(
         path: AppRoutes.settings,

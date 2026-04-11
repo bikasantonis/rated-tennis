@@ -419,9 +419,15 @@ class _QuestionnaireCta extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              FilledButton(
-                onPressed: onTap,
-                child: const Text('Start'),
+              SizedBox(
+                width: 72,
+                child: FilledButton(
+                  onPressed: onTap,
+                  style: FilledButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Text('Start'),
+                ),
               ),
             ],
           ),

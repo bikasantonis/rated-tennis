@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../router/app_router.dart';
+import 'package:rated/router/app_router.dart';
 
 class BottomNavShell extends StatelessWidget {
   const BottomNavShell({required this.child, super.key});
@@ -29,6 +29,11 @@ class BottomNavShell extends StatelessWidget {
       selectedIcon: Icon(Icons.emoji_events),
       label: 'Tournaments',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.person_outlined),
+      selectedIcon: Icon(Icons.person),
+      label: 'Profile',
+    ),
   ];
 
   static const _routes = [
@@ -36,6 +41,7 @@ class BottomNavShell extends StatelessWidget {
     AppRoutes.leaderboard,
     AppRoutes.matchInbox,
     AppRoutes.tournaments,
+    AppRoutes.profile,
   ];
 
   int _selectedIndex(BuildContext context) {
