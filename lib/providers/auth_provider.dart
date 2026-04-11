@@ -96,9 +96,10 @@ class AuthActions extends _$AuthActions {
     state = await AsyncValue.guard(
       () => _client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb
-            ? Uri.base.origin  // returns to the same origin after OAuth
-            : null,
+        // On web: omit redirectTo so Supabase uses the current page URL
+        // automatically — avoids port-specific whitelisting in the dashboard.
+        // On native: deep-link scheme handles the callback.
+        redirectTo: kIsWeb ? null : 'io.supabase.rated://login-callback',
       ),
     );
   }

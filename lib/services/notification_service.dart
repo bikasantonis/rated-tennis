@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:go_router/go_router.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
@@ -43,6 +43,7 @@ class NotificationService {
   /// Links the OneSignal subscription to the authenticated Supabase user.
   /// Must be called after sign-in so notifications reach the correct device.
   Future<void> identifyUser(String supabaseUserId) async {
+    if (kIsWeb) return;
     try {
       await OneSignal.login(supabaseUserId);
     } catch (e) {
@@ -52,6 +53,7 @@ class NotificationService {
 
   /// Removes the user association from this device on sign-out.
   Future<void> clearUser() async {
+    if (kIsWeb) return;
     try {
       await OneSignal.logout();
     } catch (e) {
