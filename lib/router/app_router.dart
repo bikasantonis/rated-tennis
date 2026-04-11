@@ -67,14 +67,7 @@ GoRouter appRouter(Ref ref) {
         return AppRoutes.login;
       }
 
-      // Logged in but questionnaire not done → force questionnaire
-      final profile = ref.read(currentProfileProvider).asData?.value;
-      if (isAuthenticated && profile != null && !profile.questionnaireDone) {
-        if (path == AppRoutes.questionnaire) return null;
-        return AppRoutes.questionnaire;
-      }
-
-      // Logged in, questionnaire done — redirect away from auth screens
+      // Logged in — redirect away from auth screens
       if (path == AppRoutes.onboarding || path == AppRoutes.login) {
         return AppRoutes.home;
       }

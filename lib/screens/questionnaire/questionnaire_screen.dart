@@ -90,7 +90,6 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.questionnaireTitle),
-        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [

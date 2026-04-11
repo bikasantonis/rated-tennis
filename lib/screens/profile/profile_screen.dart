@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rated/l10n/app_localizations.dart';
 
 import 'package:rated/models/profile.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
+import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/tier_badge.dart';
 
@@ -179,6 +181,13 @@ class _ProfileBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
+
+        // ── Questionnaire CTA ──────────────────────────────────────────
+        // Visible on own profile only, until the first match is registered.
+        if (isOwn &&
+            (profile['questionnaire_done'] as bool? ?? false) == false &&
+            (profile['matches_played'] as int? ?? 0) == 0)
+          _QuestionnaireCta(onTap: () => context.push(AppRoutes.questionnaire)),
 
         // ── ELO sparkline ──────────────────────────────────────────────
         Text(l.profileEloHistory,
@@ -366,6 +375,56 @@ class _MatchHistoryTile extends StatelessWidget {
                   ?.copyWith(color: AppColors.outline),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Questionnaire CTA card ────────────────────────────────────────────────────
+
+class _QuestionnaireCta extends StatelessWidget {
+  const _QuestionnaireCta({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Card(
+        color: AppColors.primaryContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Icon(Icons.assignment_outlined, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Complete your profile',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Answer a few questions to get a personalised starting rating.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: onTap,
+                child: const Text('Start'),
+              ),
+            ],
+          ),
         ),
       ),
     );
