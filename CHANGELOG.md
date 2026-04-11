@@ -10,6 +10,9 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Web startup fixes**:
+  - Sentry zone mismatch resolved — all initialisation (bindings, OneSignal, Supabase) moved inside `SentryFlutter.init`'s `appRunner` so `ensureInitialized` and `runApp` share the same zone.
+  - OneSignal guarded with `!kIsWeb` — `onesignal_flutter` has no web implementation; `initialize`, `requestPermission`, and `NotificationService.init()` now skip entirely on web.
 - **Auth fixes (web + register tab)**:
   - Google OAuth now passes `redirectTo: Uri.base.origin` on web so the flow completes instead of silently returning.
   - Apple Sign-In hidden on web (`kIsWeb` guard) — `sign_in_with_apple` is native-only; previously threw an immediate error in Chrome.
