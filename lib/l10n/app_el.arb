@@ -57,7 +57,22 @@
   "loginContinueApple": "Συνέχεια με Apple",
   "loginEmailConfirmation": "Ελέγξτε το email σας για επιβεβαίωση.",
   "loginForgotPassword": "Ξεχάσατε τον κωδικό;",
+  "loginForgotPasswordBody": "Εισάγετε το email σας και θα σας στείλουμε σύνδεσμο επαναφοράς κωδικού.",
+  "loginForgotPasswordSend": "Αποστολή συνδέσμου",
+  "loginForgotPasswordSuccess": "Στάλθηκε σύνδεσμος — ελέγξτε τα εισερχόμενά σας.",
   "loginPrivacyConsent": "Αποδέχομαι την Πολιτική Απορρήτου",
+  "loginPrivacyConsentPre": "Αποδέχομαι την ",
+
+  "biometricTitle": "Καλώς ήρθατε",
+  "biometricBody": "Επαληθεύστε την ταυτότητά σας για πρόσβαση στο RATED",
+  "biometricAuthenticate": "Επαλήθευση",
+  "biometricError": "Αποτυχία επαλήθευσης. Δοκιμάστε ξανά.",
+
+  "verifyEmailTitle": "Ελέγξτε το email σας",
+  "verifyEmailBody": "Στείλαμε σύνδεσμο επιβεβαίωσης στο {email}. Πατήστε για να ενεργοποιήσετε τον λογαριασμό σας.",
+  "@verifyEmailBody": { "placeholders": { "email": { "type": "String" } } },
+  "verifyEmailResend": "Εκ νέου αποστολή email επιβεβαίωσης",
+  "verifyEmailResendSuccess": "Το email επιβεβαίωσης εστάλη εκ νέου.",
 
   "questionnaireTitle": "Πείτε μας για εσάς",
   "questionnaireGetMyRating": "Λάβε τη βαθμολογία μου",

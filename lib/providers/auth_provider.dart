@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:rated/models/profile.dart';
+import 'package:rated/providers/biometric_provider.dart';
 import 'package:rated/services/notification_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -19,6 +20,11 @@ Stream<Session?> authState(Ref ref) =>
       final session = event.session;
       if (session != null) {
         NotificationService.instance.identifyUser(session.user.id);
+        // Fresh login (not a session restored from storage) — skip biometric lock
+        // so the user isn't prompted immediately after they just authenticated.
+        if (event.event == AuthChangeEvent.signedIn) {
+          ref.read(biometricUnlockedProvider.notifier).state = true;
+        }
       } else {
         NotificationService.instance.clearUser();
       }
@@ -132,6 +138,14 @@ class AuthActions extends _$AuthActions {
   /// Updates the authenticated user's password.
   Future<void> changePassword(String newPassword) async {
     await _client.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
+  /// Sends a password-reset email to [email] via Supabase.
+  Future<void> resetPasswordForEmail(String email) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _client.auth.resetPasswordForEmail(email),
+    );
   }
 
   /// GDPR Art. 17 — scrubs PII and hard-deletes the auth user via Edge Function.

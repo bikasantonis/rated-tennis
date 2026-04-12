@@ -57,7 +57,22 @@
   "loginContinueApple": "Continue with Apple",
   "loginEmailConfirmation": "Check your email to confirm your account.",
   "loginForgotPassword": "Forgot password?",
+  "loginForgotPasswordBody": "Enter your email and we'll send you a password reset link.",
+  "loginForgotPasswordSend": "Send reset link",
+  "loginForgotPasswordSuccess": "Reset link sent — check your inbox.",
   "loginPrivacyConsent": "I agree to the Privacy Policy",
+  "loginPrivacyConsentPre": "I agree to the ",
+
+  "biometricTitle": "Welcome back",
+  "biometricBody": "Authenticate to access RATED",
+  "biometricAuthenticate": "Authenticate",
+  "biometricError": "Authentication failed. Try again.",
+
+  "verifyEmailTitle": "Check your email",
+  "verifyEmailBody": "We sent a confirmation link to {email}. Click it to activate your account.",
+  "@verifyEmailBody": { "placeholders": { "email": { "type": "String" } } },
+  "verifyEmailResend": "Resend confirmation email",
+  "verifyEmailResendSuccess": "Confirmation email resent.",
 
   "questionnaireTitle": "Tell us about yourself",
   "questionnaireGetMyRating": "Get my rating",

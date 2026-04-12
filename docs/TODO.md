@@ -42,28 +42,28 @@ These are blocking decisions from PRD §12.1. Each blocks one or more downstream
 - [ ] 🔴 Add `ONESIGNAL_APP_ID` to `.env.dev` / `.env.staging` / `.env.production`
 - [ ] 🔴 **Android**: upload FCM server key in OneSignal dashboard (Settings → Push → Google Android); download and add `google-services.json` to `android/app/` _(OneSignal still needs FCM credentials server-side, but the Flutter app no longer imports `firebase_core`)_
 - [ ] 🔴 **iOS**: upload APNs Auth Key (p8) in OneSignal dashboard (Settings → Push → Apple iOS); OneSignal handles provisioning — no manual certificate rotation
-- [ ] 🔴 Set OneSignal External User ID to Supabase `uid` after login so notifications are user-targeted: `OneSignal.login(supabaseUserId)`
-- [ ] 🔴 Call `OneSignal.logout()` on sign-out so the device is no longer associated with the user
-- [ ] 🔴 Handle **foreground notifications**: listen to `OneSignal.Notifications.addForegroundWillDisplayListener` and show in-app banner
-- [ ] 🔴 Handle **notification tap** (background / terminated): listen to `OneSignal.Notifications.addClickListener`, parse `reference_type` + `reference_id` from notification data, deep-link via go_router
-- [ ] 🟡 Write Supabase Edge Function `send-notification` that calls OneSignal REST API (`POST /notifications`) — triggered by DB webhook on `notifications` INSERT
-- [ ] 🟡 Pass `headings`, `contents`, `data.reference_type`, `data.reference_id` in OneSignal payload so tap handler can route correctly
+- [x] 🔴 Set OneSignal External User ID to Supabase `uid` after login so notifications are user-targeted: `OneSignal.login(supabaseUserId)`
+- [x] 🔴 Call `OneSignal.logout()` on sign-out so the device is no longer associated with the user
+- [x] 🔴 Handle **foreground notifications**: listen to `OneSignal.Notifications.addForegroundWillDisplayListener` and show in-app banner
+- [x] 🔴 Handle **notification tap** (background / terminated): listen to `OneSignal.Notifications.addClickListener`, parse `reference_type` + `reference_id` from notification data, deep-link via go_router
+- [x] 🟡 Write Supabase Edge Function `send-notification` that calls OneSignal REST API (`POST /notifications`) — triggered by DB webhook on `notifications` INSERT
+- [x] 🟡 Pass `headings`, `contents`, `data.reference_type`, `data.reference_id` in OneSignal payload so tap handler can route correctly
 
 ---
 
 ## 2. Authentication (SCR-02 — `login_screen.dart`)
 
-- [ ] 🔴 Wire **email + password** sign-in to `Supabase.instance.client.auth.signInWithPassword()`
-- [ ] 🔴 Wire **email + password** registration to `auth.signUp()` with `display_name` in metadata
-- [ ] 🔴 Wire **Google Sign-In** button using `google_sign_in` package + Supabase OAuth flow
-- [ ] 🔴 Wire **Apple Sign-In** button using `sign_in_with_apple` + Supabase OAuth (required for App Store)
-- [ ] 🔴 Add **GDPR consent checkbox** with timestamp stored in `profiles` (Art. 6 compliance)
-- [ ] 🔴 Inline **privacy policy link** at registration (Art. 13 compliance)
-- [ ] 🔴 Add **password validation** (min 8 chars, 1 uppercase, 1 number — PRD §5.2)
-- [ ] 🔴 Handle auth errors gracefully (wrong password, email taken, network error)
-- [ ] 🔴 Implement **biometric prompt** if session token exists (`local_auth` package)
-- [ ] 🟡 Add **forgot password** flow via Supabase `resetPasswordForEmail()`
-- [ ] 🟡 Add **email verification** gate before accessing the app
+- [x] 🔴 Wire **email + password** sign-in to `Supabase.instance.client.auth.signInWithPassword()`
+- [x] 🔴 Wire **email + password** registration to `auth.signUp()` with `display_name` in metadata
+- [x] 🔴 Wire **Google Sign-In** button using `google_sign_in` package + Supabase OAuth flow
+- [x] 🔴 Wire **Apple Sign-In** button using `sign_in_with_apple` + Supabase OAuth (required for App Store)
+- [x] 🔴 Add **GDPR consent checkbox** with timestamp stored in `profiles` (Art. 6 compliance)
+- [x] 🔴 Inline **privacy policy link** at registration (Art. 13 compliance)
+- [x] 🔴 Add **password validation** (min 8 chars, 1 uppercase, 1 number — PRD §5.2)
+- [x] 🔴 Handle auth errors gracefully (wrong password, email taken, network error)
+- [x] 🔴 Implement **biometric prompt** if session token exists (`local_auth` package)
+- [x] 🟡 Add **forgot password** flow via Supabase `resetPasswordForEmail()`
+- [x] 🟡 Add **email verification** gate before accessing the app
 
 ---
 

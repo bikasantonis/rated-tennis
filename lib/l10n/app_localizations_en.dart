@@ -167,7 +167,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginForgotPassword => 'Forgot password?';
 
   @override
+  String get loginForgotPasswordBody =>
+      "Enter your email and we'll send you a password reset link.";
+
+  @override
+  String get loginForgotPasswordSend => 'Send reset link';
+
+  @override
+  String get loginForgotPasswordSuccess => 'Reset link sent — check your inbox.';
+
+  @override
   String get loginPrivacyConsent => 'I agree to the Privacy Policy';
+
+  @override
+  String get loginPrivacyConsentPre => 'I agree to the ';
 
   @override
   String get questionnaireTitle => 'Tell us about yourself';
@@ -688,6 +701,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsChangePasswordSuccess => 'Password updated successfully.';
+
+  @override
+  String get biometricTitle => 'Welcome back';
+
+  @override
+  String get biometricBody => 'Authenticate to access RATED';
+
+  @override
+  String get biometricAuthenticate => 'Authenticate';
+
+  @override
+  String get biometricError => 'Authentication failed. Try again.';
+
+  @override
+  String get verifyEmailTitle => 'Check your email';
+
+  @override
+  String verifyEmailBody(String email) {
+    return 'We sent a confirmation link to $email. Click it to activate your account.';
+  }
+
+  @override
+  String get verifyEmailResend => 'Resend confirmation email';
+
+  @override
+  String get verifyEmailResendSuccess => 'Confirmation email resent.';
 
   @override
   String eloLabel(String value) {

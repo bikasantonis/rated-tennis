@@ -53,6 +53,9 @@
 			</array>
 		</dict>
 	</array>
+	<!-- local_auth: Face ID usage description (required for App Store) -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to securely sign in to RATED</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

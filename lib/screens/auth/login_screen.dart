@@ -1,9 +1,16 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/auth_provider.dart';
+
+const _kPrivacyPolicyUrl = String.fromEnvironment(
+  'PRIVACY_POLICY_URL',
+  defaultValue: 'https://rated.app/privacy',
+);
 
 /// SCR-02 — Login / Sign-Up (tabbed).
 /// Email+password, Google OAuth, Apple Sign-In.
@@ -63,6 +70,77 @@ class _LoginTabState extends ConsumerState<LoginTab> {
           _passwordController.text,
         );
     _showErrorIfAny();
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final l = AppLocalizations.of(context)!;
+    final emailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final email = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.loginForgotPassword),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.loginForgotPasswordBody),
+            const SizedBox(height: 16),
+            Form(
+              key: formKey,
+              child: TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: l.loginEmailLabel),
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.done,
+                validator: _validateEmail,
+                autofocus: true,
+                onFieldSubmitted: (_) {
+                  if (formKey.currentState!.validate()) {
+                    Navigator.pop(ctx, emailController.text.trim());
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l.actionCancel),
+          ),
+          TextButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx, emailController.text.trim());
+              }
+            },
+            child: Text(l.loginForgotPasswordSend),
+          ),
+        ],
+      ),
+    );
+
+    emailController.dispose();
+    if (email == null || !mounted) return;
+
+    await ref.read(authActionsProvider.notifier).resetPasswordForEmail(email);
+    if (!mounted) return;
+
+    final state = ref.read(authActionsProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          state is AsyncError
+              ? _friendlyError(state.error)
+              : l.loginForgotPasswordSuccess,
+        ),
+        backgroundColor: state is AsyncError
+            ? Theme.of(context).colorScheme.error
+            : null,
+      ),
+    );
   }
 
   Future<void> _signInWithGoogle() async {
@@ -130,7 +208,14 @@ class _LoginTabState extends ConsumerState<LoginTab> {
                   (v == null || v.isEmpty) ? 'Enter your password' : null,
               enabled: !isLoading,
             ),
-            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: isLoading ? null : _showForgotPasswordDialog,
+                child: Text(l.loginForgotPassword),
+              ),
+            ),
+            const SizedBox(height: 8),
             FilledButton(
               onPressed: isLoading ? null : _signIn,
               child: isLoading
@@ -180,15 +265,35 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late final TapGestureRecognizer _privacyLinkRecognizer;
+  late final TapGestureRecognizer _consentToggleRecognizer;
   bool _obscurePassword = true;
   bool _gdprConsent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _privacyLinkRecognizer = TapGestureRecognizer()
+      ..onTap = _openPrivacyPolicy;
+    _consentToggleRecognizer = TapGestureRecognizer()
+      ..onTap = () => setState(() => _gdprConsent = !_gdprConsent);
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _privacyLinkRecognizer.dispose();
+    _consentToggleRecognizer.dispose();
     super.dispose();
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final uri = Uri.parse(_kPrivacyPolicyUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _register() async {
@@ -287,7 +392,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
               enabled: !isLoading,
             ),
             const SizedBox(height: 20),
-            // GDPR Art. 6 — consent checkbox with timestamp stored on submit
+            // GDPR Art. 6 + Art. 13 — consent checkbox with inline privacy policy link.
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -298,13 +403,25 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
                       : (v) => setState(() => _gdprConsent = v ?? false),
                 ),
                 Expanded(
-                  child: GestureDetector(
-                    onTap: isLoading
-                        ? null
-                        : () => setState(() => _gdprConsent = !_gdprConsent),
-                    child: Text(
-                      l.loginPrivacyConsent,
+                  child: Text.rich(
+                    TextSpan(
                       style: Theme.of(context).textTheme.bodyMedium,
+                      children: [
+                        TextSpan(
+                          text: l.loginPrivacyConsentPre,
+                          recognizer: isLoading ? null : _consentToggleRecognizer,
+                        ),
+                        TextSpan(
+                          text: l.settingsPrivacyPolicy,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor:
+                                Theme.of(context).colorScheme.primary,
+                          ),
+                          recognizer: _privacyLinkRecognizer,
+                        ),
+                      ],
                     ),
                   ),
                 ),

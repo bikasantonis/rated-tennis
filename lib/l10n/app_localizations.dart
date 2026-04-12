@@ -404,11 +404,35 @@ abstract class AppLocalizations {
   /// **'Forgot password?'**
   String get loginForgotPassword;
 
+  /// No description provided for @loginForgotPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send you a password reset link.'**
+  String get loginForgotPasswordBody;
+
+  /// No description provided for @loginForgotPasswordSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get loginForgotPasswordSend;
+
+  /// No description provided for @loginForgotPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset link sent — check your inbox.'**
+  String get loginForgotPasswordSuccess;
+
   /// No description provided for @loginPrivacyConsent.
   ///
   /// In en, this message translates to:
   /// **'I agree to the Privacy Policy'**
   String get loginPrivacyConsent;
+
+  /// No description provided for @loginPrivacyConsentPre.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the '**
+  String get loginPrivacyConsentPre;
 
   /// No description provided for @questionnaireTitle.
   ///
@@ -1387,6 +1411,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password updated successfully.'**
   String get settingsChangePasswordSuccess;
+
+  /// No description provided for @biometricTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get biometricTitle;
+
+  /// No description provided for @biometricBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to access RATED'**
+  String get biometricBody;
+
+  /// No description provided for @biometricAuthenticate.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate'**
+  String get biometricAuthenticate;
+
+  /// No description provided for @biometricError.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Try again.'**
+  String get biometricError;
+
+  /// No description provided for @verifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get verifyEmailTitle;
+
+  /// No description provided for @verifyEmailBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a confirmation link to {email}. Click it to activate your account.'**
+  String verifyEmailBody(String email);
+
+  /// No description provided for @verifyEmailResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend confirmation email'**
+  String get verifyEmailResend;
+
+  /// No description provided for @verifyEmailResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation email resent.'**
+  String get verifyEmailResendSuccess;
 
   /// No description provided for @eloLabel.
   ///

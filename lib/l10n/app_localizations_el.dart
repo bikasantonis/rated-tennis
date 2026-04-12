@@ -167,7 +167,21 @@ class AppLocalizationsEl extends AppLocalizations {
   String get loginForgotPassword => 'Ξεχάσατε τον κωδικό;';
 
   @override
+  String get loginForgotPasswordBody =>
+      'Εισάγετε το email σας και θα σας στείλουμε σύνδεσμο επαναφοράς κωδικού.';
+
+  @override
+  String get loginForgotPasswordSend => 'Αποστολή συνδέσμου';
+
+  @override
+  String get loginForgotPasswordSuccess =>
+      'Στάλθηκε σύνδεσμος — ελέγξτε τα εισερχόμενά σας.';
+
+  @override
   String get loginPrivacyConsent => 'Αποδέχομαι την Πολιτική Απορρήτου';
+
+  @override
+  String get loginPrivacyConsentPre => 'Αποδέχομαι την ';
 
   @override
   String get questionnaireTitle => 'Πείτε μας για εσάς';
@@ -692,6 +706,33 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get settingsChangePasswordSuccess => 'Ο κωδικός ενημερώθηκε επιτυχώς.';
+
+  @override
+  String get biometricTitle => 'Καλώς ήρθατε';
+
+  @override
+  String get biometricBody =>
+      'Επαληθεύστε την ταυτότητά σας για πρόσβαση στο RATED';
+
+  @override
+  String get biometricAuthenticate => 'Επαλήθευση';
+
+  @override
+  String get biometricError => 'Αποτυχία επαλήθευσης. Δοκιμάστε ξανά.';
+
+  @override
+  String get verifyEmailTitle => 'Ελέγξτε το email σας';
+
+  @override
+  String verifyEmailBody(String email) {
+    return 'Στείλαμε σύνδεσμο επιβεβαίωσης στο $email. Πατήστε για να ενεργοποιήσετε τον λογαριασμό σας.';
+  }
+
+  @override
+  String get verifyEmailResend => 'Εκ νέου αποστολή email επιβεβαίωσης';
+
+  @override
+  String get verifyEmailResendSuccess => 'Το email επιβεβαίωσης εστάλη εκ νέου.';
 
   @override
   String eloLabel(String value) {

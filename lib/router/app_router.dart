@@ -3,8 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:rated/providers/auth_provider.dart';
+import 'package:rated/providers/biometric_provider.dart';
 import 'package:rated/screens/admin/dispute_resolution_screen.dart';
+import 'package:rated/screens/auth/biometric_lock_screen.dart';
 import 'package:rated/screens/auth/login_screen.dart';
+import 'package:rated/screens/auth/verify_email_screen.dart';
 import 'package:rated/screens/home/home_screen.dart';
 import 'package:rated/screens/leaderboard/leaderboard_screen.dart';
 import 'package:rated/screens/match/match_inbox_screen.dart';
@@ -41,6 +44,8 @@ abstract final class AppRoutes {
   static const settings = '/settings';
   static const organizerDashboard = '/organizer';
   static const adminDisputes = '/admin/disputes';
+  static const lock = '/lock';
+  static const verifyEmail = '/verify-email';
 }
 
 // ---------------------------------------------------------------------------
@@ -50,6 +55,7 @@ abstract final class AppRoutes {
 @riverpod
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateProvider);
+  final biometricUnlocked = ref.watch(biometricUnlockedProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.onboarding,
@@ -59,7 +65,7 @@ GoRouter appRouter(Ref ref) {
       final isAuthenticated = session != null;
       final path = state.matchedLocation;
 
-      // Not logged in — allow only public screens
+      // Not logged in — allow only public screens.
       if (!isAuthenticated) {
         if (path == AppRoutes.onboarding || path == AppRoutes.login) {
           return null;
@@ -67,9 +73,25 @@ GoRouter appRouter(Ref ref) {
         return AppRoutes.onboarding;
       }
 
-      // Logged in — redirect away from auth screens
+      // Logged in — redirect away from auth screens.
       if (path == AppRoutes.onboarding || path == AppRoutes.login) {
         return AppRoutes.home;
+      }
+
+      // Email verification gate (Art. 13 compliance).
+      // emailConfirmedAt is null only when Supabase email confirmation is
+      // enabled and the user has not yet clicked the confirmation link.
+      if (session.user.emailConfirmedAt == null &&
+          path != AppRoutes.verifyEmail) {
+        return AppRoutes.verifyEmail;
+      }
+
+      // Biometric lock: required on restored sessions (cold start).
+      // Bypassed when biometricUnlocked is true (fresh login or already authed).
+      if (!biometricUnlocked &&
+          path != AppRoutes.lock &&
+          path != AppRoutes.verifyEmail) {
+        return AppRoutes.lock;
       }
 
       return null;
@@ -171,6 +193,18 @@ GoRouter appRouter(Ref ref) {
         path: AppRoutes.adminDisputes,
         pageBuilder: (context, state) =>
             _slide(state, const DisputeResolutionScreen()),
+      ),
+
+      // ── Auth gate screens ─────────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.lock,
+        pageBuilder: (context, state) =>
+            _fade(state, const BiometricLockScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
+        pageBuilder: (context, state) =>
+            _fade(state, const VerifyEmailScreen()),
       ),
     ],
   );

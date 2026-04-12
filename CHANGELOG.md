@@ -9,6 +9,21 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Added
+- **Authentication — TODO §2 complete** (all 11 items now done):
+  - **Biometric lock screen** (`lib/screens/auth/biometric_lock_screen.dart`) — on cold start with a restored Supabase session, router redirects to `/lock`; `BiometricService` wraps `local_auth`; auto-unlocks if device has no enrolled biometric so users are never blocked. `AuthChangeEvent.signedIn` sets `biometricUnlockedProvider = true` so fresh logins bypass the lock. Android: `USE_BIOMETRIC` + `USE_FINGERPRINT` permissions added; iOS: `NSFaceIDUsageDescription` added to `Info.plist`.
+  - **Email verification gate** (`lib/screens/auth/verify_email_screen.dart`) — router checks `session.user.emailConfirmedAt == null` and redirects to `/verify-email` if unconfirmed; screen shows the email address and a **Resend** button (`auth.resend(type: OtpType.signup)`).
+  - **Forgot password** — "Forgot password?" `TextButton` added to `LoginTab` (top-right of password field); opens an `AlertDialog` with email input; calls new `AuthActions.resetPasswordForEmail()` action; success/error shown via `SnackBar`.
+  - **Inline privacy policy link** (Art. 13) — consent checkbox in `RegisterTab` now uses `Text.rich` with a `TapGestureRecognizer`; "Privacy Policy" text is underlined and opens `PRIVACY_POLICY_URL` (dart-define, defaulting to `https://rated.app/privacy`) via `url_launcher`. Android `<queries>` block updated for `https` scheme.
+  - New packages added: `local_auth: ^2.3.0`, `url_launcher: ^6.3.0`.
+  - 13 new ARB keys (EN + EL): `loginForgotPasswordBody/Send/Success`, `loginPrivacyConsentPre`, `biometricTitle/Body/Authenticate/Error`, `verifyEmailTitle/Body/Resend/ResendSuccess`.
+- **OneSignal Flutter client wiring (TODO §1)** — push notification client-side integration complete:
+  - `auth_provider.dart` `authState` stream calls `NotificationService.instance.identifyUser(session.user.id)` on every sign-in and `clearUser()` on sign-out, keeping the OneSignal external user ID in sync with the Supabase session.
+  - `NotificationService.init()` registers a foreground listener (`addForegroundWillDisplayListener`) that calls `event.notification.display()` so notifications are shown as native banners when the app is open.
+  - `NotificationService.init()` registers a tap listener (`addClickListener`) that reads `reference_type` and `reference_id` from `notification.additionalData` and deep-links via go_router: `match_result` / `match_request` → `/matches`, `tournament` → `/tournaments/:id`, `profile` → `/leaderboard/:id`, unknown → `/home`.
+  - `NotificationService.setRouter(router)` is called from `RatedApp.build` so the router reference is always current.
+  - All OneSignal calls (init, login, logout) are guarded with `!kIsWeb` — `onesignal_flutter` has no web implementation.
+
 ### Changed
 - **Onboarding + login combined screen**: The onboarding screen now embeds the login/register panel directly (on the right on wide screens, below the slides on narrow screens). Returning users no longer need to swipe through all slides to reach the login form — the auth card is always visible. Unauthenticated users are now redirected to `/onboarding` instead of `/login`.
 

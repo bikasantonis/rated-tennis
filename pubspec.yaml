@@ -17,6 +17,10 @@ dependencies:
 
   # Auth
   sign_in_with_apple: ^7.0.1
+  local_auth: ^2.3.0
+
+  # URL launcher (privacy policy link)
+  url_launcher: ^6.3.0
 
   # Push notifications
   onesignal_flutter: ^5.2.5
