@@ -29,7 +29,7 @@ class QuestionnaireActions extends _$QuestionnaireActions {
       );
       if (response.status != 200) {
         throw Exception(
-          response.data?['error'] ?? 'Failed to save questionnaire',
+          (response.data as Map<String, dynamic>?)?['error'] ?? 'Failed to save questionnaire',
         );
       }
     });

@@ -107,7 +107,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
             child: Text(l.actionCancel),
           ),
           Consumer(
-            builder: (_, ref, __) {
+            builder: (_, ref, _) {
               final isLoading = ref.watch(authActionsProvider).isLoading;
               return FilledButton(
                 onPressed: isLoading

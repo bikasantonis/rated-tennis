@@ -64,7 +64,7 @@ class _PendingResultsTab extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: results.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, i) =>
                 _PendingResultCard(match: results[i], ref: ref),
           ),
@@ -315,7 +315,7 @@ class _PendingRequestsTab extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: requests.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, i) =>
                 _RequestCard(request: requests[i], ref: ref),
           ),

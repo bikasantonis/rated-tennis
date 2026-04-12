@@ -343,6 +343,6 @@ int bracketTotalRounds(int n) {
 
 int _nextPow2Viewer(int n) {
   var p = 1;
-  while (p < n) p *= 2;
+  while (p < n) { p *= 2; }
   return p;
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../models/profile.dart';
-import 'tier_badge.dart';
+import 'package:rated/models/profile.dart';
+import 'package:rated/widgets/tier_badge.dart';
 
 class EloScoreCard extends StatelessWidget {
   const EloScoreCard({required this.profile, super.key});

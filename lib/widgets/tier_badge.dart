@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/profile.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
+import 'package:rated/models/profile.dart';
+import 'package:rated/theme/app_colors.dart';
+import 'package:rated/theme/app_theme.dart';
 
 class TierBadge extends StatelessWidget {
   const TierBadge({required this.tier, super.key, this.small = false});

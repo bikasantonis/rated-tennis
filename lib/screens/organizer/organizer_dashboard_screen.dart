@@ -386,7 +386,7 @@ class _CreateTournamentSheetState
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _format,
+                initialValue: _format,
                 decoration: InputDecoration(labelText: l.organizerFormatLabel),
                 items: [
                   DropdownMenuItem(

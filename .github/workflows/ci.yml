@@ -14,11 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: flutter-actions/setup-flutter@v4
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
         with:
-          flutter-version: '3.38.5'
-          channel: 'stable'
-          cache: true
+          path: /opt/flutter
+          key: flutter-3.38.5
+
+      - name: Setup Flutter
+        run: |
+          if [ ! -d /opt/flutter/bin ]; then
+            git clone https://github.com/flutter/flutter.git --depth 1 -b 3.38.5 /opt/flutter
+          fi
+          echo "/opt/flutter/bin" >> $GITHUB_PATH
+
+      - name: Flutter version
+        run: flutter --version
 
       - name: Install dependencies
         run: flutter pub get

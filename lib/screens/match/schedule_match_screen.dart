@@ -151,7 +151,7 @@ class _PlayerListView extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: players.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         final p = players[i];
         final name = p['display_name'] as String? ?? '—';
@@ -296,7 +296,7 @@ class _RequestFormView extends StatelessWidget {
   }
 
   String _formatDt(DateTime dt) {
-    final pad = (int n) => n.toString().padLeft(2, '0');
+    String pad(int n) => n.toString().padLeft(2, '0');
     return '${dt.day}/${dt.month}/${dt.year}  ${pad(dt.hour)}:${pad(dt.minute)}';
   }
 }

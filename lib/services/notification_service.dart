@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:go_router/go_router.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-import '../router/app_router.dart';
+import 'package:rated/router/app_router.dart';
 
 /// Wraps all OneSignal interactions.
 ///

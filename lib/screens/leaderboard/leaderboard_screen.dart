@@ -36,7 +36,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         actions: [
           clubsAsync.when(
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
             data: (clubs) => clubs.isEmpty
                 ? const SizedBox.shrink()
                 : _ClubFilterButton(

@@ -141,7 +141,7 @@ class TournamentActions extends _$TournamentActions {
         'max_players': maxPlayers,
         'starts_at': startsAt.toIso8601String(),
         'elo_multiplier': eloMultiplier,
-        if (clubId != null) 'club_id': clubId,
+        'club_id': ?clubId,
         'status': 'draft',
       });
     });
