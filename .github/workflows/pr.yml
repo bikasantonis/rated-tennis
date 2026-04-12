@@ -44,7 +44,7 @@ jobs:
       # ── Static analysis ───────────────────────────────────────────────────────
       # Fail on any error or warning; info hints are allowed.
       - name: flutter analyze
-        run: flutter analyze --fatal-infos=false --fatal-warnings
+        run: flutter analyze --fatal-warnings
 
       # ── Unit tests ───────────────────────────────────────────────────────────
       - name: Unit tests
