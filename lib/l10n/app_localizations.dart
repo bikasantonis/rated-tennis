@@ -404,6 +404,30 @@ abstract class AppLocalizations {
   /// **'Forgot password?'**
   String get loginForgotPassword;
 
+  /// No description provided for @forgotPasswordDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get forgotPasswordDialogTitle;
+
+  /// No description provided for @forgotPasswordDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send you a reset link.'**
+  String get forgotPasswordDialogBody;
+
+  /// No description provided for @forgotPasswordSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get forgotPasswordSend;
+
+  /// No description provided for @forgotPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email for a password reset link.'**
+  String get forgotPasswordSuccess;
+
   /// No description provided for @loginPrivacyConsent.
   ///
   /// In en, this message translates to:
@@ -1115,8 +1139,32 @@ abstract class AppLocalizations {
   /// No description provided for @organizerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Organizer Dashboard'**
+  /// **'My Tournaments'**
   String get organizerTitle;
+
+  /// No description provided for @organizerTabOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get organizerTabOpen;
+
+  /// No description provided for @organizerTabInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get organizerTabInProgress;
+
+  /// No description provided for @organizerTabCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get organizerTabCompleted;
+
+  /// No description provided for @organizerManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get organizerManage;
 
   /// No description provided for @organizerCreateTitle.
   ///
@@ -1201,6 +1249,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No registrations yet.'**
   String get organizerNoRegistrations;
+
+  /// No description provided for @organizerGenerateBracket.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Bracket & Start'**
+  String get organizerGenerateBracket;
+
+  /// No description provided for @organizerGenerateBracketSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket generated — tournament is live!'**
+  String get organizerGenerateBracketSuccess;
+
+  /// No description provided for @organizerOpenRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Registration'**
+  String get organizerOpenRegistration;
+
+  /// No description provided for @organizerCompleteTourn.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Completed'**
+  String get organizerCompleteTourn;
+
+  /// No description provided for @organizerBracketSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket Management'**
+  String get organizerBracketSection;
+
+  /// No description provided for @settingsOrganizerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Organiser'**
+  String get settingsOrganizerSection;
+
+  /// No description provided for @settingsRequestOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Organiser Rights'**
+  String get settingsRequestOrganizer;
+
+  /// No description provided for @settingsRequestOrganizerSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to create and manage tournaments.'**
+  String get settingsRequestOrganizerSub;
+
+  /// No description provided for @settingsOrganizerRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Request pending…'**
+  String get settingsOrganizerRequestPending;
+
+  /// No description provided for @settingsOrganizerRequestPendingSub.
+  ///
+  /// In en, this message translates to:
+  /// **'An admin will review your request shortly.'**
+  String get settingsOrganizerRequestPendingSub;
+
+  /// No description provided for @settingsOrganizerRequestDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Request not approved'**
+  String get settingsOrganizerRequestDenied;
+
+  /// No description provided for @settingsOrganizerRequestDeniedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'You may submit a new request.'**
+  String get settingsOrganizerRequestDeniedSub;
+
+  /// No description provided for @settingsIsOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'You are an Organiser'**
+  String get settingsIsOrganizer;
+
+  /// No description provided for @settingsIsOrganizerSub.
+  ///
+  /// In en, this message translates to:
+  /// **'You can create and manage tournaments.'**
+  String get settingsIsOrganizerSub;
+
+  /// No description provided for @settingsOrganizerRequestConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Organiser Rights?'**
+  String get settingsOrganizerRequestConfirmTitle;
+
+  /// No description provided for @settingsOrganizerRequestConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An admin will review your request and notify you by push and email once a decision is made.'**
+  String get settingsOrganizerRequestConfirmBody;
+
+  /// No description provided for @settingsOrganizerRequestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted!'**
+  String get settingsOrganizerRequestSuccess;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Panel'**
+  String get adminTitle;
+
+  /// No description provided for @adminTabDisputes.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Disputes'**
+  String get adminTabDisputes;
+
+  /// No description provided for @adminTabRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Organiser Requests'**
+  String get adminTabRequests;
+
+  /// No description provided for @adminRequestsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending requests.'**
+  String get adminRequestsNone;
+
+  /// No description provided for @adminRequestsApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get adminRequestsApprove;
+
+  /// No description provided for @adminRequestsDeny.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny'**
+  String get adminRequestsDeny;
+
+  /// No description provided for @adminRequestsApproveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Organiser rights granted.'**
+  String get adminRequestsApproveSuccess;
+
+  /// No description provided for @adminRequestsDenySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request declined.'**
+  String get adminRequestsDenySuccess;
+
+  /// No description provided for @bracketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket'**
+  String get bracketTitle;
+
+  /// No description provided for @bracketNotGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket has not been generated yet.'**
+  String get bracketNotGenerated;
+
+  /// No description provided for @bracketRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {n}'**
+  String bracketRound(int n);
+
+  /// No description provided for @bracketSemifinal.
+  ///
+  /// In en, this message translates to:
+  /// **'Semifinal'**
+  String get bracketSemifinal;
+
+  /// No description provided for @bracketFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'Final'**
+  String get bracketFinal;
+
+  /// No description provided for @bracketBye.
+  ///
+  /// In en, this message translates to:
+  /// **'Bye'**
+  String get bracketBye;
+
+  /// No description provided for @bracketRecordResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Record result'**
+  String get bracketRecordResult;
+
+  /// No description provided for @bracketSelectWinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Select winner'**
+  String get bracketSelectWinner;
 
   /// No description provided for @settingsTitle.
   ///

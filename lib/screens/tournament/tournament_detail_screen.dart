@@ -6,9 +6,10 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/tier_badge.dart';
+import 'package:rated/widgets/tournament_bracket_viewer.dart';
 import 'package:rated/models/profile.dart';
 
-/// SCR-11 — Tournament detail: info, participants, registration CTA.
+/// SCR-11 — Tournament detail: info, participants, bracket, registration CTA.
 class TournamentDetailScreen extends ConsumerWidget {
   const TournamentDetailScreen({required this.tournamentId, super.key});
 
@@ -18,60 +19,125 @@ class TournamentDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final detailAsync = ref.watch(tournamentDetailProvider(tournamentId));
-    final regsAsync =
-        ref.watch(tournamentRegistrationsProvider(tournamentId));
     final profileAsync = ref.watch(currentProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.tournamentDetailTitle)),
-      body: detailAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (t) {
-          if (t == null) {
-            return Center(child: Text(l.errorTournamentNotFound));
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(tournamentDetailProvider(tournamentId));
-              ref.invalidate(tournamentRegistrationsProvider(tournamentId));
-            },
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+    return detailAsync.when(
+      loading: () => Scaffold(
+        appBar: AppBar(title: Text(l.tournamentDetailTitle)),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Scaffold(
+        appBar: AppBar(title: Text(l.tournamentDetailTitle)),
+        body: Center(child: Text('Error: $e')),
+      ),
+      data: (t) {
+        if (t == null) {
+          return Scaffold(
+            appBar: AppBar(title: Text(l.tournamentDetailTitle)),
+            body: Center(child: Text(l.errorTournamentNotFound)),
+          );
+        }
+
+        final status = t['status'] as String? ?? '';
+        final hasBracket =
+            status == 'in_progress' || status == 'completed';
+        final organizerId = t['organizer_id'] as String?;
+        final currentUid = switch (profileAsync) {
+          AsyncData(:final value) => value?.id,
+          _ => null,
+        };
+        final isOrganizer = currentUid != null && currentUid == organizerId;
+
+        return DefaultTabController(
+          length: hasBracket ? 3 : 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(l.tournamentDetailTitle),
+              bottom: TabBar(
+                tabs: [
+                  const Tab(icon: Icon(Icons.info_outline)),
+                  Tab(
+                    icon: const Icon(Icons.people_outline),
+                    text: l.tournamentDetailParticipants,
+                  ),
+                  if (hasBracket)
+                    Tab(
+                      icon: const Icon(Icons.account_tree_outlined),
+                      text: l.bracketTitle,
+                    ),
+                ],
+              ),
+            ),
+            body: TabBarView(
               children: [
-                _InfoCard(t: t),
-                const SizedBox(height: 16),
-                _RegistrationCta(
-                  t: t,
-                  tournamentId: tournamentId,
-                  profileAsync: profileAsync,
-                  ref: ref,
+                // ── Info tab ────────────────────────────────────────────────
+                RefreshIndicator(
+                  onRefresh: () async =>
+                      ref.invalidate(tournamentDetailProvider(tournamentId)),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _InfoCard(t: t),
+                      const SizedBox(height: 16),
+                      _RegistrationCta(
+                        t: t,
+                        tournamentId: tournamentId,
+                        profileAsync: profileAsync,
+                        ref: ref,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                Text(l.tournamentDetailParticipants,
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                regsAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
-                  data: (regs) => regs.isEmpty
-                      ? Text(l.tournamentDetailNoParticipants,
-                          style: TextStyle(color: AppColors.outline))
-                      : Column(
-                          children: regs
-                              .map((r) => _ParticipantTile(r: r))
-                              .toList(),
-                        ),
-                ),
+
+                // ── Participants tab ─────────────────────────────────────────
+                _ParticipantsTab(tournamentId: tournamentId),
+
+                // ── Bracket tab (only when in_progress or completed) ─────────
+                if (hasBracket)
+                  TournamentBracketViewer(
+                    tournamentId: tournamentId,
+                    isOrganizer: isOrganizer,
+                  ),
               ],
             ),
-          );
-        },
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Participants tab ─────────────────────────────────────────────────────────
+
+class _ParticipantsTab extends ConsumerWidget {
+  const _ParticipantsTab({required this.tournamentId});
+  final String tournamentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final regsAsync = ref.watch(tournamentRegistrationsProvider(tournamentId));
+    return RefreshIndicator(
+      onRefresh: () async =>
+          ref.invalidate(tournamentRegistrationsProvider(tournamentId)),
+      child: regsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (regs) => regs.isEmpty
+            ? Center(
+                child: Text(l.tournamentDetailNoParticipants,
+                    style: TextStyle(color: AppColors.outline)))
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: regs.length,
+                itemBuilder: (_, i) => _ParticipantTile(r: regs[i]),
+              ),
       ),
     );
   }
 }
+
+// ── Info card ────────────────────────────────────────────────────────────────
 
 class _InfoCard extends StatelessWidget {
   const _InfoCard({required this.t});
@@ -178,6 +244,8 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
+// ── Registration CTA ─────────────────────────────────────────────────────────
+
 class _RegistrationCta extends StatelessWidget {
   const _RegistrationCta({
     required this.t,
@@ -230,6 +298,8 @@ class _RegistrationCta extends StatelessWidget {
     );
   }
 }
+
+// ── Participant tile ──────────────────────────────────────────────────────────
 
 class _ParticipantTile extends StatelessWidget {
   const _ParticipantTile({required this.r});

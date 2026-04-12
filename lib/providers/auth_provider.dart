@@ -123,6 +123,14 @@ class AuthActions extends _$AuthActions {
     });
   }
 
+  /// Sends a password-reset email via Supabase.
+  Future<void> resetPassword(String email) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _client.auth.resetPasswordForEmail(email),
+    );
+  }
+
   /// Signs out the current user.
   Future<void> signOut() async {
     state = const AsyncLoading();

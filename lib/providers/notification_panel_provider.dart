@@ -2,26 +2,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:rated/models/notification_item.dart';
+import 'package:rated/providers/auth_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Fetch notifications for the current user (newest first, last 30)
+// Real-time: Supabase .stream() pushes updates whenever a row is
+// inserted or updated for this recipient.
+// Scoped to auth state: stream is recreated on sign-in and disposed on
+// sign-out to prevent subscription leaks between sessions.
 // ---------------------------------------------------------------------------
 
 final notificationsProvider =
-    FutureProvider<List<NotificationItem>>((ref) async {
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return [];
+    StreamProvider<List<NotificationItem>>((ref) {
+  // Watch the session so this provider re-builds on sign-in / sign-out.
+  final session = ref.watch(authStateProvider).asData?.value;
+  final userId = session?.user.id;
+  if (userId == null) return Stream.value([]);
 
-  final rows = await Supabase.instance.client
+  return Supabase.instance.client
       .from('notifications')
-      .select()
-      .eq('recipient_id', user.id)
+      .stream(primaryKey: ['id'])
+      .eq('recipient_id', userId)
       .order('created_at', ascending: false)
-      .limit(30);
-
-  return (rows as List)
-      .map((r) => NotificationItem.fromJson(r as Map<String, dynamic>))
-      .toList();
+      .limit(30)
+      .map(
+        (rows) => rows
+            .map((r) => NotificationItem.fromJson(r))
+            .toList(),
+      );
 });
 
 // ---------------------------------------------------------------------------
@@ -55,8 +63,7 @@ class NotificationActions extends Notifier<void> {
         .update({'is_read': true})
         .eq('recipient_id', user.id)
         .eq('is_read', false);
-
-    ref.invalidate(notificationsProvider);
+    // Stream auto-updates via Supabase realtime — no invalidate needed.
   }
 
   Future<void> markRead(String notificationId) async {
@@ -64,7 +71,6 @@ class NotificationActions extends Notifier<void> {
         .from('notifications')
         .update({'is_read': true})
         .eq('id', notificationId);
-
-    ref.invalidate(notificationsProvider);
+    // Stream auto-updates via Supabase realtime — no invalidate needed.
   }
 }

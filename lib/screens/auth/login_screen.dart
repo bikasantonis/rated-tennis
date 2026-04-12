@@ -75,6 +75,81 @@ class _LoginTabState extends ConsumerState<LoginTab> {
     _showErrorIfAny();
   }
 
+  Future<void> _showForgotPasswordDialog(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final emailController = TextEditingController(text: _emailController.text.trim());
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.forgotPasswordDialogTitle),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l.forgotPasswordDialogBody),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: l.loginEmailLabel),
+                keyboardType: TextInputType.emailAddress,
+                validator: _validateEmail,
+                autofocus: true,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.actionCancel),
+          ),
+          Consumer(
+            builder: (_, ref, __) {
+              final isLoading = ref.watch(authActionsProvider).isLoading;
+              return FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+                        await ref
+                            .read(authActionsProvider.notifier)
+                            .resetPassword(emailController.text.trim());
+                        if (!ctx.mounted) return;
+                        final state = ref.read(authActionsProvider);
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              state is AsyncError
+                                  ? _friendlyError(state.error)
+                                  : l.forgotPasswordSuccess,
+                            ),
+                            backgroundColor: state is AsyncError
+                                ? Theme.of(context).colorScheme.error
+                                : null,
+                          ),
+                        );
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l.forgotPasswordSend),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    emailController.dispose();
+  }
+
   void _showErrorIfAny() {
     final state = ref.read(authActionsProvider);
     if (state is AsyncError && mounted) {
@@ -130,7 +205,14 @@ class _LoginTabState extends ConsumerState<LoginTab> {
                   (v == null || v.isEmpty) ? 'Enter your password' : null,
               enabled: !isLoading,
             ),
-            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: isLoading ? null : () => _showForgotPasswordDialog(context),
+                child: Text(l.loginForgotPassword),
+              ),
+            ),
+            const SizedBox(height: 8),
             FilledButton(
               onPressed: isLoading ? null : _signIn,
               child: isLoading

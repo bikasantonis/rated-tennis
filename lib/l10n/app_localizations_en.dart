@@ -167,6 +167,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginForgotPassword => 'Forgot password?';
 
   @override
+  String get forgotPasswordDialogTitle => 'Reset password';
+
+  @override
+  String get forgotPasswordDialogBody =>
+      "Enter your email and we'll send you a reset link.";
+
+  @override
+  String get forgotPasswordSend => 'Send reset link';
+
+  @override
+  String get forgotPasswordSuccess =>
+      'Check your email for a password reset link.';
+
+  @override
   String get loginPrivacyConsent => 'I agree to the Privacy Policy';
 
   @override
@@ -548,7 +562,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentDetailMultiplierLabel => 'Rating multiplier';
 
   @override
-  String get organizerTitle => 'Organizer Dashboard';
+  String get organizerTitle => 'My Tournaments';
+
+  @override
+  String get organizerTabOpen => 'Open';
+
+  @override
+  String get organizerTabInProgress => 'In Progress';
+
+  @override
+  String get organizerTabCompleted => 'Completed';
+
+  @override
+  String get organizerManage => 'Manage';
 
   @override
   String get organizerCreateTitle => 'Create Tournament';
@@ -591,6 +617,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get organizerNoRegistrations => 'No registrations yet.';
+
+  @override
+  String get organizerGenerateBracket => 'Generate Bracket & Start';
+
+  @override
+  String get organizerGenerateBracketSuccess =>
+      'Bracket generated — tournament is live!';
+
+  @override
+  String get organizerOpenRegistration => 'Open Registration';
+
+  @override
+  String get organizerCompleteTourn => 'Mark as Completed';
+
+  @override
+  String get organizerBracketSection => 'Bracket Management';
+
+  @override
+  String get settingsOrganizerSection => 'Organiser';
+
+  @override
+  String get settingsRequestOrganizer => 'Request Organiser Rights';
+
+  @override
+  String get settingsRequestOrganizerSub =>
+      'Apply to create and manage tournaments.';
+
+  @override
+  String get settingsOrganizerRequestPending => 'Request pending…';
+
+  @override
+  String get settingsOrganizerRequestPendingSub =>
+      'An admin will review your request shortly.';
+
+  @override
+  String get settingsOrganizerRequestDenied => 'Request not approved';
+
+  @override
+  String get settingsOrganizerRequestDeniedSub =>
+      'You may submit a new request.';
+
+  @override
+  String get settingsIsOrganizer => 'You are an Organiser';
+
+  @override
+  String get settingsIsOrganizerSub => 'You can create and manage tournaments.';
+
+  @override
+  String get settingsOrganizerRequestConfirmTitle =>
+      'Request Organiser Rights?';
+
+  @override
+  String get settingsOrganizerRequestConfirmBody =>
+      'An admin will review your request and notify you by push and email once a decision is made.';
+
+  @override
+  String get settingsOrganizerRequestSuccess => 'Request submitted!';
+
+  @override
+  String get adminTitle => 'Admin Panel';
+
+  @override
+  String get adminTabDisputes => 'Match Disputes';
+
+  @override
+  String get adminTabRequests => 'Organiser Requests';
+
+  @override
+  String get adminRequestsNone => 'No pending requests.';
+
+  @override
+  String get adminRequestsApprove => 'Approve';
+
+  @override
+  String get adminRequestsDeny => 'Deny';
+
+  @override
+  String get adminRequestsApproveSuccess => 'Organiser rights granted.';
+
+  @override
+  String get adminRequestsDenySuccess => 'Request declined.';
+
+  @override
+  String get bracketTitle => 'Bracket';
+
+  @override
+  String get bracketNotGenerated => 'Bracket has not been generated yet.';
+
+  @override
+  String bracketRound(int n) {
+    return 'Round $n';
+  }
+
+  @override
+  String get bracketSemifinal => 'Semifinal';
+
+  @override
+  String get bracketFinal => 'Final';
+
+  @override
+  String get bracketBye => 'Bye';
+
+  @override
+  String get bracketRecordResult => 'Record result';
+
+  @override
+  String get bracketSelectWinner => 'Select winner';
 
   @override
   String get settingsTitle => 'Settings';

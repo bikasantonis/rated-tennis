@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:rated/models/profile.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/locale_provider.dart';
+import 'package:rated/providers/organizer_request_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 
-/// SCR-13 — Settings: language, notifications, account management.
+/// SCR-13 — Settings: language, organiser request, account management.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -30,6 +32,12 @@ class SettingsScreen extends ConsumerWidget {
               playerId: profile?.id,
               ref: ref,
             ),
+
+            const Divider(),
+
+            // ── Organiser ───────────────────────────────────────────────
+            _SectionHeader(title: l.settingsOrganizerSection),
+            _OrganizerTile(profile: profile),
 
             const Divider(),
 
@@ -175,6 +183,111 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
+// ── Organiser request tile ────────────────────────────────────────────────────
+
+class _OrganizerTile extends ConsumerWidget {
+  const _OrganizerTile({required this.profile});
+  final Profile? profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final role = profile?.role;
+
+    // Already an organiser or admin — nothing to request.
+    if (role == UserRole.organizer || role == UserRole.admin) {
+      return ListTile(
+        leading:
+            const Icon(Icons.verified_outlined, color: AppColors.eloGain),
+        title: Text(l.settingsIsOrganizer),
+        subtitle: Text(l.settingsIsOrganizerSub),
+      );
+    }
+
+    final requestAsync = ref.watch(myOrganizerRequestProvider);
+
+    return requestAsync.when(
+      loading: () => const ListTile(
+        leading: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        title: Text('…'),
+      ),
+      error: (e, _) => ListTile(
+        leading: const Icon(Icons.error_outline, color: AppColors.error),
+        title: Text('Error: $e'),
+      ),
+      data: (request) {
+        final status = request?['status'] as String?;
+
+        if (status == 'pending') {
+          return ListTile(
+            leading: const Icon(Icons.hourglass_top_outlined,
+                color: AppColors.primary),
+            title: Text(l.settingsOrganizerRequestPending),
+            subtitle: Text(l.settingsOrganizerRequestPendingSub),
+          );
+        }
+
+        // Denied or no request yet — show the request button.
+        return ListTile(
+          leading:
+              const Icon(Icons.manage_accounts_outlined, color: AppColors.primary),
+          title: Text(l.settingsRequestOrganizer),
+          subtitle: Text(status == 'denied'
+              ? l.settingsOrganizerRequestDenied
+              : l.settingsRequestOrganizerSub),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _confirmAndSubmit(context, ref, l),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmAndSubmit(
+      BuildContext context, WidgetRef ref, AppLocalizations l) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.settingsOrganizerRequestConfirmTitle),
+        content: Text(l.settingsOrganizerRequestConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.settingsRequestOrganizer),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    await ref
+        .read(organizerRequestActionsProvider.notifier)
+        .submitRequest();
+    if (!context.mounted) return;
+
+    final st = ref.read(organizerRequestActionsProvider);
+    if (st is AsyncData) {
+      ref.invalidate(myOrganizerRequestProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.settingsOrganizerRequestSuccess)),
+      );
+    } else if (st is AsyncError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(st.error.toString())),
+      );
+    }
+  }
+}
+
+// ── Shared section header ─────────────────────────────────────────────────────
+
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
   final String title;
@@ -193,6 +306,8 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
+
+// ── Language tile ─────────────────────────────────────────────────────────────
 
 class _LanguageTile extends StatelessWidget {
   const _LanguageTile(
@@ -239,11 +354,9 @@ class _LanguageTile extends StatelessWidget {
                 },
               );
               if (picked != null && picked != current) {
-                // Update locale in app immediately
                 ref
                     .read(localeProvider.notifier)
                     .setLocale(Locale(picked));
-                // Persist to profile
                 await ref
                     .read(profileEditActionsProvider.notifier)
                     .updateLanguage(playerId!, picked);

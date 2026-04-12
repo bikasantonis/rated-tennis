@@ -167,6 +167,20 @@ class AppLocalizationsEl extends AppLocalizations {
   String get loginForgotPassword => 'Ξεχάσατε τον κωδικό;';
 
   @override
+  String get forgotPasswordDialogTitle => 'Επαναφορά κωδικού';
+
+  @override
+  String get forgotPasswordDialogBody =>
+      'Εισάγετε το email σας και θα σας στείλουμε σύνδεσμο επαναφοράς.';
+
+  @override
+  String get forgotPasswordSend => 'Αποστολή συνδέσμου';
+
+  @override
+  String get forgotPasswordSuccess =>
+      'Ελέγξτε το email σας για σύνδεσμο επαναφοράς κωδικού.';
+
+  @override
   String get loginPrivacyConsent => 'Αποδέχομαι την Πολιτική Απορρήτου';
 
   @override
@@ -551,7 +565,19 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tournamentDetailMultiplierLabel => 'Πολλαπλασιαστής Βαθμολογίας';
 
   @override
-  String get organizerTitle => 'Πίνακας Διοργανωτή';
+  String get organizerTitle => 'Τα Τουρνουά μου';
+
+  @override
+  String get organizerTabOpen => 'Ανοιχτά';
+
+  @override
+  String get organizerTabInProgress => 'Σε εξέλιξη';
+
+  @override
+  String get organizerTabCompleted => 'Ολοκληρωμένα';
+
+  @override
+  String get organizerManage => 'Διαχείριση';
 
   @override
   String get organizerCreateTitle => 'Δημιουργία Τουρνουά';
@@ -594,6 +620,115 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get organizerNoRegistrations => 'Δεν υπάρχουν εγγραφές ακόμα.';
+
+  @override
+  String get organizerGenerateBracket => 'Δημιουργία Κλήρωσης & Έναρξη';
+
+  @override
+  String get organizerGenerateBracketSuccess =>
+      'Κλήρωση δημιουργήθηκε — το τουρνουά ξεκίνησε!';
+
+  @override
+  String get organizerOpenRegistration => 'Άνοιγμα Εγγραφών';
+
+  @override
+  String get organizerCompleteTourn => 'Ολοκλήρωση Τουρνουά';
+
+  @override
+  String get organizerBracketSection => 'Διαχείριση Κλήρωσης';
+
+  @override
+  String get settingsOrganizerSection => 'Διοργανωτής';
+
+  @override
+  String get settingsRequestOrganizer => 'Αίτηση Δικαιωμάτων Διοργανωτή';
+
+  @override
+  String get settingsRequestOrganizerSub =>
+      'Υποβάλετε αίτηση για δημιουργία και διαχείριση τουρνουά.';
+
+  @override
+  String get settingsOrganizerRequestPending => 'Αίτηση σε αναμονή…';
+
+  @override
+  String get settingsOrganizerRequestPendingSub =>
+      'Ένας διαχειριστής θα επεξεργαστεί την αίτησή σας σύντομα.';
+
+  @override
+  String get settingsOrganizerRequestDenied => 'Η αίτηση δεν εγκρίθηκε';
+
+  @override
+  String get settingsOrganizerRequestDeniedSub =>
+      'Μπορείτε να υποβάλετε νέα αίτηση.';
+
+  @override
+  String get settingsIsOrganizer => 'Είστε Διοργανωτής';
+
+  @override
+  String get settingsIsOrganizerSub =>
+      'Μπορείτε να δημιουργείτε και να διαχειρίζεστε τουρνουά.';
+
+  @override
+  String get settingsOrganizerRequestConfirmTitle =>
+      'Αίτηση Δικαιωμάτων Διοργανωτή;';
+
+  @override
+  String get settingsOrganizerRequestConfirmBody =>
+      'Ένας διαχειριστής θα επεξεργαστεί την αίτησή σας και θα σας ειδοποιήσει μέσω push και email.';
+
+  @override
+  String get settingsOrganizerRequestSuccess => 'Η αίτηση υποβλήθηκε!';
+
+  @override
+  String get adminTitle => 'Πίνακας Διαχείρισης';
+
+  @override
+  String get adminTabDisputes => 'Αμφισβητήσεις Αγώνων';
+
+  @override
+  String get adminTabRequests => 'Αιτήσεις Διοργανωτή';
+
+  @override
+  String get adminRequestsNone => 'Δεν υπάρχουν αναμενόμενες αιτήσεις.';
+
+  @override
+  String get adminRequestsApprove => 'Έγκριση';
+
+  @override
+  String get adminRequestsDeny => 'Απόρριψη';
+
+  @override
+  String get adminRequestsApproveSuccess =>
+      'Τα δικαιώματα διοργανωτή χορηγήθηκαν.';
+
+  @override
+  String get adminRequestsDenySuccess => 'Η αίτηση απορρίφθηκε.';
+
+  @override
+  String get bracketTitle => 'Κλήρωση';
+
+  @override
+  String get bracketNotGenerated => 'Η κλήρωση δεν έχει δημιουργηθεί ακόμα.';
+
+  @override
+  String bracketRound(int n) {
+    return 'Γύρος $n';
+  }
+
+  @override
+  String get bracketSemifinal => 'Ημιτελικός';
+
+  @override
+  String get bracketFinal => 'Τελικός';
+
+  @override
+  String get bracketBye => 'Bye';
+
+  @override
+  String get bracketRecordResult => 'Καταχώρηση αποτελέσματος';
+
+  @override
+  String get bracketSelectWinner => 'Επιλογή νικητή';
 
   @override
   String get settingsTitle => 'Ρυθμίσεις';

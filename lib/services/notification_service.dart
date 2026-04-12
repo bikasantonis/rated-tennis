@@ -32,7 +32,7 @@ class NotificationService {
     OneSignal.Notifications.addClickListener((event) {
       final data = event.notification.additionalData;
       if (data == null || _router == null) return;
-      final path = _resolveRoute(
+      final path = resolveRoute(
         referenceType: data['reference_type'] as String?,
         referenceId: data['reference_id'] as String?,
       );
@@ -62,12 +62,13 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
-  // Internal helpers
+  // Helpers
   // ---------------------------------------------------------------------------
 
   /// Maps a [referenceType] / [referenceId] pair from a notification payload
   /// to a go_router path. Returns null if the type is unknown.
-  String? _resolveRoute({
+  /// Also used by [notification_panel.dart] to navigate on tile tap.
+  String? resolveRoute({
     required String? referenceType,
     required String? referenceId,
   }) {
@@ -80,6 +81,10 @@ class NotificationService {
         return referenceId != null ? '/tournaments/$referenceId' : AppRoutes.tournaments;
       case 'profile':
         return referenceId != null ? '/leaderboard/$referenceId' : AppRoutes.profile;
+      // organizer_request_submitted  → admin reviews in admin panel
+      // organizer_request_approved / _denied → player checks settings
+      case 'organizer_request':
+        return AppRoutes.adminDisputes;
       default:
         return AppRoutes.home;
     }

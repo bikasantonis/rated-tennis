@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:rated/models/notification_item.dart';
 import 'package:rated/providers/notification_panel_provider.dart';
+import 'package:rated/services/notification_service.dart';
 import 'package:rated/theme/app_colors.dart';
 
 /// Opens a compact notification panel anchored to the top-right corner,
@@ -103,8 +105,24 @@ class _NotificationPanelDialogState
                               itemCount: items.length,
                               separatorBuilder: (_, i) =>
                                   const Divider(height: 1, indent: 56),
-                              itemBuilder: (_, i) =>
-                                  _NotificationTile(item: items[i]),
+                              itemBuilder: (ctx, i) => _NotificationTile(
+                                item: items[i],
+                                onTap: () {
+                                  // Mark this notification read.
+                                  ref
+                                      .read(notificationActionsProvider.notifier)
+                                      .markRead(items[i].id);
+                                  // Close the panel.
+                                  Navigator.of(ctx).pop();
+                                  // Navigate to the referenced screen.
+                                  final path =
+                                      NotificationService.instance.resolveRoute(
+                                    referenceType: items[i].referenceType,
+                                    referenceId: items[i].referenceId,
+                                  );
+                                  if (path != null) ctx.push(path);
+                                },
+                              ),
                             ),
                     ),
                   ),
@@ -162,8 +180,9 @@ class _PanelHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({required this.item});
+  const _NotificationTile({required this.item, required this.onTap});
   final NotificationItem item;
+  final VoidCallback onTap;
 
   static final _dateFmt = DateFormat('d MMM, HH:mm');
 
@@ -171,7 +190,9 @@ class _NotificationTile extends StatelessWidget {
         'match_submitted' => Icons.sports_tennis,
         'match_disputed' => Icons.warning_amber_outlined,
         'match_request_received' => Icons.calendar_today_outlined,
-        'match_request_responded' => Icons.check_circle_outline,
+        'match_request_accepted' => Icons.check_circle_outline,
+        'match_request_declined' => Icons.cancel_outlined,
+        'match_auto_confirmed' => Icons.schedule_outlined,
         _ => Icons.notifications_outlined,
       };
 
@@ -181,6 +202,7 @@ class _NotificationTile extends StatelessWidget {
 
     return ListTile(
       dense: true,
+      onTap: onTap,
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: unread

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:rated/models/profile.dart';
+import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/notification_panel_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/widgets/notification_panel.dart';
@@ -14,10 +16,31 @@ class AppBarActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadCountProvider);
+    final profileAsync = ref.watch(currentProfileProvider);
+    final isAdmin = profileAsync.whenOrNull(
+          data: (p) => p?.role == UserRole.admin,
+        ) ??
+        false;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // ── Organiser dashboard (organiser + admin) ────────────────────
+        if (isAdmin ||
+            profileAsync.whenOrNull(data: (p) => p?.role == UserRole.organizer) == true)
+          IconButton(
+            icon: const Icon(Icons.emoji_events_outlined),
+            tooltip: 'My tournaments',
+            onPressed: () => context.push(AppRoutes.organizerDashboard),
+          ),
+
+        // ── Admin panel (admins only) ──────────────────────────────────
+        if (isAdmin)
+          IconButton(
+            icon: const Icon(Icons.admin_panel_settings_outlined),
+            tooltip: 'Admin panel',
+            onPressed: () => context.push(AppRoutes.adminDisputes),
+          ),
         // ── Notification bell ──────────────────────────────────────────
         Stack(
           clipBehavior: Clip.none,
@@ -60,6 +83,13 @@ class AppBarActions extends ConsumerWidget {
           icon: const Icon(Icons.person_outlined),
           tooltip: 'My profile',
           onPressed: () => context.push(AppRoutes.profile),
+        ),
+
+        // ── Settings ───────────────────────────────────────────────────
+        IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          tooltip: 'Settings',
+          onPressed: () => context.push(AppRoutes.settings),
         ),
 
         const SizedBox(width: 4),

@@ -169,6 +169,22 @@ select cron.schedule(
               confirmed_at  = now()
         where id = v_id;
         perform public.apply_elo_changes(v_id);
+
+        -- NF-02: notify both players that the match was auto-confirmed
+        insert into public.notifications
+          (recipient_id, type, title, body, reference_id, reference_type)
+        select
+          p.id,
+          'match_auto_confirmed',
+          'Match auto-confirmed',
+          'A pending match result was automatically confirmed after 48 hours.',
+          v_id,
+          'match_result'
+        from (
+          select winner_id as id from public.match_results where id = v_id
+          union all
+          select loser_id  as id from public.match_results where id = v_id
+        ) p;
       end loop;
     end;
     $inner$ language plpgsql;
