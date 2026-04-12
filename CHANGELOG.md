@@ -9,6 +9,9 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Changed
+- **Onboarding + login combined screen**: The onboarding screen now embeds the login/register panel directly (on the right on wide screens, below the slides on narrow screens). Returning users no longer need to swipe through all slides to reach the login form — the auth card is always visible. Unauthenticated users are now redirected to `/onboarding` instead of `/login`.
+
 ### Added
 - **Prestige score — migration 014**: Players whose `elo_rating` reaches 10.0 become "RATED". Their visible rating stays capped at 10.0 forever, but a hidden `prestige_score` column accumulates so RATED players can still be ranked among themselves. New RPC `get_leaderboard_page` returns RATED players at the top (sorted by `prestige_score DESC`) with a pre-computed `global_rank`; non-RATED follow sorted by `elo_rating DESC`. `apply_elo_changes` rewritten to route delta to `prestige_score` for RATED players; mixed RATED vs non-RATED match uses `elo_rating = 10.0` as the effective opponent rating to prevent inflation. `prestige_score` is never returned to clients.
 - **Leaderboard RPC migration**: `leaderboard_provider.dart` now calls `get_leaderboard_page` RPC instead of querying `profiles` directly; `LeaderboardScreen` uses the server-computed `global_rank` from the response so RATED players always appear at the top with correct ranks across pages.

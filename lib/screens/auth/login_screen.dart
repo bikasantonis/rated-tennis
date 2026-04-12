@@ -25,7 +25,7 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
         body: const TabBarView(
-          children: [_LoginTab(), _RegisterTab()],
+          children: [LoginTab(), RegisterTab()],
         ),
       ),
     );
@@ -36,14 +36,14 @@ class LoginScreen extends StatelessWidget {
 // Login tab
 // ---------------------------------------------------------------------------
 
-class _LoginTab extends ConsumerStatefulWidget {
-  const _LoginTab();
+class LoginTab extends ConsumerStatefulWidget {
+  const LoginTab({super.key});
 
   @override
-  ConsumerState<_LoginTab> createState() => _LoginTabState();
+  ConsumerState<LoginTab> createState() => _LoginTabState();
 }
 
-class _LoginTabState extends ConsumerState<_LoginTab> {
+class _LoginTabState extends ConsumerState<LoginTab> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -168,14 +168,14 @@ class _LoginTabState extends ConsumerState<_LoginTab> {
 // Register tab
 // ---------------------------------------------------------------------------
 
-class _RegisterTab extends ConsumerStatefulWidget {
-  const _RegisterTab();
+class RegisterTab extends ConsumerStatefulWidget {
+  const RegisterTab({super.key});
 
   @override
-  ConsumerState<_RegisterTab> createState() => _RegisterTabState();
+  ConsumerState<RegisterTab> createState() => _RegisterTabState();
 }
 
-class _RegisterTabState extends ConsumerState<_RegisterTab> {
+class _RegisterTabState extends ConsumerState<RegisterTab> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();

@@ -64,7 +64,7 @@ GoRouter appRouter(Ref ref) {
         if (path == AppRoutes.onboarding || path == AppRoutes.login) {
           return null;
         }
-        return AppRoutes.login;
+        return AppRoutes.onboarding;
       }
 
       // Logged in — redirect away from auth screens
