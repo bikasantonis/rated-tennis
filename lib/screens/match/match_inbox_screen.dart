@@ -5,6 +5,7 @@ import 'package:rated/models/match_result.dart';
 import 'package:rated/providers/match_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
+import 'package:rated/widgets/pending_badge.dart';
 
 /// SCR-08 — Match inbox.
 /// Tab 1: Pending results submitted by opponent (confirm / dispute).
@@ -15,6 +16,11 @@ class MatchInboxScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
+    final resultsCount =
+        ref.watch(pendingResultsProvider).asData?.value.length ?? 0;
+    final requestsCount =
+        ref.watch(pendingRequestsProvider).asData?.value.length ?? 0;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -23,8 +29,8 @@ class MatchInboxScreen extends ConsumerWidget {
           actions: const [AppBarActions()],
           bottom: TabBar(
             tabs: [
-              Tab(text: l.inboxTabToConfirm),
-              Tab(text: l.inboxTabRequests),
+              TabWithBadge(label: l.inboxTabToConfirm, count: resultsCount),
+              TabWithBadge(label: l.inboxTabRequests, count: requestsCount),
             ],
           ),
         ),

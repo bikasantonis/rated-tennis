@@ -10,6 +10,17 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Pending-action badges**: Red count badges now appear wherever the user has items requiring attention.
+  - **Bottom nav — Matches icon**: sum of pending results to confirm + pending match requests.
+  - **Match inbox tabs**: "To Confirm" and "Requests" tabs each show their item count.
+  - **Tournaments tabs** (player view): "Open" and "In Progress" tabs show the count of tournaments in each state.
+  - **Organiser icon** (top-right app bar): count of pending registration approvals across all own tournaments. Powered by the new `pendingRegistrationsCountProvider`.
+  - **Organiser dashboard tabs**: "Open" and "In Progress" tabs show the count of the organiser's own tournaments in each state.
+  - **Admin icon** (top-right app bar): sum of disputed matches + pending organiser requests.
+  - **Admin panel tabs**: "Match Disputes" and "Organiser Requests" tabs each show their pending item count.
+  - New shared widgets `CountChip` and `TabWithBadge` added to `lib/widgets/pending_badge.dart`.
+
+### Added
 - **Persistent session restore + splash screen**: Returning users are no longer redirected to onboarding on cold start. The app now reads the Supabase session synchronously at launch via `currentSession` and navigates directly to `/home` after a brief branded splash. The router is created once and uses `GoRouter.refreshListenable` with a new `AuthChangeNotifier` (`ChangeNotifier`) instead of rebuilding the entire `GoRouter` on every auth state change (which was causing nav-stack loss). Expired or invalidated sessions silently redirect to `/onboarding`.
 
 ### Changed

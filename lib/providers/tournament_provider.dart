@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -336,6 +337,31 @@ int _nextPow2(int n) {
   }
   return p;
 }
+
+// ---------------------------------------------------------------------------
+// Organiser badge — pending registration count
+// ---------------------------------------------------------------------------
+
+/// Count of pending (awaiting approval) registrations across all tournaments
+/// owned by the current user.  Used for the organiser icon badge.
+final pendingRegistrationsCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  final uid = _uid;
+  if (uid == null) return 0;
+  final myRaw = await _db
+      .from('tournaments')
+      .select('id')
+      .eq('organizer_id', uid);
+  final ids = List<Map<String, dynamic>>.from(myRaw as List)
+      .map((t) => t['id'] as String)
+      .toList();
+  if (ids.isEmpty) return 0;
+  final regs = await _db
+      .from('tournament_registrations')
+      .select('id')
+      .inFilter('tournament_id', ids)
+      .eq('status', 'pending');
+  return (regs as List).length;
+});
 
 // ---------------------------------------------------------------------------
 // Admin — dispute resolution

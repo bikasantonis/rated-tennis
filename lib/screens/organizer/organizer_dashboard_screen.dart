@@ -5,6 +5,7 @@ import 'package:rated/l10n/app_localizations.dart';
 
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/pending_badge.dart';
 
 /// SCR-12 — Organiser dashboard: tabbed list of own tournaments + create.
 class OrganizerDashboardScreen extends ConsumerWidget {
@@ -13,6 +14,20 @@ class OrganizerDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
+
+    final openCount = ref
+            .watch(myTournamentsProvider(statusFilter: 'registration_open'))
+            .asData
+            ?.value
+            .length ??
+        0;
+    final inProgressCount = ref
+            .watch(myTournamentsProvider(statusFilter: 'in_progress'))
+            .asData
+            ?.value
+            .length ??
+        0;
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -20,8 +35,9 @@ class OrganizerDashboardScreen extends ConsumerWidget {
           title: Text(l.organizerTitle),
           bottom: TabBar(
             tabs: [
-              Tab(text: l.organizerTabOpen),
-              Tab(text: l.organizerTabInProgress),
+              TabWithBadge(label: l.organizerTabOpen, count: openCount),
+              TabWithBadge(
+                  label: l.organizerTabInProgress, count: inProgressCount),
               Tab(text: l.organizerTabCompleted),
             ],
           ),

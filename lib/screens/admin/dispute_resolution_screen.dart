@@ -5,6 +5,7 @@ import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/organizer_request_provider.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/pending_badge.dart';
 import 'package:rated/widgets/tier_badge.dart';
 import 'package:rated/models/profile.dart';
 
@@ -15,6 +16,12 @@ class DisputeResolutionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
+
+    final disputesCount =
+        ref.watch(disputedMatchesProvider).asData?.value.length ?? 0;
+    final requestsCount =
+        ref.watch(pendingOrganizerRequestsProvider).asData?.value.length ?? 0;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -22,8 +29,34 @@ class DisputeResolutionScreen extends ConsumerWidget {
           title: Text(l.adminTitle),
           bottom: TabBar(
             tabs: [
-              Tab(icon: const Icon(Icons.gavel_outlined), text: l.adminTabDisputes),
-              Tab(icon: const Icon(Icons.manage_accounts_outlined), text: l.adminTabRequests),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.gavel_outlined, size: 18),
+                    const SizedBox(width: 6),
+                    Text(l.adminTabDisputes),
+                    if (disputesCount > 0) ...[
+                      const SizedBox(width: 6),
+                      CountChip(count: disputesCount),
+                    ],
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.manage_accounts_outlined, size: 18),
+                    const SizedBox(width: 6),
+                    Text(l.adminTabRequests),
+                    if (requestsCount > 0) ...[
+                      const SizedBox(width: 6),
+                      CountChip(count: requestsCount),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
+import 'package:rated/widgets/pending_badge.dart';
 
 /// SCR-10 — Tournament list with status tabs.
 class TournamentsListScreen extends ConsumerStatefulWidget {
@@ -45,16 +46,23 @@ class _TournamentsListScreenState
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final filterLabels = [
-      l.tournamentsTabOpen,
-      l.tournamentsTabInProgress,
-      l.tournamentsTabPast,
-      l.tournamentsTabAll,
-    ];
 
     final profileAsync = ref.watch(currentProfileProvider);
     final isOrganizer = profileAsync.asData?.value?.role.name == 'organizer' ||
         profileAsync.asData?.value?.role.name == 'admin';
+
+    final openCount = ref
+            .watch(tournamentsProvider(statusFilter: 'registration_open'))
+            .asData
+            ?.value
+            .length ??
+        0;
+    final inProgressCount = ref
+            .watch(tournamentsProvider(statusFilter: 'in_progress'))
+            .asData
+            ?.value
+            .length ??
+        0;
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +70,13 @@ class _TournamentsListScreenState
         actions: const [AppBarActions()],
         bottom: TabBar(
           controller: _tabs,
-          tabs: filterLabels.map((label) => Tab(text: label)).toList(),
+          tabs: [
+            TabWithBadge(label: l.tournamentsTabOpen, count: openCount),
+            TabWithBadge(
+                label: l.tournamentsTabInProgress, count: inProgressCount),
+            Tab(text: l.tournamentsTabPast),
+            Tab(text: l.tournamentsTabAll),
+          ],
         ),
       ),
       body: TabBarView(
