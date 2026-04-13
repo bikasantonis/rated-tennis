@@ -635,7 +635,44 @@ class AppLocalizationsEl extends AppLocalizations {
   String get organizerCompleteTourn => 'Ολοκλήρωση Τουρνουά';
 
   @override
-  String get organizerBracketSection => 'Διαχείριση Κλήρωσης';
+  String get organizerBracketSection => 'Κλήρωση';
+
+  @override
+  String get organizerManageTournament => 'Διαχείριση Τουρνουά';
+
+  @override
+  String get organizerTabRegistrations => 'Εγγραφές';
+
+  @override
+  String get organizerTabStatusControls => 'Κατάσταση';
+
+  @override
+  String get organizerRegStatusPending => 'Εκκρεμείς';
+
+  @override
+  String get organizerRegStatusApproved => 'Εγκεκριμένες';
+
+  @override
+  String get organizerRegStatusRejected => 'Απορριφθείσες';
+
+  @override
+  String get organizerOpenRegistrationDesc =>
+      'Επιτρέψτε στους παίκτες να εγγραφούν στο τουρνουά.';
+
+  @override
+  String get organizerGenerateBracketDesc =>
+      'Κατατάξτε τους συμμετέχοντες βάσει βαθμολογίας και δημιουργήστε την κλήρωση. Αυτό θα ξεκινήσει και το τουρνουά.';
+
+  @override
+  String get organizerCompleteTournDesc =>
+      'Σημειώστε το τουρνουά ως ολοκληρωμένο. Αυτό δεν μπορεί να αναιρεθεί.';
+
+  @override
+  String get organizerTournamentCompleted => 'Το τουρνουά ολοκληρώθηκε!';
+
+  @override
+  String get organizerBracketNotGeneratedYet =>
+      'Η κλήρωση θα εμφανιστεί εδώ μόλις τη δημιουργήσετε.';
 
   @override
   String get settingsOrganizerSection => 'Διοργανωτής';

@@ -71,7 +71,7 @@ Future<Map<String, dynamic>?> tournamentDetail(
   return data;
 }
 
-/// Registrations for a tournament (for bracket / participant list).
+/// Registrations for a tournament (approved only — for bracket / participant list).
 @riverpod
 Future<List<Map<String, dynamic>>> tournamentRegistrations(
     Ref ref, String tournamentId) async {
@@ -84,6 +84,21 @@ Future<List<Map<String, dynamic>>> tournamentRegistrations(
       .eq('tournament_id', tournamentId)
       .eq('status', 'approved')
       .order('seed', ascending: true);
+  return List<Map<String, dynamic>>.from(results as List);
+}
+
+/// All registrations for a tournament regardless of status (organiser management).
+@riverpod
+Future<List<Map<String, dynamic>>> allTournamentRegistrations(
+    Ref ref, String tournamentId) async {
+  final results = await _db
+      .from('tournament_registrations')
+      .select(
+        'id, player_id, status, seed, registered_at, '
+        'player:profiles!player_id(display_name, elo_rating, elo_tier)',
+      )
+      .eq('tournament_id', tournamentId)
+      .order('registered_at', ascending: true);
   return List<Map<String, dynamic>>.from(results as List);
 }
 

@@ -1277,8 +1277,74 @@ abstract class AppLocalizations {
   /// No description provided for @organizerBracketSection.
   ///
   /// In en, this message translates to:
-  /// **'Bracket Management'**
+  /// **'Bracket'**
   String get organizerBracketSection;
+
+  /// No description provided for @organizerManageTournament.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Tournament'**
+  String get organizerManageTournament;
+
+  /// No description provided for @organizerTabRegistrations.
+  ///
+  /// In en, this message translates to:
+  /// **'Registrations'**
+  String get organizerTabRegistrations;
+
+  /// No description provided for @organizerTabStatusControls.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get organizerTabStatusControls;
+
+  /// No description provided for @organizerRegStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get organizerRegStatusPending;
+
+  /// No description provided for @organizerRegStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get organizerRegStatusApproved;
+
+  /// No description provided for @organizerRegStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get organizerRegStatusRejected;
+
+  /// No description provided for @organizerOpenRegistrationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow players to sign up for this tournament.'**
+  String get organizerOpenRegistrationDesc;
+
+  /// No description provided for @organizerGenerateBracketDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Seed participants by rating and generate the single-elimination bracket. This will also start the tournament.'**
+  String get organizerGenerateBracketDesc;
+
+  /// No description provided for @organizerCompleteTournDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the tournament as finished. This cannot be undone.'**
+  String get organizerCompleteTournDesc;
+
+  /// No description provided for @organizerTournamentCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament completed!'**
+  String get organizerTournamentCompleted;
+
+  /// No description provided for @organizerBracketNotGeneratedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket will appear here once you generate it.'**
+  String get organizerBracketNotGeneratedYet;
 
   /// No description provided for @settingsOrganizerSection.
   ///

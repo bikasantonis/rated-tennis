@@ -171,7 +171,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPasswordDialogBody =>
-      "Enter your email and we'll send you a reset link.";
+      'Enter your email and we\'ll send you a reset link.';
 
   @override
   String get forgotPasswordSend => 'Send reset link';
@@ -632,7 +632,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organizerCompleteTourn => 'Mark as Completed';
 
   @override
-  String get organizerBracketSection => 'Bracket Management';
+  String get organizerBracketSection => 'Bracket';
+
+  @override
+  String get organizerManageTournament => 'Manage Tournament';
+
+  @override
+  String get organizerTabRegistrations => 'Registrations';
+
+  @override
+  String get organizerTabStatusControls => 'Status';
+
+  @override
+  String get organizerRegStatusPending => 'Pending';
+
+  @override
+  String get organizerRegStatusApproved => 'Approved';
+
+  @override
+  String get organizerRegStatusRejected => 'Rejected';
+
+  @override
+  String get organizerOpenRegistrationDesc =>
+      'Allow players to sign up for this tournament.';
+
+  @override
+  String get organizerGenerateBracketDesc =>
+      'Seed participants by rating and generate the single-elimination bracket. This will also start the tournament.';
+
+  @override
+  String get organizerCompleteTournDesc =>
+      'Mark the tournament as finished. This cannot be undone.';
+
+  @override
+  String get organizerTournamentCompleted => 'Tournament completed!';
+
+  @override
+  String get organizerBracketNotGeneratedYet =>
+      'Bracket will appear here once you generate it.';
 
   @override
   String get settingsOrganizerSection => 'Organiser';
