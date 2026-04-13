@@ -35,3 +35,7 @@ GoogleService-Info.plist
 
 # macOS
 .DS_Store
+
+# Claude Code
+.claude/
+claude-skills-collection/
