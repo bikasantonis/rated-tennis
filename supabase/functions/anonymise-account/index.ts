@@ -48,7 +48,8 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
 
-    // Scrub PII from profiles row — keep the row for FK integrity
+    // Scrub PII from profiles row — keep the row for FK integrity.
+    // Location fields are cleared here to satisfy GDPR Art. 17 for location data.
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
@@ -58,6 +59,13 @@ Deno.serve(async (req) => {
         preferred_language: "en",
         is_public: false,
         deleted_at: new Date().toISOString(),
+        // Clear location data (GDPR Art. 17 — right to erasure)
+        location_consent: false,
+        location_consent_at: null,
+        home_city: null,
+        home_lat: null,
+        home_lng: null,
+        notify_nearby_tournaments: false,
       })
       .eq("id", userId);
 

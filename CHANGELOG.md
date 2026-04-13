@@ -10,6 +10,14 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > Work in progress toward **Beta (end of Apr 2026)**.
 
 ### Added
+- **Location-based features (GDPR-compliant, EU)**: Players can opt-in to share their approximate home location (~1 km precision) to unlock:
+  - **Nearby Tournaments tab**: "Near Me" tab (first tab in Tournaments screen) shows tournaments within the player's chosen radius (25/50/100/150 km), sorted by distance with a km badge on each card. Organisers can set a tournament's venue using "Use my location" or by typing a city/country when creating a tournament.
+  - **Nearby Players filter**: location icon in the Leaderboard app bar toggles a "Near Me" view showing only players who have also opted in and are within the search radius, sorted by distance.
+  - **Nearby tournament push notifications**: when a tournament opens for registration, all players with location consent and `notify_nearby_tournaments = true` who are within their chosen radius automatically receive a push notification routed to the tournament detail screen.
+  - **Settings > Location section**: master consent toggle (bottom sheet explains purpose, precision, and withdrawal rights before any GPS access), "Notify me about nearby tournaments" sub-toggle, and a radius picker. Disabling consent immediately NULLs all location columns. Account deletion (GDPR Art. 17) also clears location data.
+  - DB migration `006_location.sql`: adds `city/country/venue_lat/venue_lng` to `tournaments`, adds `location_consent/home_city/home_lat/home_lng/notify_nearby_tournaments/nearby_radius_km` to `profiles`, adds `haversine_km()`, `nearby_tournaments()`, `nearby_players()`, and `nearby_tournament_notify_targets()` SQL functions.
+  - New Supabase Edge Function `notify-nearby-tournament` triggered by DB webhook when a tournament transitions to `registration_open`.
+  - New packages: `geolocator ^13.0.0`, `http ^1.2.0` (Nominatim reverse geocoding, no API key required).
 - **Pending-action badges**: Red count badges now appear wherever the user has items requiring attention.
   - **Bottom nav — Matches icon**: sum of pending results to confirm + pending match requests.
   - **Match inbox tabs**: "To Confirm" and "Requests" tabs each show their item count.

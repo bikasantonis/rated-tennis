@@ -29,6 +29,26 @@ Future<List<Map<String, dynamic>>> leaderboardPage(
   return List<Map<String, dynamic>>.from(results as List);
 }
 
+/// Players within [radiusKm] of [lat]/[lng] who have location consent.
+/// Returns rows with [distance_km] field, ordered by ascending distance.
+@riverpod
+Future<List<Map<String, dynamic>>> nearbyPlayers(
+  Ref ref, {
+  required double lat,
+  required double lng,
+  int radiusKm = 50,
+  int page = 0,
+}) async {
+  final results = await _db.rpc('nearby_players', params: {
+    'p_lat': lat,
+    'p_lng': lng,
+    'p_radius_km': radiusKm,
+    'p_limit': kLeaderboardPageSize,
+    'p_offset': page * kLeaderboardPageSize,
+  });
+  return List<Map<String, dynamic>>.from(results as List);
+}
+
 /// Returns all clubs (id + name) for the filter dropdown.
 @riverpod
 Future<List<Map<String, dynamic>>> clubs(Ref ref) async {

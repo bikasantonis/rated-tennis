@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rated/models/profile.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/locale_provider.dart';
+import 'package:rated/providers/location_provider.dart';
 import 'package:rated/providers/organizer_request_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
 import 'package:rated/theme/app_colors.dart';
@@ -32,6 +33,12 @@ class SettingsScreen extends ConsumerWidget {
               playerId: profile?.id,
               ref: ref,
             ),
+
+            const Divider(),
+
+            // ── Location ────────────────────────────────────────────────
+            _SectionHeader(title: l.settingsSectionLocation),
+            _LocationSection(playerId: profile?.id),
 
             const Divider(),
 
@@ -302,6 +309,234 @@ class _SectionHeader extends StatelessWidget {
             .textTheme
             .labelLarge
             ?.copyWith(color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+// ── Location section ──────────────────────────────────────────────────────────
+
+class _LocationSection extends ConsumerWidget {
+  const _LocationSection({required this.playerId});
+  final String? playerId;
+
+  static const _radii = [25, 50, 100, 150];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final prefsAsync = ref.watch(locationPrefsProvider);
+    final actionState = ref.watch(locationActionsProvider);
+    final isLoading = actionState is AsyncLoading;
+
+    return prefsAsync.when(
+      loading: () => const ListTile(
+        leading: SizedBox(
+            width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+        title: Text('…'),
+      ),
+      error: (e, _) => ListTile(
+        leading: const Icon(Icons.error_outline, color: AppColors.error),
+        title: Text('Error: $e'),
+      ),
+      data: (prefs) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Master consent toggle
+          SwitchListTile(
+            secondary: Icon(
+              Icons.location_on_outlined,
+              color: prefs.locationConsent ? AppColors.primary : AppColors.outline,
+            ),
+            title: Text(l.settingsLocationEnable),
+            subtitle: Text(prefs.locationConsent
+                ? (prefs.homeCity ?? l.settingsLocationUnknownArea)
+                : l.settingsLocationEnableSub),
+            value: prefs.locationConsent,
+            onChanged: isLoading || playerId == null
+                ? null
+                : (on) => on
+                    ? _showConsentSheet(context, ref, l)
+                    : _confirmRevoke(context, ref, l),
+          ),
+
+          // Sub-options visible only when consent is active
+          if (prefs.locationConsent) ...[
+            // Nearby-tournament notifications toggle
+            SwitchListTile(
+              secondary: const Icon(Icons.notifications_outlined,
+                  color: AppColors.primary),
+              title: Text(l.settingsLocationNotifyNearby),
+              subtitle: Text(l.settingsLocationNotifyNearbySub),
+              value: prefs.notifyNearbyTournaments,
+              onChanged: isLoading
+                  ? null
+                  : (v) => ref
+                      .read(locationActionsProvider.notifier)
+                      .setNotifyNearby(v),
+            ),
+
+            // Radius picker
+            ListTile(
+              leading: const Icon(Icons.radar, color: AppColors.primary),
+              title: Text(l.settingsLocationRadius),
+              trailing: DropdownButton<int>(
+                value: prefs.nearbyRadiusKm,
+                underline: const SizedBox.shrink(),
+                items: _radii
+                    .map((r) => DropdownMenuItem(
+                          value: r,
+                          child: Text(l.settingsLocationRadiusKm(r)),
+                        ))
+                    .toList(),
+                onChanged: isLoading
+                    ? null
+                    : (v) {
+                        if (v != null) {
+                          ref
+                              .read(locationActionsProvider.notifier)
+                              .setRadius(v);
+                        }
+                      },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showConsentSheet(
+      BuildContext context, WidgetRef ref, AppLocalizations l) async {
+    final accepted = await showModalBottomSheet<bool>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _LocationConsentSheet(),
+    );
+    if (accepted != true || !context.mounted) return;
+
+    await ref.read(locationActionsProvider.notifier).grantConsent();
+    if (!context.mounted) return;
+
+    final st = ref.read(locationActionsProvider);
+    if (st is AsyncError) {
+      final msg = _locationErrorMessage(st.error, l);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
+  Future<void> _confirmRevoke(
+      BuildContext context, WidgetRef ref, AppLocalizations l) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.settingsLocationRevokeTitle),
+        content: Text(l.settingsLocationRevokeBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: Text(l.settingsLocationRevokeConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(locationActionsProvider.notifier).revokeConsent();
+  }
+
+  String _locationErrorMessage(Object error, AppLocalizations l) {
+    final s = error.toString().toLowerCase();
+    if (s.contains('service') || s.contains('disabled')) {
+      return l.locationServiceDisabled;
+    }
+    if (s.contains('denied') || s.contains('permission')) {
+      return l.locationPermissionDenied;
+    }
+    return l.errorGeneric;
+  }
+}
+
+// ── Location consent bottom sheet ─────────────────────────────────────────────
+
+class _LocationConsentSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sheet handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.outline.withAlpha(80),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              const Icon(Icons.location_on, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Text(l.settingsLocationConsentTitle,
+                  style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(l.settingsLocationConsentBody,
+              style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 12),
+          // GDPR data-minimisation note
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              l.settingsLocationConsentPrivacyNote,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.primary),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(l.actionDecline),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(l.settingsLocationConsentAccept),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -22,7 +22,7 @@ Future<List<Map<String, dynamic>>> tournaments(
       .from('tournaments')
       .select('id, name, format, status, starts_at, ends_at, '
           'elo_min, elo_max, max_players, registration_open, elo_multiplier, '
-          'club_id, organizer_id');
+          'club_id, organizer_id, city, country');
 
   if (statusFilter != null) {
     query = query.eq('status', statusFilter);
@@ -30,6 +30,29 @@ Future<List<Map<String, dynamic>>> tournaments(
 
   final results = await query.order('starts_at', ascending: false);
   return List<Map<String, dynamic>>.from(results as List);
+}
+
+/// Tournaments within [radiusKm] of [lat]/[lng], optionally filtered by status.
+/// Returns rows enriched with a [distance_km] field from the Haversine SQL function.
+@riverpod
+Future<List<Map<String, dynamic>>> nearbyTournaments(
+  Ref ref, {
+  required double lat,
+  required double lng,
+  int radiusKm = 50,
+  String? statusFilter,
+}) async {
+  final results = await _db.rpc('nearby_tournaments', params: {
+    'p_lat': lat,
+    'p_lng': lng,
+    'p_radius_km': radiusKm,
+  });
+
+  var list = List<Map<String, dynamic>>.from(results as List);
+  if (statusFilter != null) {
+    list = list.where((t) => t['status'] == statusFilter).toList();
+  }
+  return list;
 }
 
 /// Tournaments owned by the current user, optionally filtered by status.
@@ -143,6 +166,10 @@ class TournamentActions extends _$TournamentActions {
     required DateTime startsAt,
     required double eloMultiplier,
     String? clubId,
+    String? city,
+    String? country,
+    double? venueLat,
+    double? venueLng,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -159,6 +186,10 @@ class TournamentActions extends _$TournamentActions {
         'elo_multiplier': eloMultiplier,
         'club_id': ?clubId,
         'status': 'draft',
+        if (city != null && city.isNotEmpty) 'city': city,
+        if (country != null && country.isNotEmpty) 'country': country,
+        'venue_lat': ?venueLat,
+        'venue_lng': ?venueLng,
       });
     });
   }

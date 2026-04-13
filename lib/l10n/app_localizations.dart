@@ -1526,6 +1526,186 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsSectionLanguage;
 
+  /// No description provided for @settingsSectionLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get settingsSectionLocation;
+
+  /// No description provided for @settingsLocationEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location features'**
+  String get settingsLocationEnable;
+
+  /// No description provided for @settingsLocationEnableSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find nearby tournaments and players'**
+  String get settingsLocationEnableSub;
+
+  /// No description provided for @settingsLocationUnknownArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Your area'**
+  String get settingsLocationUnknownArea;
+
+  /// No description provided for @settingsLocationNotifyNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me about nearby tournaments'**
+  String get settingsLocationNotifyNearby;
+
+  /// No description provided for @settingsLocationNotifyNearbySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a push notification when a tournament opens near you'**
+  String get settingsLocationNotifyNearbySub;
+
+  /// No description provided for @settingsLocationRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Search radius'**
+  String get settingsLocationRadius;
+
+  /// No description provided for @settingsLocationRadiusKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String settingsLocationRadiusKm(int km);
+
+  /// No description provided for @settingsLocationRevokeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove location data?'**
+  String get settingsLocationRevokeTitle;
+
+  /// No description provided for @settingsLocationRevokeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete your stored location, disable nearby features, and stop nearby-tournament notifications.'**
+  String get settingsLocationRevokeBody;
+
+  /// No description provided for @settingsLocationRevokeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get settingsLocationRevokeConfirm;
+
+  /// No description provided for @settingsLocationConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location features'**
+  String get settingsLocationConsentTitle;
+
+  /// No description provided for @settingsLocationConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'RATED will use your device location to:\n\n• Show tournaments near you in the Tournaments tab\n• Show players near you on the Leaderboard\n• Notify you when a tournament opens near your home area\n\nYou can withdraw this consent at any time in Settings.'**
+  String get settingsLocationConsentBody;
+
+  /// No description provided for @settingsLocationConsentPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location is rounded to ~1 km precision and stored securely. It is never shared with other users without your consent.'**
+  String get settingsLocationConsentPrivacyNote;
+
+  /// No description provided for @settingsLocationConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location'**
+  String get settingsLocationConsentAccept;
+
+  /// No description provided for @locationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was denied. You can enable it in your device settings.'**
+  String get locationPermissionDenied;
+
+  /// No description provided for @locationServiceDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are disabled. Please enable them in your device settings.'**
+  String get locationServiceDisabled;
+
+  /// No description provided for @tournamentsTabNearMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Near Me'**
+  String get tournamentsTabNearMe;
+
+  /// No description provided for @tournamentDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String tournamentDistanceKm(String km);
+
+  /// No description provided for @tournamentsNearMeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tournaments found near you within {km} km.'**
+  String tournamentsNearMeEmpty(int km);
+
+  /// No description provided for @tournamentsLocationPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find nearby tournaments'**
+  String get tournamentsLocationPromptTitle;
+
+  /// No description provided for @tournamentsLocationPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location features in Settings to see tournaments near you.'**
+  String get tournamentsLocationPromptBody;
+
+  /// No description provided for @tournamentsGoToSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Settings'**
+  String get tournamentsGoToSettings;
+
+  /// No description provided for @leaderboardNearMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Near Me'**
+  String get leaderboardNearMe;
+
+  /// No description provided for @leaderboardNearMeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No players found near you within {km} km.'**
+  String leaderboardNearMeEmpty(int km);
+
+  /// No description provided for @leaderboardDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String leaderboardDistanceKm(String km);
+
+  /// No description provided for @organizerCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City (optional)'**
+  String get organizerCityLabel;
+
+  /// No description provided for @organizerCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Country code (e.g. GR)'**
+  String get organizerCountryLabel;
+
+  /// No description provided for @organizerUseMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get organizerUseMyLocation;
+
+  /// No description provided for @organizerLocationSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Location set'**
+  String get organizerLocationSet;
+
   /// No description provided for @settingsSectionAccount.
   ///
   /// In en, this message translates to:

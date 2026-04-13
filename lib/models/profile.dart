@@ -49,6 +49,15 @@ abstract class Profile with _$Profile {
     @Default('en') String preferredLanguage,
     @Default(true) bool isPublic,
     @Default(false) bool questionnaireDone,
+    // ── Location (GDPR Art. 6(1)(a) — explicit consent required) ────────────
+    @Default(false) bool locationConsent,
+    DateTime? locationConsentAt,
+    String? homeCity,
+    double? homeLat,
+    double? homeLng,
+    @Default(false) bool notifyNearbyTournaments,
+    @Default(50) int nearbyRadiusKm,
+    // ────────────────────────────────────────────────────────────────────────
     DateTime? deletedAt,
     required DateTime createdAt,
     required DateTime updatedAt,

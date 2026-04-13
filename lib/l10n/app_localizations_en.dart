@@ -769,6 +769,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionLanguage => 'Language';
 
   @override
+  String get settingsSectionLocation => 'Location';
+
+  @override
+  String get settingsLocationEnable => 'Enable location features';
+
+  @override
+  String get settingsLocationEnableSub => 'Find nearby tournaments and players';
+
+  @override
+  String get settingsLocationUnknownArea => 'Your area';
+
+  @override
+  String get settingsLocationNotifyNearby =>
+      'Notify me about nearby tournaments';
+
+  @override
+  String get settingsLocationNotifyNearbySub =>
+      'Get a push notification when a tournament opens near you';
+
+  @override
+  String get settingsLocationRadius => 'Search radius';
+
+  @override
+  String settingsLocationRadiusKm(int km) {
+    return '$km km';
+  }
+
+  @override
+  String get settingsLocationRevokeTitle => 'Remove location data?';
+
+  @override
+  String get settingsLocationRevokeBody =>
+      'This will delete your stored location, disable nearby features, and stop nearby-tournament notifications.';
+
+  @override
+  String get settingsLocationRevokeConfirm => 'Remove';
+
+  @override
+  String get settingsLocationConsentTitle => 'Location features';
+
+  @override
+  String get settingsLocationConsentBody =>
+      'RATED will use your device location to:\n\n• Show tournaments near you in the Tournaments tab\n• Show players near you on the Leaderboard\n• Notify you when a tournament opens near your home area\n\nYou can withdraw this consent at any time in Settings.';
+
+  @override
+  String get settingsLocationConsentPrivacyNote =>
+      'Your location is rounded to ~1 km precision and stored securely. It is never shared with other users without your consent.';
+
+  @override
+  String get settingsLocationConsentAccept => 'Enable location';
+
+  @override
+  String get locationPermissionDenied =>
+      'Location permission was denied. You can enable it in your device settings.';
+
+  @override
+  String get locationServiceDisabled =>
+      'Location services are disabled. Please enable them in your device settings.';
+
+  @override
+  String get tournamentsTabNearMe => 'Near Me';
+
+  @override
+  String tournamentDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String tournamentsNearMeEmpty(int km) {
+    return 'No tournaments found near you within $km km.';
+  }
+
+  @override
+  String get tournamentsLocationPromptTitle => 'Find nearby tournaments';
+
+  @override
+  String get tournamentsLocationPromptBody =>
+      'Enable location features in Settings to see tournaments near you.';
+
+  @override
+  String get tournamentsGoToSettings => 'Go to Settings';
+
+  @override
+  String get leaderboardNearMe => 'Near Me';
+
+  @override
+  String leaderboardNearMeEmpty(int km) {
+    return 'No players found near you within $km km.';
+  }
+
+  @override
+  String leaderboardDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String get organizerCityLabel => 'City (optional)';
+
+  @override
+  String get organizerCountryLabel => 'Country code (e.g. GR)';
+
+  @override
+  String get organizerUseMyLocation => 'Use my location';
+
+  @override
+  String get organizerLocationSet => 'Location set';
+
+  @override
   String get settingsSectionAccount => 'Account';
 
   @override

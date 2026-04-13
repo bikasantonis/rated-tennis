@@ -4,6 +4,7 @@ import 'package:rated/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:rated/providers/leaderboard_provider.dart';
+import 'package:rated/providers/location_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/tier_badge.dart';
@@ -21,83 +22,224 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   int _page = 0;
   String? _clubId;
   String? _clubName;
+  bool _nearMe = false;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final pageAsync = ref.watch(
-      leaderboardPageProvider(page: _page, clubId: _clubId),
-    );
+    final prefsAsync = ref.watch(locationPrefsProvider);
+    final prefs = prefsAsync.asData?.value;
+
+    // Nearby players data (only fetched when _nearMe is active and we have coords)
+    final nearbyAsync = (_nearMe && prefs != null && prefs.hasLocation)
+        ? ref.watch(nearbyPlayersProvider(
+            lat: prefs.homeLat!,
+            lng: prefs.homeLng!,
+            radiusKm: prefs.nearbyRadiusKm,
+            page: _page,
+          ))
+        : null;
+
+    final pageAsync = (!_nearMe)
+        ? ref.watch(leaderboardPageProvider(page: _page, clubId: _clubId))
+        : null;
+
     final clubsAsync = ref.watch(clubsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l.leaderboardTitle),
         actions: [
-          clubsAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
-            data: (clubs) => clubs.isEmpty
-                ? const SizedBox.shrink()
-                : _ClubFilterButton(
-                    clubs: clubs,
-                    selectedClubId: _clubId,
-                    selectedClubName: _clubName,
-                    onSelected: (id, name) => setState(() {
-                      _clubId = id;
-                      _clubName = name;
-                      _page = 0;
-                    }),
+          // Near Me toggle button
+          IconButton(
+            icon: Icon(
+              Icons.location_on,
+              color: _nearMe ? AppColors.primary : null,
+            ),
+            tooltip: l.leaderboardNearMe,
+            onPressed: () {
+              final hasLocation = prefs?.hasLocation ?? false;
+              if (!hasLocation && !_nearMe) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l.tournamentsLocationPromptBody),
+                    action: SnackBarAction(
+                      label: l.tournamentsGoToSettings,
+                      onPressed: () => context.push('/settings'),
+                    ),
                   ),
+                );
+                return;
+              }
+              setState(() {
+                _nearMe = !_nearMe;
+                _page = 0;
+                if (_nearMe) {
+                  _clubId = null;
+                  _clubName = null;
+                }
+              });
+            },
           ),
+          if (!_nearMe)
+            clubsAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+              data: (clubs) => clubs.isEmpty
+                  ? const SizedBox.shrink()
+                  : _ClubFilterButton(
+                      clubs: clubs,
+                      selectedClubId: _clubId,
+                      selectedClubName: _clubName,
+                      onSelected: (id, name) => setState(() {
+                        _clubId = id;
+                        _clubName = name;
+                        _page = 0;
+                      }),
+                    ),
+            ),
           const AppBarActions(),
         ],
       ),
-      body: pageAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (rows) {
-          if (rows.isEmpty && _page == 0) {
-            return Center(child: Text(l.leaderboardNoPlayers));
-          }
-          return Column(
+      body: _nearMe
+          ? _buildNearMeBody(context, l, prefs, nearbyAsync)
+          : _buildGlobalBody(context, l, pageAsync!),
+    );
+  }
+
+  Widget _buildNearMeBody(
+    BuildContext context,
+    AppLocalizations l,
+    LocationPrefs? prefs,
+    AsyncValue<List<Map<String, dynamic>>>? nearbyAsync,
+  ) {
+    if (prefs == null || !prefs.hasLocation) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (_clubId != null)
-                _FilterChip(
-                  label: _clubName ?? _clubId!,
-                  onRemove: () => setState(() {
-                    _clubId = null;
-                    _clubName = null;
-                    _page = 0;
-                  }),
-                ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async => ref.invalidate(leaderboardPageProvider),
-                  child: ListView.builder(
-                    itemCount: rows.length,
-                    itemBuilder: (context, i) => _LeaderboardRow(
-                      rank: (rows[i]['global_rank'] as int?) ??
-                          (_page * kLeaderboardPageSize + i + 1),
-                      row: rows[i],
-                    ),
+              const Icon(Icons.location_off_outlined,
+                  size: 48, color: AppColors.outline),
+              const SizedBox(height: 16),
+              Text(l.tournamentsLocationPromptTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(l.tournamentsLocationPromptBody,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.outline)),
+              const SizedBox(height: 20),
+              FilledButton.tonal(
+                onPressed: () => context.push('/settings'),
+                child: Text(l.tournamentsGoToSettings),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return nearbyAsync!.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (rows) {
+        if (rows.isEmpty) {
+          return Center(
+            child: Text(
+              l.leaderboardNearMeEmpty(prefs.nearbyRadiusKm),
+              style: const TextStyle(color: AppColors.outline),
+            ),
+          );
+        }
+        return Column(
+          children: [
+            _FilterChip(
+              label: '${l.leaderboardNearMe} · ${prefs.nearbyRadiusKm} km',
+              onRemove: () => setState(() {
+                _nearMe = false;
+                _page = 0;
+              }),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async => ref.invalidate(nearbyPlayersProvider(
+                  lat: prefs.homeLat!,
+                  lng: prefs.homeLng!,
+                  radiusKm: prefs.nearbyRadiusKm,
+                )),
+                child: ListView.builder(
+                  itemCount: rows.length,
+                  itemBuilder: (context, i) => _LeaderboardRow(
+                    rank: _page * kLeaderboardPageSize + i + 1,
+                    row: rows[i],
+                    distanceKm: (rows[i]['distance_km'] as num?)?.toDouble(),
                   ),
                 ),
               ),
-              _PaginationBar(
-                page: _page,
-                hasMore: rows.length == kLeaderboardPageSize,
-                onPrev: _page > 0
-                    ? () => setState(() => _page--)
-                    : null,
-                onNext: rows.length == kLeaderboardPageSize
-                    ? () => setState(() => _page++)
-                    : null,
+            ),
+            _PaginationBar(
+              page: _page,
+              hasMore: rows.length == kLeaderboardPageSize,
+              onPrev: _page > 0 ? () => setState(() => _page--) : null,
+              onNext: rows.length == kLeaderboardPageSize
+                  ? () => setState(() => _page++)
+                  : null,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGlobalBody(
+    BuildContext context,
+    AppLocalizations l,
+    AsyncValue<List<Map<String, dynamic>>> pageAsync,
+  ) {
+    return pageAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (rows) {
+        if (rows.isEmpty && _page == 0) {
+          return Center(child: Text(l.leaderboardNoPlayers));
+        }
+        return Column(
+          children: [
+            if (_clubId != null)
+              _FilterChip(
+                label: _clubName ?? _clubId!,
+                onRemove: () => setState(() {
+                  _clubId = null;
+                  _clubName = null;
+                  _page = 0;
+                }),
               ),
-            ],
-          );
-        },
-      ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async => ref.invalidate(leaderboardPageProvider),
+                child: ListView.builder(
+                  itemCount: rows.length,
+                  itemBuilder: (context, i) => _LeaderboardRow(
+                    rank: (rows[i]['global_rank'] as int?) ??
+                        (_page * kLeaderboardPageSize + i + 1),
+                    row: rows[i],
+                  ),
+                ),
+              ),
+            ),
+            _PaginationBar(
+              page: _page,
+              hasMore: rows.length == kLeaderboardPageSize,
+              onPrev: _page > 0 ? () => setState(() => _page--) : null,
+              onNext: rows.length == kLeaderboardPageSize
+                  ? () => setState(() => _page++)
+                  : null,
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -177,9 +319,14 @@ class _FilterChip extends StatelessWidget {
 // ── Leaderboard row ───────────────────────────────────────────────────────────
 
 class _LeaderboardRow extends StatelessWidget {
-  const _LeaderboardRow({required this.rank, required this.row});
+  const _LeaderboardRow({
+    required this.rank,
+    required this.row,
+    this.distanceKm,
+  });
   final int rank;
   final Map<String, dynamic> row;
+  final double? distanceKm;
 
   @override
   Widget build(BuildContext context) {
@@ -214,12 +361,34 @@ class _LeaderboardRow extends StatelessWidget {
       ),
       title: Text(name),
       subtitle: TierBadge(tier: tier, small: true),
-      trailing: Text(
-        elo.toStringAsFixed(1),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+      trailing: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            elo.toStringAsFixed(1),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+          ),
+          if (distanceKm != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.location_on, size: 10, color: AppColors.primary),
+                const SizedBox(width: 2),
+                Text(
+                  AppLocalizations.of(context)!
+                      .leaderboardDistanceKm(distanceKm!.toStringAsFixed(1)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(color: AppColors.primary),
+                ),
+              ],
             ),
+        ],
       ),
     );
   }

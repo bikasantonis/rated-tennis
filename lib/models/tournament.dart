@@ -31,6 +31,12 @@ abstract class Tournament with _$Tournament {
     DateTime? endsAt,
     required TournamentStatus status,
     @Default(1.0) double eloMultiplier,
+    // ── Venue location ───────────────────────────────────────────────────────
+    String? city,
+    String? country,
+    double? venueLat,
+    double? venueLng,
+    // ────────────────────────────────────────────────────────────────────────
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Tournament;

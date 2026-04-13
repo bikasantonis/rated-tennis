@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rated/l10n/app_localizations.dart';
 
@@ -207,17 +208,25 @@ class _CreateTournamentSheetState
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  final _cityCtrl = TextEditingController();
+  final _countryCtrl = TextEditingController();
   String _format = 'single_elimination';
   double _eloMin = 5.0;
   double _eloMax = 10.0;
   int _maxPlayers = 16;
   double _multiplier = 1.0;
   DateTime? _startsAt;
+  double? _venueLat;
+  double? _venueLng;
+  bool _locationSet = false;
+  bool _fetchingLocation = false;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _descCtrl.dispose();
+    _cityCtrl.dispose();
+    _countryCtrl.dispose();
     super.dispose();
   }
 
@@ -361,6 +370,45 @@ class _CreateTournamentSheetState
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              // ── Venue location (optional) ──────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cityCtrl,
+                      decoration: InputDecoration(labelText: l.organizerCityLabel),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 100,
+                    child: TextFormField(
+                      controller: _countryCtrl,
+                      decoration: InputDecoration(labelText: l.organizerCountryLabel),
+                      maxLength: 2,
+                      textCapitalization: TextCapitalization.characters,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: isLoading || _fetchingLocation ? null : _useMyLocation,
+                icon: _fetchingLocation
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        _locationSet ? Icons.check_circle : Icons.my_location,
+                        color: _locationSet ? AppColors.eloGain : null,
+                      ),
+                label: Text(_locationSet
+                    ? l.organizerLocationSet
+                    : l.organizerUseMyLocation),
+              ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: isLoading ? null : _submit,
@@ -378,6 +426,40 @@ class _CreateTournamentSheetState
         ),
       ),
     );
+  }
+
+  Future<void> _useMyLocation() async {
+    setState(() => _fetchingLocation = true);
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw Exception('Location services disabled');
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        throw Exception('Location permission denied');
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+
+      // Round to 2 dp for data minimisation
+      setState(() {
+        _venueLat = (position.latitude * 100).roundToDouble() / 100;
+        _venueLng = (position.longitude * 100).roundToDouble() / 100;
+        _locationSet = true;
+        _fetchingLocation = false;
+      });
+    } catch (_) {
+      setState(() => _fetchingLocation = false);
+    }
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -409,6 +491,12 @@ class _CreateTournamentSheetState
           maxPlayers: _maxPlayers,
           startsAt: _startsAt!,
           eloMultiplier: _multiplier,
+          city: _cityCtrl.text.trim().isEmpty ? null : _cityCtrl.text.trim(),
+          country: _countryCtrl.text.trim().isEmpty
+              ? null
+              : _countryCtrl.text.trim().toUpperCase(),
+          venueLat: _venueLat,
+          venueLng: _venueLng,
         );
     if (!mounted) return;
     final st = ref.read(tournamentActionsProvider);

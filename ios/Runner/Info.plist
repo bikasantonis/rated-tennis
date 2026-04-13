@@ -22,6 +22,9 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<!-- Location permission — used only after explicit GDPR consent in Settings -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RATED uses your approximate location to suggest nearby tournaments and players. You can withdraw this at any time in Settings.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

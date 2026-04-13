@@ -54,6 +54,10 @@ dependencies:
   # Preferences persistence
   shared_preferences: ^2.3.0
 
+  # Location
+  geolocator: ^13.0.0
+  http: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

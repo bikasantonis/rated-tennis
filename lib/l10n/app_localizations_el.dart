@@ -774,6 +774,113 @@ class AppLocalizationsEl extends AppLocalizations {
   String get settingsSectionLanguage => 'Γλώσσα';
 
   @override
+  String get settingsSectionLocation => 'Τοποθεσία';
+
+  @override
+  String get settingsLocationEnable => 'Ενεργοποίηση τοποθεσίας';
+
+  @override
+  String get settingsLocationEnableSub => 'Βρείτε κοντινά τουρνουά και παίκτες';
+
+  @override
+  String get settingsLocationUnknownArea => 'Η περιοχή σας';
+
+  @override
+  String get settingsLocationNotifyNearby => 'Ειδοποίηση για κοντινά τουρνουά';
+
+  @override
+  String get settingsLocationNotifyNearbySub =>
+      'Λάβετε push ειδοποίηση όταν ανοίξει τουρνουά κοντά σας';
+
+  @override
+  String get settingsLocationRadius => 'Ακτίνα αναζήτησης';
+
+  @override
+  String settingsLocationRadiusKm(int km) {
+    return '$km χλμ';
+  }
+
+  @override
+  String get settingsLocationRevokeTitle => 'Αφαίρεση δεδομένων τοποθεσίας;';
+
+  @override
+  String get settingsLocationRevokeBody =>
+      'Αυτό θα διαγράψει την αποθηκευμένη τοποθεσία σας και θα απενεργοποιήσει τις λειτουργίες κοντινότητας.';
+
+  @override
+  String get settingsLocationRevokeConfirm => 'Αφαίρεση';
+
+  @override
+  String get settingsLocationConsentTitle => 'Λειτουργίες τοποθεσίας';
+
+  @override
+  String get settingsLocationConsentBody =>
+      'Το RATED θα χρησιμοποιήσει την τοποθεσία σας για:\n\n• Εμφάνιση κοντινών τουρνουά\n• Εμφάνιση κοντινών παικτών στην κατάταξη\n• Ειδοποίηση όταν ανοίξει τουρνουά κοντά σας\n\nΜπορείτε να αποσύρετε τη συγκατάθεσή σας οποιαδήποτε στιγμή.';
+
+  @override
+  String get settingsLocationConsentPrivacyNote =>
+      'Η τοποθεσία σας στρογγυλοποιείται σε ακρίβεια ~1 χλμ και αποθηκεύεται με ασφάλεια. Δεν κοινοποιείται σε άλλους χρήστες χωρίς τη συγκατάθεσή σας.';
+
+  @override
+  String get settingsLocationConsentAccept => 'Ενεργοποίηση τοποθεσίας';
+
+  @override
+  String get locationPermissionDenied =>
+      'Η άδεια τοποθεσίας απορρίφθηκε. Μπορείτε να την ενεργοποιήσετε στις ρυθμίσεις της συσκευής σας.';
+
+  @override
+  String get locationServiceDisabled =>
+      'Οι υπηρεσίες τοποθεσίας είναι απενεργοποιημένες. Παρακαλώ ενεργοποιήστε τες στις ρυθμίσεις της συσκευής σας.';
+
+  @override
+  String get tournamentsTabNearMe => 'Κοντά μου';
+
+  @override
+  String tournamentDistanceKm(String km) {
+    return '$km χλμ';
+  }
+
+  @override
+  String tournamentsNearMeEmpty(int km) {
+    return 'Δεν βρέθηκαν τουρνουά κοντά σας εντός $km χλμ.';
+  }
+
+  @override
+  String get tournamentsLocationPromptTitle => 'Βρείτε κοντινά τουρνουά';
+
+  @override
+  String get tournamentsLocationPromptBody =>
+      'Ενεργοποιήστε τις λειτουργίες τοποθεσίας στις Ρυθμίσεις για να δείτε τουρνουά κοντά σας.';
+
+  @override
+  String get tournamentsGoToSettings => 'Μετάβαση στις Ρυθμίσεις';
+
+  @override
+  String get leaderboardNearMe => 'Κοντά μου';
+
+  @override
+  String leaderboardNearMeEmpty(int km) {
+    return 'Δεν βρέθηκαν παίκτες κοντά σας εντός $km χλμ.';
+  }
+
+  @override
+  String leaderboardDistanceKm(String km) {
+    return '$km χλμ';
+  }
+
+  @override
+  String get organizerCityLabel => 'Πόλη (προαιρετικά)';
+
+  @override
+  String get organizerCountryLabel => 'Κωδικός χώρας (π.χ. GR)';
+
+  @override
+  String get organizerUseMyLocation => 'Χρήση τοποθεσίας μου';
+
+  @override
+  String get organizerLocationSet => 'Τοποθεσία ορίστηκε';
+
+  @override
   String get settingsSectionAccount => 'Λογαριασμός';
 
   @override

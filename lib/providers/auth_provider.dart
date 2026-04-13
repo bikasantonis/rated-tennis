@@ -111,7 +111,10 @@ Future<Profile?> currentProfile(Ref ref) async {
       .select(
         'id, display_name, avatar_url, club_id, elo_rating, elo_tier, role, '
         'matches_played, matches_won, preferred_language, is_public, '
-        'questionnaire_done, deleted_at, created_at, updated_at',
+        'questionnaire_done, '
+        'location_consent, location_consent_at, home_city, home_lat, home_lng, '
+        'notify_nearby_tournaments, nearby_radius_km, '
+        'deleted_at, created_at, updated_at',
       )
       .eq('id', session.user.id)
       .maybeSingle();

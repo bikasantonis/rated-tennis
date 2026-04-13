@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rated/l10n/app_localizations.dart';
 
 import 'package:rated/providers/auth_provider.dart';
+import 'package:rated/providers/location_provider.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
@@ -24,6 +25,7 @@ class _TournamentsListScreenState
     with SingleTickerProviderStateMixin {
   late final TabController _tabs;
 
+  // Index 0 = Near Me, 1-4 = standard filters
   static const _filterValues = [
     'registration_open',
     'in_progress',
@@ -34,7 +36,8 @@ class _TournamentsListScreenState
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: _filterValues.length, vsync: this);
+    // 5 tabs: Near Me + 4 standard filters
+    _tabs = TabController(length: _filterValues.length + 1, vsync: this);
   }
 
   @override
@@ -70,7 +73,19 @@ class _TournamentsListScreenState
         actions: const [AppBarActions()],
         bottom: TabBar(
           controller: _tabs,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: [
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.location_on, size: 16),
+                  const SizedBox(width: 4),
+                  Text(l.tournamentsTabNearMe),
+                ],
+              ),
+            ),
             TabWithBadge(label: l.tournamentsTabOpen, count: openCount),
             TabWithBadge(
                 label: l.tournamentsTabInProgress, count: inProgressCount),
@@ -81,9 +96,10 @@ class _TournamentsListScreenState
       ),
       body: TabBarView(
         controller: _tabs,
-        children: _filterValues
-            .map((f) => _TournamentTab(statusFilter: f))
-            .toList(),
+        children: [
+          const _NearMeTournamentTab(),
+          ..._filterValues.map((f) => _TournamentTab(statusFilter: f)),
+        ],
       ),
       floatingActionButton: isOrganizer
           ? FloatingActionButton.extended(
@@ -124,7 +140,7 @@ class _TournamentTab extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: list.length,
-            separatorBuilder: (_, i) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, i) => _TournamentCard(t: list[i]),
           ),
         );
@@ -133,9 +149,95 @@ class _TournamentTab extends ConsumerWidget {
   }
 }
 
+// ── Near Me tab ───────────────────────────────────────────────────────────────
+
+class _NearMeTournamentTab extends ConsumerWidget {
+  const _NearMeTournamentTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final prefsAsync = ref.watch(locationPrefsProvider);
+
+    return prefsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (prefs) {
+        // No consent — prompt user to enable location in Settings.
+        if (!prefs.locationConsent || !prefs.hasLocation) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.location_off_outlined,
+                      size: 48, color: AppColors.outline),
+                  const SizedBox(height: 16),
+                  Text(l.tournamentsLocationPromptTitle,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text(l.tournamentsLocationPromptBody,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.outline)),
+                  const SizedBox(height: 20),
+                  FilledButton.tonal(
+                    onPressed: () => context.push('/settings'),
+                    child: Text(l.tournamentsGoToSettings),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final async = ref.watch(nearbyTournamentsProvider(
+          lat: prefs.homeLat!,
+          lng: prefs.homeLng!,
+          radiusKm: prefs.nearbyRadiusKm,
+        ));
+
+        return async.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+          data: (list) {
+            if (list.isEmpty) {
+              return Center(
+                child: Text(
+                  l.tournamentsNearMeEmpty(prefs.nearbyRadiusKm),
+                  style: TextStyle(color: AppColors.outline),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: () async => ref.invalidate(nearbyTournamentsProvider(
+                lat: prefs.homeLat!,
+                lng: prefs.homeLng!,
+                radiusKm: prefs.nearbyRadiusKm,
+              )),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: list.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, i) => _TournamentCard(
+                  t: list[i],
+                  distanceKm: (list[i]['distance_km'] as num?)?.toDouble(),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class _TournamentCard extends StatelessWidget {
-  const _TournamentCard({required this.t});
+  const _TournamentCard({required this.t, this.distanceKm});
   final Map<String, dynamic> t;
+  final double? distanceKm;
 
   String _formatDate(dynamic date) {
     if (date == null) return '—';
@@ -226,13 +328,31 @@ class _TournamentCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Text(
-                l.tournamentEloRange(
-                    eloMin.toStringAsFixed(1), eloMax.toStringAsFixed(1)),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.outline),
+              Row(
+                children: [
+                  Text(
+                    l.tournamentEloRange(
+                        eloMin.toStringAsFixed(1), eloMax.toStringAsFixed(1)),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.outline),
+                  ),
+                  if (distanceKm != null) ...[
+                    const SizedBox(width: 12),
+                    const Icon(Icons.location_on,
+                        size: 12, color: AppColors.primary),
+                    const SizedBox(width: 2),
+                    Text(
+                      l.tournamentDistanceKm(
+                          distanceKm!.toStringAsFixed(1)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: AppColors.primary),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
