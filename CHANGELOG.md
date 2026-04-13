@@ -9,10 +9,14 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Added
+- **Persistent session restore + splash screen**: Returning users are no longer redirected to onboarding on cold start. The app now reads the Supabase session synchronously at launch via `currentSession` and navigates directly to `/home` after a brief branded splash. The router is created once and uses `GoRouter.refreshListenable` with a new `AuthChangeNotifier` (`ChangeNotifier`) instead of rebuilding the entire `GoRouter` on every auth state change (which was causing nav-stack loss). Expired or invalidated sessions silently redirect to `/onboarding`.
+
 ### Changed
 - **Onboarding + login combined screen**: The onboarding screen now embeds the login/register panel directly (on the right on wide screens, below the slides on narrow screens). Returning users no longer need to swipe through all slides to reach the login form — the auth card is always visible. Unauthenticated users are now redirected to `/onboarding` instead of `/login`.
 
 ### Added
+- **Organiser per-tournament management screen** (`/organizer/tournaments/:id`): Tapping a tournament card in the organiser dashboard now opens a dedicated full-screen route with three tabs — **Registrations** (all pending/approved/rejected entries with approve/reject actions, grouped by status), **Status Controls** (lifecycle stepper + action cards for Open Registration → Generate Bracket → Mark Completed), and **Bracket** (existing `TournamentBracketViewer`). The dashboard cards are now simple tap-to-navigate rows with an inline status chip; the old expansion tile with cramped inline controls has been removed. `allTournamentRegistrationsProvider` added to fetch all registration statuses for organiser management.
 - **Forgot password flow**: "Forgot password?" link on the Login tab opens a dialog where the user enters their email; calls `resetPasswordForEmail` and shows a confirmation snackbar. Pre-fills the email field if the user has already typed one.
 - **Organiser dashboard — new layout**: Tapping the trophy icon (visible to organisers and admins in every screen's app bar) opens a dedicated "My Tournaments" screen with three tabs — Open, In Progress, Completed — each showing the organiser's own tournaments. Each card expands to show registrations, status-lifecycle controls (Open Registration → Generate Bracket → Mark Completed), and the bracket viewer for active tournaments. A "Create Tournament" FAB opens the creation form in a bottom sheet. `myTournamentsProvider` added to scope queries to the current user.
 - **Admin panel icon in app bar**: Admins now see a shield icon (`admin_panel_settings_outlined`) in the top-right app bar on every screen, giving direct access to `/admin/disputes` without needing a notification tap or direct URL.

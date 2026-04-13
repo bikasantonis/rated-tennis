@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/screens/admin/dispute_resolution_screen.dart';
 import 'package:rated/screens/auth/login_screen.dart';
+import 'package:rated/screens/splash/splash_screen.dart';
 import 'package:rated/screens/home/home_screen.dart';
 import 'package:rated/screens/leaderboard/leaderboard_screen.dart';
 import 'package:rated/screens/match/match_inbox_screen.dart';
@@ -12,6 +13,7 @@ import 'package:rated/screens/match/schedule_match_screen.dart';
 import 'package:rated/screens/match/submit_match_screen.dart';
 import 'package:rated/screens/onboarding/onboarding_screen.dart';
 import 'package:rated/screens/organizer/organizer_dashboard_screen.dart';
+import 'package:rated/screens/organizer/organizer_tournament_detail_screen.dart';
 import 'package:rated/screens/profile/profile_screen.dart';
 import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/screens/settings/settings_screen.dart';
@@ -26,6 +28,7 @@ part 'app_router.g.dart';
 // ---------------------------------------------------------------------------
 
 abstract final class AppRoutes {
+  static const splash = '/splash';
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const questionnaire = '/questionnaire';
@@ -40,6 +43,7 @@ abstract final class AppRoutes {
   static const playerProfile = '/profile/:id';
   static const settings = '/settings';
   static const organizerDashboard = '/organizer';
+  static const organizerTournamentDetail = '/organizer/tournaments/:id';
   static const adminDisputes = '/admin/disputes';
 }
 
@@ -49,32 +53,45 @@ abstract final class AppRoutes {
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final authState = ref.watch(authStateProvider);
+  final notifier = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.onboarding,
+    initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final session = authState.asData?.value;
-      final isAuthenticated = session != null;
+      final status = notifier.status;
+      final splashReady = notifier.splashReady;
       final path = state.matchedLocation;
 
-      // Not logged in — allow only public screens
-      if (!isAuthenticated) {
-        if (path == AppRoutes.onboarding || path == AppRoutes.login) {
-          return null;
+      // While splash is still showing, stay on it
+      if (!splashReady) {
+        return path == AppRoutes.splash ? null : AppRoutes.splash;
+      }
+
+      // Authenticated — redirect away from splash / auth screens
+      if (status == AuthStatus.authenticated) {
+        if (path == AppRoutes.splash ||
+            path == AppRoutes.onboarding ||
+            path == AppRoutes.login) {
+          return AppRoutes.home;
         }
-        return AppRoutes.onboarding;
+        return null;
       }
 
-      // Logged in — redirect away from auth screens
+      // Unauthenticated — allow only public screens
       if (path == AppRoutes.onboarding || path == AppRoutes.login) {
-        return AppRoutes.home;
+        return null;
       }
-
-      return null;
+      return AppRoutes.onboarding;
     },
     routes: [
+      // ── Splash screen ─────────────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.splash,
+        pageBuilder: (context, state) => _fade(state, const SplashScreen()),
+      ),
+
       // ── Public screens ────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.onboarding,
@@ -166,6 +183,15 @@ GoRouter appRouter(Ref ref) {
         path: AppRoutes.organizerDashboard,
         pageBuilder: (context, state) =>
             _slide(state, const OrganizerDashboardScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.organizerTournamentDetail,
+        pageBuilder: (context, state) => _slide(
+          state,
+          OrganizerTournamentDetailScreen(
+            tournamentId: state.pathParameters['id']!,
+          ),
+        ),
       ),
       GoRoute(
         path: AppRoutes.adminDisputes,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:rated/models/profile.dart';
 import 'package:rated/services/notification_service.dart';
@@ -6,6 +8,75 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'auth_provider.g.dart';
+
+// ---------------------------------------------------------------------------
+// Auth status for router
+// ---------------------------------------------------------------------------
+
+enum AuthStatus { loading, authenticated, unauthenticated }
+
+/// A [ChangeNotifier] the router uses via [GoRouter.refreshListenable].
+///
+/// Reads [Supabase.instance.client.auth.currentSession] synchronously on
+/// construction (available immediately after [Supabase.initialize] in main),
+/// then subscribes to [onAuthStateChange] for subsequent updates.
+class AuthChangeNotifier extends ChangeNotifier {
+  AuthChangeNotifier() {
+    final existing = Supabase.instance.client.auth.currentSession;
+
+    if (existing != null) {
+      _session = existing;
+      _status = AuthStatus.authenticated;
+      NotificationService.instance.identifyUser(existing.user.id);
+    } else {
+      _status = AuthStatus.unauthenticated;
+    }
+
+    // Enforce a minimum splash display of ~1 second.
+    _splashReady = false;
+    Future<void>.delayed(const Duration(seconds: 1), () {
+      _splashReady = true;
+      notifyListeners();
+    });
+
+    _subscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((event) {
+      final session = event.session;
+      if (session != null) {
+        NotificationService.instance.identifyUser(session.user.id);
+      } else {
+        NotificationService.instance.clearUser();
+      }
+      _session = session;
+      _status = session != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated;
+      notifyListeners();
+    });
+  }
+
+  late final StreamSubscription<AuthState> _subscription;
+  Session? _session;
+  AuthStatus _status = AuthStatus.loading;
+  bool _splashReady = false;
+
+  Session? get session => _session;
+  AuthStatus get status => _status;
+  bool get splashReady => _splashReady;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
+@riverpod
+AuthChangeNotifier authNotifier(Ref ref) {
+  final notifier = AuthChangeNotifier();
+  ref.onDispose(notifier.dispose);
+  return notifier;
+}
 
 // ---------------------------------------------------------------------------
 // Session stream
