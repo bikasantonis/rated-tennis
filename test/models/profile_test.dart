@@ -8,7 +8,7 @@ Map<String, dynamic> _baseJson() => {
       'avatar_url': null,
       'club_id': null,
       'elo_rating': 7.2,
-      'elo_tier': 'silver',
+      'elo_tier': '7.0',
       'role': 'player',
       'matches_played': 10,
       'matches_won': 6,
@@ -30,7 +30,7 @@ void main() {
       expect(p.id, 'abc-123');
       expect(p.displayName, 'Nikos P.');
       expect(p.eloRating, 7.2);
-      expect(p.eloTier, EloTier.silver);
+      expect(p.eloTier, EloTier.tier70);
       expect(p.role, UserRole.player);
       expect(p.matchesPlayed, 10);
       expect(p.matchesWon, 6);

@@ -65,6 +65,21 @@ enum EloTier {
         tier100 => 10.0,
       };
 
+  /// Returns the highest tier whose threshold is ≤ [rating].
+  static EloTier fromRating(double rating) {
+    if (rating >= 10.0) return tier100;
+    if (rating >= 9.5)  return tier95;
+    if (rating >= 9.0)  return tier90;
+    if (rating >= 8.5)  return tier85;
+    if (rating >= 8.0)  return tier80;
+    if (rating >= 7.5)  return tier75;
+    if (rating >= 7.0)  return tier70;
+    if (rating >= 6.5)  return tier65;
+    if (rating >= 6.0)  return tier60;
+    if (rating >= 5.5)  return tier55;
+    return tier50;
+  }
+
   /// The next tier above this one, or null for tier100 (RATED — no next tier).
   EloTier? get nextTier => switch (this) {
         tier50  => tier55,
