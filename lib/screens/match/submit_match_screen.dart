@@ -149,6 +149,13 @@ class _SubmitMatchScreenState extends ConsumerState<SubmitMatchScreen> {
     final actionState = ref.watch(matchActionsProvider);
     final isLoading = actionState is AsyncLoading;
 
+    final eloExcluded = _opponent != null
+        ? ref.watch(
+            friendlyEloExcludedProvider(_opponent!['id'] as String),
+          )
+        : const AsyncData<bool>(false);
+    final showEloBanner = eloExcluded.asData?.value == true;
+
     ref.listen(matchActionsProvider, (_, next) {
       if (next is AsyncError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -177,6 +184,8 @@ class _SubmitMatchScreenState extends ConsumerState<SubmitMatchScreen> {
       body: Column(
         children: [
           _StepIndicator(current: _step, total: 5),
+          if (showEloBanner)
+            _EloExcludedBanner(message: l.submitMatchEloExcludedBanner),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -232,6 +241,34 @@ class _SubmitMatchScreenState extends ConsumerState<SubmitMatchScreen> {
                       )
                     : Text(_step == 4 ? l.submitMatchSubmit : l.actionNext),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── ELO-excluded info banner ──────────────────────────────────────────────────
+
+class _EloExcludedBanner extends StatelessWidget {
+  const _EloExcludedBanner({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, size: 16, color: AppColors.tertiary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.tertiary,
+                  ),
             ),
           ),
         ],
@@ -492,7 +529,7 @@ class _OutcomeStep extends StatelessWidget {
         _OutcomeTile(
           label: l.submitMatchOutcomeWon,
           icon: Icons.emoji_events,
-          iconColor: AppColors.tierGold,
+          iconColor: AppColors.tier85Color,
           selected: selected == true,
           onTap: () => onSelected(true),
         ),

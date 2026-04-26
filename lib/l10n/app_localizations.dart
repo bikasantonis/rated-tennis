@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @actionRequest.
   ///
   /// In en, this message translates to:
-  /// **'Request'**
+  /// **'Challenge'**
   String get actionRequest;
 
   /// No description provided for @actionChange.
@@ -233,7 +233,7 @@ abstract class AppLocalizations {
   /// No description provided for @actionSendRequest.
   ///
   /// In en, this message translates to:
-  /// **'Send request'**
+  /// **'Send challenge'**
   String get actionSendRequest;
 
   /// No description provided for @errorGeneric.
@@ -593,7 +593,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeScheduleMatch.
   ///
   /// In en, this message translates to:
-  /// **'Request Match'**
+  /// **'Challenge'**
   String get homeScheduleMatch;
 
   /// No description provided for @homeMatchWonVs.
@@ -863,7 +863,7 @@ abstract class AppLocalizations {
   /// No description provided for @inboxTabRequests.
   ///
   /// In en, this message translates to:
-  /// **'Requests'**
+  /// **'Challenges'**
   String get inboxTabRequests;
 
   /// No description provided for @inboxNoPendingResults.
@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @inboxNoPendingRequests.
   ///
   /// In en, this message translates to:
-  /// **'No pending match requests.'**
+  /// **'No pending challenges.'**
   String get inboxNoPendingRequests;
 
   /// No description provided for @inboxConfirmSuccess.
@@ -887,13 +887,13 @@ abstract class AppLocalizations {
   /// No description provided for @inboxRequestAccepted.
   ///
   /// In en, this message translates to:
-  /// **'Request accepted!'**
+  /// **'Challenge accepted!'**
   String get inboxRequestAccepted;
 
   /// No description provided for @inboxRequestDeclined.
   ///
   /// In en, this message translates to:
-  /// **'Request declined.'**
+  /// **'Challenge declined.'**
   String get inboxRequestDeclined;
 
   /// No description provided for @inboxDisputeTitle.
@@ -935,7 +935,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleTitle.
   ///
   /// In en, this message translates to:
-  /// **'Schedule a Match'**
+  /// **'Challenge a Player'**
   String get scheduleTitle;
 
   /// No description provided for @scheduleProposedDateTime.
@@ -980,11 +980,29 @@ abstract class AppLocalizations {
   /// **'No players found in your rating range.'**
   String get scheduleNoPlayersInRange;
 
+  /// No description provided for @scheduleSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name…'**
+  String get scheduleSearchHint;
+
+  /// No description provided for @scheduleNoSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No players found for that name.'**
+  String get scheduleNoSearchResults;
+
   /// No description provided for @scheduleRequestSent.
   ///
   /// In en, this message translates to:
-  /// **'Match request sent!'**
+  /// **'Challenge sent!'**
   String get scheduleRequestSent;
+
+  /// No description provided for @scheduleMaxWinPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Win: up to +{points}'**
+  String scheduleMaxWinPoints(String points);
 
   /// No description provided for @tournamentsTitle.
   ///
@@ -1879,6 +1897,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password updated successfully.'**
   String get settingsChangePasswordSuccess;
+
+  /// No description provided for @submitMatchEloExcludedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Large rating gap — this match won’t affect either player’s rating.'**
+  String get submitMatchEloExcludedBanner;
 
   /// No description provided for @eloLabel.
   ///

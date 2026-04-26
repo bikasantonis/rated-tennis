@@ -333,10 +333,7 @@ class _LeaderboardRow extends StatelessWidget {
     final name = row['display_name'] as String? ?? '—';
     final elo = (row['elo_rating'] as num?)?.toDouble() ?? 5.0;
     final tierStr = row['elo_tier'] as String? ?? 'beginner';
-    final tier = EloTier.values.firstWhere(
-      (t) => t.name == tierStr,
-      orElse: () => EloTier.beginner,
-    );
+    final tier = EloTier.fromString(tierStr);
 
     final isTopThree = rank <= 3;
     final rankColor = switch (rank) {

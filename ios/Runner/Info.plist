@@ -25,6 +25,12 @@
 	<!-- Location permission — used only after explicit GDPR consent in Settings -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>RATED uses your approximate location to suggest nearby tournaments and players. You can withdraw this at any time in Settings.</string>
+	<!-- Photo library permission — used for profile avatar upload -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a photo from your library to use as your profile picture.</string>
+	<!-- Camera permission — used for profile avatar upload -->
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo to use as your profile picture.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

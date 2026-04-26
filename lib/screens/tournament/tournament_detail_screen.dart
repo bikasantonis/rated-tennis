@@ -310,11 +310,8 @@ class _ParticipantTile extends StatelessWidget {
     final player = r['player'] as Map?;
     final name = player?['display_name'] as String? ?? '—';
     final elo = (player?['elo_rating'] as num?)?.toDouble() ?? 5.0;
-    final tierStr = player?['elo_tier'] as String? ?? 'beginner';
-    final tier = EloTier.values.firstWhere(
-      (t) => t.name == tierStr,
-      orElse: () => EloTier.beginner,
-    );
+    final tierStr = player?['elo_tier'] as String? ?? '5.0';
+    final tier = EloTier.fromString(tierStr);
     final seed = r['seed'] as int?;
 
     return Card(

@@ -49,44 +49,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (profile) {
           if (profile == null) return const SizedBox.shrink();
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(currentProfileProvider);
-              ref.invalidate(recentMatchesProvider);
-            },
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                EloScoreCard(profile: profile),
-                const SizedBox(height: 24),
-                Text(
-                  l.homeRecentMatches,
-                  style: Theme.of(context).textTheme.titleMedium,
+          return Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(currentProfileProvider);
+                  ref.invalidate(recentMatchesProvider);
+                },
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                  children: [
+                    EloScoreCard(profile: profile),
+                    const SizedBox(height: 24),
+                    Text(
+                      l.homeRecentMatches,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    _RecentMatchesList(currentUserId: profile.id),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                _RecentMatchesList(currentUserId: profile.id),
-              ],
-            ),
+              ),
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: FloatingActionButton.extended(
+                  heroTag: 'challenge',
+                  onPressed: () => context.push(AppRoutes.scheduleMatch),
+                  icon: const Icon(Icons.sports_tennis),
+                  label: const Text('Challenge'),
+                ),
+              ),
+            ],
           );
         },
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'schedule',
-            onPressed: () => context.push(AppRoutes.scheduleMatch),
-            tooltip: l.homeScheduleMatch,
-            child: const Icon(Icons.calendar_today_outlined),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton.extended(
-            heroTag: 'submit',
-            onPressed: () => context.push(AppRoutes.submitMatch),
-            icon: const Icon(Icons.add),
-            label: Text(l.homeSubmitMatch),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'submit',
+        onPressed: () => context.push(AppRoutes.submitMatch),
+        icon: const Icon(Icons.add),
+        label: Text(l.homeSubmitMatch),
       ),
     );
   }

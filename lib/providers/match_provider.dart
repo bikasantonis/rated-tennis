@@ -204,3 +204,37 @@ class MatchActions extends _$MatchActions {
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Friendly match ELO eligibility check
+// ---------------------------------------------------------------------------
+
+/// Returns true when a friendly match between the current user and [opponentId]
+/// would be ELO-excluded because the tier gap exceeds 1.5 steps.
+///
+/// Tier is computed as floor(elo_rating / 0.5) × 0.5, matching the DB logic in
+/// apply_elo_changes. The DB enforces this independently; this provider is for
+/// surfacing a warning in the UI before the match is submitted.
+@riverpod
+Future<bool> friendlyEloExcluded(Ref ref, String opponentId) async {
+  final uid = _uid;
+  if (uid == null) return false;
+
+  final rows = await _db
+      .from('profiles')
+      .select('id, elo_rating')
+      .inFilter('id', [uid, opponentId]);
+
+  final ratings = {
+    for (final r in List<Map<String, dynamic>>.from(rows as List))
+      r['id'] as String: (r['elo_rating'] as num).toDouble()
+  };
+
+  final myRating = ratings[uid] ?? 5.0;
+  final opponentRating = ratings[opponentId] ?? 5.0;
+
+  final myTier = (myRating / 0.5).floor() * 0.5;
+  final opponentTier = (opponentRating / 0.5).floor() * 0.5;
+
+  return (myTier - opponentTier).abs() > 1.5;
+}

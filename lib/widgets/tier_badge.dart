@@ -10,18 +10,9 @@ class TierBadge extends StatelessWidget {
   final EloTier tier;
   final bool small;
 
-  Color get _fill => switch (tier) {
-        EloTier.beginner => AppColors.tierBeginner,
-        EloTier.bronze => AppColors.tierBronze,
-        EloTier.silver => AppColors.tierSilver,
-        EloTier.gold => AppColors.tierGold,
-        EloTier.platinum => AppColors.tierPlatinum,
-        EloTier.elite => AppColors.tierElite,
-      };
+  Color get _fill => AppColors.tierColor(tier);
 
-  Color get _textColor => tier == EloTier.beginner
-      ? AppColors.tierBeginnerText
-      : AppColors.tierBadgeText;
+  Color get _textColor => AppColors.tierTextColor(tier);
 
   @override
   Widget build(BuildContext context) {

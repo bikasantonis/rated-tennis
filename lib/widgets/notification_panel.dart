@@ -193,6 +193,7 @@ class _NotificationTile extends StatelessWidget {
         'match_request_accepted' => Icons.check_circle_outline,
         'match_request_declined' => Icons.cancel_outlined,
         'match_auto_confirmed' => Icons.schedule_outlined,
+        'match_elo_excluded' => Icons.leaderboard_outlined,
         _ => Icons.notifications_outlined,
       };
 

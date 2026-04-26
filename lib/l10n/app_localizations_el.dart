@@ -60,7 +60,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get actionRegister => 'Εγγραφή';
 
   @override
-  String get actionRequest => 'Αίτηση';
+  String get actionRequest => 'Πρόκληση';
 
   @override
   String get actionChange => 'Αλλαγή';
@@ -75,7 +75,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get actionCreateAccount => 'Δημιουργία Λογαριασμού';
 
   @override
-  String get actionSendRequest => 'Αποστολή αιτήματος';
+  String get actionSendRequest => 'Αποστολή πρόκλησης';
 
   @override
   String get errorGeneric => 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.';
@@ -264,7 +264,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get homeSubmitMatch => 'Υποβολή Αγώνα';
 
   @override
-  String get homeScheduleMatch => 'Αίτηση Αγώνα';
+  String get homeScheduleMatch => 'Πρόκληση';
 
   @override
   String homeMatchWonVs(String opponent) {
@@ -414,23 +414,23 @@ class AppLocalizationsEl extends AppLocalizations {
   String get inboxTabToConfirm => 'Προς Επιβεβαίωση';
 
   @override
-  String get inboxTabRequests => 'Αιτήματα';
+  String get inboxTabRequests => 'Προκλήσεις';
 
   @override
   String get inboxNoPendingResults => 'Δεν υπάρχουν αγώνες προς επιβεβαίωση.';
 
   @override
-  String get inboxNoPendingRequests => 'Δεν υπάρχουν εκκρεμή αιτήματα.';
+  String get inboxNoPendingRequests => 'Δεν υπάρχουν εκκρεμείς προκλήσεις.';
 
   @override
   String get inboxConfirmSuccess =>
       'Ο αγώνας επιβεβαιώθηκε — η βαθμολογία ενημερώθηκε!';
 
   @override
-  String get inboxRequestAccepted => 'Το αίτημα έγινε αποδεκτό!';
+  String get inboxRequestAccepted => 'Η πρόκληση έγινε αποδεκτή!';
 
   @override
-  String get inboxRequestDeclined => 'Το αίτημα απορρίφθηκε.';
+  String get inboxRequestDeclined => 'Η πρόκληση απορρίφθηκε.';
 
   @override
   String get inboxDisputeTitle => 'Αμφισβήτηση αποτελέσματος';
@@ -457,7 +457,7 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get scheduleTitle => 'Προγραμματισμός Αγώνα';
+  String get scheduleTitle => 'Πρόκληση Παίκτη';
 
   @override
   String get scheduleProposedDateTime => 'Προτεινόμενη ημερομηνία και ώρα';
@@ -482,7 +482,19 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν βρέθηκαν παίκτες στο εύρος βαθμολογίας σας.';
 
   @override
-  String get scheduleRequestSent => 'Το αίτημα αγώνα εστάλη!';
+  String get scheduleSearchHint => 'Αναζήτηση με όνομα…';
+
+  @override
+  String get scheduleNoSearchResults =>
+      'Δεν βρέθηκαν παίκτες με αυτό το όνομα.';
+
+  @override
+  String get scheduleRequestSent => 'Η πρόκληση εστάλη!';
+
+  @override
+  String scheduleMaxWinPoints(String points) {
+    return 'Νίκη: έως +$points';
+  }
 
   @override
   String get tournamentsTitle => 'Τουρνουά';
@@ -971,6 +983,10 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get settingsChangePasswordSuccess => 'Ο κωδικός ενημερώθηκε επιτυχώς.';
+
+  @override
+  String get submitMatchEloExcludedBanner =>
+      'Μεγάλη διαφορά βαθμολογίας — αυτό το ματς δεν θα επηρεάσει τη βαθμολογία κανενός παίκτη.';
 
   @override
   String eloLabel(String value) {

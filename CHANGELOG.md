@@ -9,7 +9,41 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Fixed
+- **Avatar upload crash** (`profile_provider.dart`): Uploading a profile picture threw `UnmountedRefException` because the `profileEditActionsProvider` could be disposed before the slow `uploadBinary` call finished. Fixed by checking `ref.mounted` before assigning state in all four `ProfileEditActions` methods. Upload errors now also propagate to the caller so a snackbar is shown instead of silently failing.
+- **Avatar upload RLS** (`020_avatars_storage.sql`): Created the `avatars` Storage bucket (public, 2 MB limit, images only) and four RLS policies — authenticated users can insert/update/delete objects under their own `<uid>/` prefix; everyone can read (public bucket).
+- **Remove profile picture**: The avatar bottom sheet now includes a red "Remove photo" option when the user already has a picture set. Tapping it deletes the file from Storage and clears `avatar_url` on the profile row.
+
 ### Added
+- **Player search on challenge screen** (`schedule_match_screen.dart`): A debounced search bar (300 ms) now sits above the ELO-browse list. Typing 2+ characters switches the list to name-search results (case-insensitive substring via `searchOpponentsProvider`); clearing the field restores the ELO-range browse. Available in both EN and EL locales.
+- **Max ELO gain preview on challenge screen**: When browsing players to challenge, each player card now shows the maximum points the current user could gain by winning ("Win: up to +X.XX"), computed via the same K=0.15 / D=1.67 friendly ELO formula as the backend. The figure also remains visible on the challenge form after selecting a player.
+- **"Challenge" terminology**: All user-facing references to "match request" have been renamed to "challenge" across both EN and EL locales (DB table/column names unchanged).
+
+### Added
+- **`match_elo_excluded` notification icon**: Notification panel now shows a `leaderboard_outlined` icon for `match_elo_excluded` notifications, distinguishing ELO-exclusion alerts from generic notifications.
+- **Numeric tier system** (`019_numeric_tiers.sql`): Replaced the 6 named tiers (Beginner → Elite) with 11 numeric tiers at 0.5-point intervals (`5.0`, `5.5`, …, `9.5`, `10.0`). Tier labels are the boundary numbers themselves. A player's displayed tier advances only when their true `elo_rating` (stored at full precision) crosses the next 0.5-point threshold.
+- **Tier progress bar on profile page**: Under the ELO stats row, non-RATED players now see a coloured progress bar and a label showing the remaining points to the next tier to 2 decimal places (e.g. "0.27 points to next tier"). Hidden for RATED (10.0) players.
+- **`friendlyEloExcluded` provider** (`match_provider.dart`): Pre-submission check that returns `true` when a friendly match between the current user and an opponent would be ELO-excluded due to a tier gap > 1.5 steps, allowing the UI to warn players before they submit.
+
+### Changed
+- **ELO delta bounds**: Hard clamp `[0.01, 0.20]` applied to every match result. Floor prevents near-zero gains for heavy favourites; ceiling caps extreme upset swings.
+- **Tournament K-factor cap**: `elo_multiplier` is now limited to **1.5×** (max K = 0.225). Existing tournaments with a higher multiplier have been capped at 1.5 in the migration.
+- **Friendly match void for large mismatches**: Friendly matches where the tier gap between the two players exceeds 1.5 steps (e.g. tier `7.0` vs tier `9.0`) are marked `elo_excluded = true` and do not affect either player's rating. Both players receive an in-app notification explaining why.
+- **Tier colours redesigned**: 11 distinct colours replace the old 6, progressing from slate/entry → bronze → silver → gold → platinum → elite navy. On the profile page the tier is shown as a large coloured number (font chosen by the user); on the leaderboard the existing pill badge uses the same colour as its fill.
+- **`EloTier` enum** (`profile.dart`): Expanded from 6 to 11 values (`tier50`…`tier100`). Added `threshold`, `nextTier` getters. `fromString()` replaces `fromRating()` — the DB string `'7.0'` maps directly to the enum.
+
+### Added
+- **Complete profile screen**: Overhauled SCR-06 with a richer layout for both own and public profiles.
+  - **Header**: Real avatar photo with tap-to-upload (gallery or camera) for own profile. Displays home city (if location consent granted), member-since date, and role badge (Organiser/Admin) alongside the existing tier badge.
+  - **Extended stats row**: Second stats strip showing global rank (`get_player_rank` RPC), peak ELO ever reached, losses, and current win/loss streak (computed from last 10 matches).
+  - **Playing Profile section**: Chips showing questionnaire answers (years playing, frequency, preferred surface, self-assessed level, tournament/recreational) — visible when `questionnaire_done = true`, read-only on other players' profiles.
+  - **Tournament history section**: Lists all tournament registrations with tournament name, date range, and a colour-coded status chip (Done / Live / Open / Cancelled).
+  - **Match history enhancement**: Tournament match tiles now show the tournament name as a subtitle line.
+  - Avatar upload uses Supabase Storage bucket `avatars`; images are capped at 512×512 / 85% quality before upload.
+- **DB migration `018_profile_enhancements.sql`**: Adds `peak_elo` column to `profiles`, a trigger `trg_update_peak_elo` to keep it current on every `elo_history` insert, `get_player_rank(uuid)` RPC, and two new permissive RLS policies for tournament registration and questionnaire public-profile reads.
+- New packages: `image_picker ^1.1.2` (avatar photo selection). Android `READ_MEDIA_IMAGES` and iOS `NSPhotoLibraryUsageDescription` / `NSCameraUsageDescription` permissions added.
+- New providers: `playerQuestionnaireProvider`, `playerTournamentHistoryProvider`, `playerGlobalRankProvider`, `ProfileEditActions.updateAvatar`.
+
 - **Location-based features (GDPR-compliant, EU)**: Players can opt-in to share their approximate home location (~1 km precision) to unlock:
   - **Nearby Tournaments tab**: "Near Me" tab (first tab in Tournaments screen) shows tournaments within the player's chosen radius (25/50/100/150 km), sorted by distance with a km badge on each card. Organisers can set a tournament's venue using "Use my location" or by typing a city/country when creating a tournament.
   - **Nearby Players filter**: location icon in the Leaderboard app bar toggles a "Near Me" view showing only players who have also opted in and are within the search radius, sorted by distance.

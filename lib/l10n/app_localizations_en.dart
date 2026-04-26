@@ -60,7 +60,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionRegister => 'Register';
 
   @override
-  String get actionRequest => 'Request';
+  String get actionRequest => 'Challenge';
 
   @override
   String get actionChange => 'Change';
@@ -75,7 +75,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionCreateAccount => 'Create Account';
 
   @override
-  String get actionSendRequest => 'Send request';
+  String get actionSendRequest => 'Send challenge';
 
   @override
   String get errorGeneric => 'Something went wrong. Please try again.';
@@ -264,7 +264,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSubmitMatch => 'Submit Match';
 
   @override
-  String get homeScheduleMatch => 'Request Match';
+  String get homeScheduleMatch => 'Challenge';
 
   @override
   String homeMatchWonVs(String opponent) {
@@ -412,23 +412,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inboxTabToConfirm => 'To Confirm';
 
   @override
-  String get inboxTabRequests => 'Requests';
+  String get inboxTabRequests => 'Challenges';
 
   @override
   String get inboxNoPendingResults =>
       'No matches waiting for your confirmation.';
 
   @override
-  String get inboxNoPendingRequests => 'No pending match requests.';
+  String get inboxNoPendingRequests => 'No pending challenges.';
 
   @override
   String get inboxConfirmSuccess => 'Match confirmed — Rating updated!';
 
   @override
-  String get inboxRequestAccepted => 'Request accepted!';
+  String get inboxRequestAccepted => 'Challenge accepted!';
 
   @override
-  String get inboxRequestDeclined => 'Request declined.';
+  String get inboxRequestDeclined => 'Challenge declined.';
 
   @override
   String get inboxDisputeTitle => 'Dispute result';
@@ -455,7 +455,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduleTitle => 'Schedule a Match';
+  String get scheduleTitle => 'Challenge a Player';
 
   @override
   String get scheduleProposedDateTime => 'Proposed date & time';
@@ -480,7 +480,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'No players found in your rating range.';
 
   @override
-  String get scheduleRequestSent => 'Match request sent!';
+  String get scheduleSearchHint => 'Search by name…';
+
+  @override
+  String get scheduleNoSearchResults => 'No players found for that name.';
+
+  @override
+  String get scheduleRequestSent => 'Challenge sent!';
+
+  @override
+  String scheduleMaxWinPoints(String points) {
+    return 'Win: up to +$points';
+  }
 
   @override
   String get tournamentsTitle => 'Tournaments';
@@ -966,6 +977,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsChangePasswordSuccess => 'Password updated successfully.';
+
+  @override
+  String get submitMatchEloExcludedBanner =>
+      'Large rating gap — this match won’t affect either player’s rating.';
 
   @override
   String eloLabel(String value) {
