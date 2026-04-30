@@ -103,10 +103,13 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // ── Post-registration ─────────────────────────────────────────────────
+      // The questionnaire is now shown as a dialog from HomeScreen.
+      // This route is kept for deep-link compatibility and immediately shows
+      // the dialog, then pops back to the previous route when done.
       GoRoute(
         path: AppRoutes.questionnaire,
         pageBuilder: (context, state) =>
-            _fade(state, const QuestionnaireScreen()),
+            _fade(state, const _QuestionnaireRoute()),
       ),
 
       // ── Authenticated shell (bottom nav) ──────────────────────────────────
@@ -231,3 +234,32 @@ CustomTransitionPage<void> _fade(GoRouterState state, Widget child) =>
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           FadeTransition(opacity: animation, child: child),
     );
+
+// ---------------------------------------------------------------------------
+// Questionnaire route wrapper
+// Opens the questionnaire dialog immediately, then pops when done.
+// ---------------------------------------------------------------------------
+
+class _QuestionnaireRoute extends StatefulWidget {
+  const _QuestionnaireRoute();
+
+  @override
+  State<_QuestionnaireRoute> createState() => _QuestionnaireRouteState();
+}
+
+class _QuestionnaireRouteState extends State<_QuestionnaireRoute> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await showQuestionnaireDialog(context);
+      if (mounted) context.pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+}

@@ -16,6 +16,12 @@ class OrganizerDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
 
+    final draftCount = ref
+            .watch(myTournamentsProvider(statusFilter: 'draft'))
+            .asData
+            ?.value
+            .length ??
+        0;
     final openCount = ref
             .watch(myTournamentsProvider(statusFilter: 'registration_open'))
             .asData
@@ -30,12 +36,15 @@ class OrganizerDashboardScreen extends ConsumerWidget {
         0;
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.organizerTitle),
           bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             tabs: [
+              TabWithBadge(label: l.organizerTabDraft, count: draftCount),
               TabWithBadge(label: l.organizerTabOpen, count: openCount),
               TabWithBadge(
                   label: l.organizerTabInProgress, count: inProgressCount),
@@ -45,6 +54,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
         ),
         body: TabBarView(
           children: [
+            _TournamentList(statusFilter: 'draft'),
             _TournamentList(statusFilter: 'registration_open'),
             _TournamentList(statusFilter: 'in_progress'),
             _TournamentList(statusFilter: 'completed'),

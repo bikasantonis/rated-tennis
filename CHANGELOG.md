@@ -9,6 +9,21 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Docs
+- **Documentation overhaul** (`docs/`): Rewrote `ARCHITECTURE.md` to reflect current state (21 migrations, 11 providers, 8 widgets, 6 Edge Functions, accurate screen statuses, no Firebase references). Added four new reference documents: `ELO_SYSTEM.md` (rating algorithm, tiers, seed formula, delta bounds, prestige), `DATABASE.md` (all tables, full migration log, triggers, helper functions, RLS, pg_cron), `NOTIFICATIONS.md` (delivery pipeline, all notification types, deep-link routing table, OneSignal config), `DECISIONS.md` (13 architecture decision records covering key technology and design choices).
+
+### Changed
+- **Tournaments "Open" tab renamed to "Upcoming"** (player and organizer views): The first status tab in both `TournamentsListScreen` and `OrganizerDashboardScreen` is now labelled "Upcoming" (Greek: "Επερχόμενα"), reflecting that it shows tournaments with open registration that have not yet started.
+- **Organizer dashboard "Drafts" tab added**: A new first tab shows the organizer's draft tournaments so newly created tournaments are immediately visible. Draft tournaments are never shown in the player-facing lists.
+- **Questionnaire redesign** (`021_questionnaire_v2.sql`, `questionnaire_screen.dart`, `seed-elo/index.ts`): Replaced the original 5-question form with a new 5-question sport-history questionnaire. The form now appears as a dismissible **popup dialog** (instead of a full-screen route), with animated dot progress indicators at the bottom that fill as each question is answered. Questions:
+  1. Date of birth (date picker)
+  2. Years playing tennis (number input)
+  3. Competitive experience in Greece (recreational / national junior ranked outside top 200 / ranked 20–200 / ranked top 20)
+  4. International competitive experience (none / recreational intl. / junior intl. with career-high ranking / professional adult with ATP/WTA point flag / US College with division)
+  5. Other competitive sport — **only shown when Q3 is "recreational only"** (racket sports / other / none)
+- **Seed-ELO algorithm replaced**: The new algorithm maps sport history directly to a rating on the 5.0–10.0 scale, giving results from 5.5 (< 2 years recreational) up to 10.0 (ATP/WTA point recipient under 40). Age is derived from the supplied date of birth and adjusts the rating for national/international junior experience.
+- Removed DB columns `playing_frequency`, `self_assessed_level`, `preferred_surface`, `has_competed` from `questionnaire_responses`; added `date_of_birth`, `greek_experience`, `international_experience`, `junior_career_high_ranking`, `received_atp_wta_point`, `us_college_division`, `other_sport`.
+
 ### Fixed
 - **Avatar upload crash** (`profile_provider.dart`): Uploading a profile picture threw `UnmountedRefException` because the `profileEditActionsProvider` could be disposed before the slow `uploadBinary` call finished. Fixed by checking `ref.mounted` before assigning state in all four `ProfileEditActions` methods. Upload errors now also propagate to the caller so a snackbar is shown instead of silently failing.
 - **Avatar upload RLS** (`020_avatars_storage.sql`): Created the `avatars` Storage bucket (public, 2 MB limit, images only) and four RLS policies — authenticated users can insert/update/delete objects under their own `<uid>/` prefix; everyone can read (public bucket).

@@ -190,65 +190,135 @@ class AppLocalizationsEl extends AppLocalizations {
   String get questionnaireGetMyRating => 'Λάβε τη βαθμολογία μου';
 
   @override
-  String get questionnaireFrequencyTitle => 'Πόσο συχνά παίζετε;';
+  String get questionnaireDobTitle =>
+      'Παρακαλώ εισάγετε την ημερομηνία γέννησής σας';
 
   @override
-  String get questionnaireFrequencyRarely => 'Σπάνια';
+  String get questionnaireDobPlaceholder =>
+      'Πατήστε για επιλογή ημερομηνίας γέννησης';
 
   @override
-  String get questionnaireFrequencyMonthly => 'Μηνιαία';
+  String get questionnaireYearsTitle => 'Πόσα χρόνια παίζετε τένις;';
 
   @override
-  String get questionnaireFrequencyWeekly => 'Εβδομαδιαία';
+  String get questionnaireYearsHint => 'Αριθμός ετών';
 
   @override
-  String get questionnaireFrequencyMultiple => 'Πολλές φορές την εβδομάδα';
+  String get questionnaireYearsUnit => 'χρόνια';
 
   @override
-  String get questionnaireLevelTitle => 'Πώς αξιολογείτε τον εαυτό σας;';
+  String get questionnaireGreekTitle =>
+      'Έχετε ανταγωνιστική εμπειρία στην Ελλάδα;';
 
   @override
-  String get questionnaireLevelBeginner => 'Αρχάριος';
+  String get questionnaireGreekRecreational => 'Όχι, μόνο ερασιτεχνικά';
 
   @override
-  String get questionnaireLevelIntermediate => 'Μεσαίο επίπεδο';
+  String get questionnaireGreekRecreationalSub =>
+      'Έχω παίξει μόνο ερασιτεχνικά';
 
   @override
-  String get questionnaireLevelAdvanced => 'Προχωρημένος';
+  String get questionnaireGreekNationalU200 =>
+      'Εθνικό επίπεδο junior – εκτός top 200';
 
   @override
-  String get questionnaireLevelCompetitive => 'Ανταγωνιστικός';
+  String get questionnaireGreekNationalU200Sub =>
+      'Συμμετοχή σε εθνικά τουρνουά, χωρίς κατάταξη εντός top 200';
 
   @override
-  String get questionnaireYearsTitle => 'Πόσα χρόνια παίζετε;';
+  String get questionnaireGreekNational20200 =>
+      'Εθνικό επίπεδο junior – κατάταξη 20–200';
 
   @override
-  String get questionnaireSurfaceTitle => 'Προτιμώμενη επιφάνεια;';
+  String get questionnaireGreekNational20200Sub =>
+      'Κατάταξη 20–200 σε U16 ή U18';
 
   @override
-  String get questionnaireSurfaceClay => 'Χώμα';
+  String get questionnaireGreekNationalTop20 =>
+      'Εθνικό επίπεδο junior – top 20';
 
   @override
-  String get questionnaireSurfaceHard => 'Σκληρό';
+  String get questionnaireGreekNationalTop20Sub =>
+      'Κατάταξη εντός top 20 σε U16 ή U18';
 
   @override
-  String get questionnaireSurfaceGrass => 'Γρασίδι';
+  String get questionnaireIntlTitle => 'Έχετε διεθνή ανταγωνιστική εμπειρία;';
 
   @override
-  String get questionnaireSurfaceIndoor => 'Κλειστό';
+  String get questionnaireIntlNone => 'Χωρίς διεθνή εμπειρία';
 
   @override
-  String get questionnaireSurfaceNoPreference => 'Χωρίς προτίμηση';
+  String get questionnaireIntlNoneSub => 'Δεν έχω παίξει διεθνώς';
 
   @override
-  String get questionnaireTournamentTitle =>
-      'Έχετε συμμετάσχει σε επίσημα τουρνουά;';
+  String get questionnaireIntlRecreational => 'Ερασιτεχνικά διεθνή τουρνουά';
 
   @override
-  String get questionnaireTournamentYes => 'Ναι';
+  String get questionnaireIntlRecreationalSub =>
+      'ITF Masters ή άλλα ερασιτεχνικά διεθνή τουρνουά';
 
   @override
-  String get questionnaireTournamentNo => 'Όχι';
+  String get questionnaireIntlJunior => 'Διεθνή junior τουρνουά';
+
+  @override
+  String get questionnaireIntlJuniorSub => 'Tennis Europe, ITF Juniors';
+
+  @override
+  String get questionnaireIntlCareerHighLabel => 'Καλύτερη κατάταξη καριέρας';
+
+  @override
+  String get questionnaireIntlCareerHighHint => 'π.χ. 150';
+
+  @override
+  String get questionnaireIntlCareerHighHelper =>
+      'Εισάγετε την καλύτερη κατάταξή σας στο ITF Juniors';
+
+  @override
+  String get questionnaireIntlProfessional => 'Επαγγελματικά διεθνή τουρνουά';
+
+  @override
+  String get questionnaireIntlProfessionalSub =>
+      'ITF Futures, Challenger, ATP ή WTA τουρνουά';
+
+  @override
+  String get questionnaireIntlAtpWtaQuestion =>
+      'Έχετε λάβει πόντους ATP ή WTA;';
+
+  @override
+  String get questionnaireIntlCollege => 'Αμερικανικό Κολέγιο (US College)';
+
+  @override
+  String get questionnaireIntlCollegeSub =>
+      'Αγωνίστηκα σε ομάδα αμερικανικού κολεγίου';
+
+  @override
+  String get questionnaireIntlCollegeDivision =>
+      'Σε ποιο division αγωνίστηκε το κολέγιό σας;';
+
+  @override
+  String get questionnaireOtherSportTitle =>
+      'Έχετε αγωνιστεί ανταγωνιστικά σε άλλο άθλημα;';
+
+  @override
+  String get questionnaireOtherSportRacket => 'Αθλήματα ρακέτας';
+
+  @override
+  String get questionnaireOtherSportRacketSub =>
+      'Squash, badminton, επιτραπέζιο τένις, padel ή pickleball';
+
+  @override
+  String get questionnaireOtherSportOther => 'Άλλο άθλημα';
+
+  @override
+  String get questionnaireOtherSportOtherSub =>
+      'Οποιοδήποτε άλλο ανταγωνιστικό άθλημα';
+
+  @override
+  String get questionnaireOtherSportNone => 'Κανένα ανταγωνιστικό άθλημα';
+
+  @override
+  String get questionnaireOtherSportNoneSub =>
+      'Δεν έχω αγωνιστεί ανταγωνιστικά σε άλλο άθλημα';
 
   @override
   String get homeTitle => 'RATED';
@@ -500,7 +570,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tournamentsTitle => 'Τουρνουά';
 
   @override
-  String get tournamentsTabOpen => 'Ανοιχτά';
+  String get tournamentsTabOpen => 'Επερχόμενα';
 
   @override
   String get tournamentsTabInProgress => 'Σε εξέλιξη';
@@ -580,7 +650,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get organizerTitle => 'Τα Τουρνουά μου';
 
   @override
-  String get organizerTabOpen => 'Ανοιχτά';
+  String get organizerTabDraft => 'Πρόχειρα';
+
+  @override
+  String get organizerTabOpen => 'Επερχόμενα';
 
   @override
   String get organizerTabInProgress => 'Σε εξέλιξη';

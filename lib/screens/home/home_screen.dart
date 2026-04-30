@@ -8,6 +8,7 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/match_provider.dart';
 import 'package:rated/providers/questionnaire_prompt_provider.dart';
 import 'package:rated/router/app_router.dart';
+import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/elo_score_card.dart';
@@ -109,7 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       final takeQuestionnaire = await _showPromptDialog();
       if (takeQuestionnaire == true && mounted) {
-        context.push(AppRoutes.questionnaire);
+        final completed = await showQuestionnaireDialog(context);
+        if (completed == true) ref.invalidate(currentProfileProvider);
       }
     });
   }

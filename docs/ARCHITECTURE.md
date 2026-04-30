@@ -1,7 +1,7 @@
-# RATED — Architecture & File Reference
+# RATED — Architecture & Developer Reference
 
-> Auto-generated scaffold documentation. Updated: 2026-03-29.
-> Every file created in the initial scaffold is described here with its purpose, key decisions, and how it connects to the PRD.
+> Last updated: 2026-04-30.
+> For a new developer: read this file first, then [ELO_SYSTEM.md](ELO_SYSTEM.md) for rating logic, [DATABASE.md](DATABASE.md) for schema details, [NOTIFICATIONS.md](NOTIFICATIONS.md) for the push pipeline, and [DECISIONS.md](DECISIONS.md) for why key choices were made.
 
 ---
 
@@ -18,31 +18,34 @@
    - [Providers](#45-providers)
    - [Widgets](#46-widgets)
    - [Screens](#47-screens)
+   - [Services](#48-services)
 5. [supabase/ — Database & Backend](#5-supabase--database--backend)
-   - [Migration 001 — Schema](#51-migration-001--initial-schema)
-   - [Migration 002 — Indexes](#52-migration-002--indexes)
-   - [Migration 003 — RLS Policies](#53-migration-003--rls-policies)
-   - [Migration 004 — Triggers](#54-migration-004--triggers)
-   - [Migration 005 — Edge Function Stubs](#55-migration-005--edge-function-stubs)
-6. [How the layers connect](#6-how-the-layers-connect)
-7. [First-run checklist](#7-first-run-checklist)
+6. [How the Layers Connect](#6-how-the-layers-connect)
+7. [First-Run Checklist](#7-first-run-checklist)
 
 ---
 
 ## 1. Project Overview
 
-**RATED** is a cross-platform Flutter application providing a universal ELO ranking system for Greek tennis club players. Players receive a profile and rating from a short questionnaire; every confirmed match updates both players' ratings via the ELO algorithm. The app supports match scheduling, dispute resolution, and tournament management with bracket generation.
+**RATED** is a cross-platform Flutter application providing a universal ELO ranking system for Greek tennis club players. Players receive a profile and initial rating from a sport-history questionnaire; every confirmed match updates both players' ratings via a custom ELO algorithm. The app supports match scheduling, dispute resolution, tournament management with bracket generation, and GDPR-compliant location-based discovery.
 
-| Layer | Technology | PRD ref |
+| Layer | Technology | Version |
 |---|---|---|
-| Frontend | Flutter 3.22+ / Dart | §4.2 |
-| State management | Riverpod 2 (code-gen) | §4.2 |
-| Navigation | go_router 14 (ShellRoute) | §7.3.2 |
-| Backend / DB | Supabase (PostgreSQL + PostgREST) | §4.2 |
-| Auth | Supabase Auth + Google + Apple | §5.2 |
-| Push notifications | OneSignal via Supabase Edge Function | §5.4 |
-| Error monitoring | Sentry | §11.5 |
-| CI/CD | GitHub Actions + Fastlane | §11.4 |
+| Frontend | Flutter / Dart | ≥ 3.22 |
+| State management | Riverpod (code-gen) | 3.1.0 |
+| Navigation | go_router (ShellRoute) | 17.1.0 |
+| Backend / DB | Supabase (PostgreSQL + PostgREST) | — |
+| Auth | Supabase Auth + Google OAuth + Apple Sign-In | — |
+| Push notifications | OneSignal | 5.2.5 |
+| Error monitoring | Sentry | 9.16.0 |
+| Serialisation | Freezed + JSON Serializable | 3.2.3 / 6.8.0 |
+| Location | geolocator (GDPR opt-in) | 13.0.0 |
+| i18n | Flutter intl | 0.20.2 |
+
+**Target audiences:**
+- **Players** — submit and confirm match results, view rankings, join tournaments
+- **Organisers** — create and manage tournaments, control brackets
+- **Admins** — resolve disputed match results, approve organiser requests
 
 ---
 
@@ -51,54 +54,78 @@
 ```
 rated/
 ├── lib/
-│   ├── main.dart                        App entry point
-│   ├── app.dart                         MaterialApp.router + i18n
+│   ├── main.dart                             Entry point (OneSignal → Supabase → Sentry → runApp)
+│   ├── app.dart                              MaterialApp.router + i18n (EN/EL)
 │   ├── router/
-│   │   └── app_router.dart              go_router config (all 14 screens)
+│   │   └── app_router.dart                  go_router — all routes, redirect logic, transitions
 │   ├── theme/
-│   │   ├── app_colors.dart              Design tokens (PRD §7.2)
-│   │   └── app_theme.dart               MD3 ThemeData light + dark
+│   │   ├── app_colors.dart                  Design tokens: light/dark + 11 tier colours
+│   │   └── app_theme.dart                   MD3 ThemeData + Barlow Condensed / Inter typography
 │   ├── models/
-│   │   ├── profile.dart                 profiles table model
-│   │   ├── match_result.dart            match_results table model
-│   │   ├── match_request.dart           match_requests table model
-│   │   ├── tournament.dart              tournaments table model
-│   │   ├── elo_history.dart             elo_history table model
-│   │   └── notification_item.dart       notifications table model
+│   │   ├── profile.dart                     profiles table + EloTier enum (11 tiers)
+│   │   ├── match_result.dart                match_results table + SetScore
+│   │   ├── match_request.dart               match_requests table
+│   │   ├── tournament.dart                  tournaments table
+│   │   ├── elo_history.dart                 elo_history append-only ledger
+│   │   ├── notification_item.dart           notifications table (polymorphic reference)
+│   │   └── bracket_match.dart               tournament_bracket_matches table
 │   ├── providers/
-│   │   └── auth_provider.dart           Session stream + current profile
+│   │   ├── auth_provider.dart               Session stream + AuthNotifier + currentProfileProvider
+│   │   ├── profile_provider.dart            Own/other profile loading + edit + avatar upload
+│   │   ├── leaderboard_provider.dart        Global rankings (paginated) + nearbyPlayers
+│   │   ├── tournament_provider.dart         Tournaments list/detail + nearbyTournaments + bracket
+│   │   ├── match_provider.dart              Match submission/confirmation + friendlyEloExcluded
+│   │   ├── location_provider.dart           LocationPrefs + LocationActions (GDPR consent flow)
+│   │   ├── organizer_request_provider.dart  Organiser request submit + admin decisions
+│   │   ├── questionnaire_provider.dart      Questionnaire submit + seed-elo call
+│   │   ├── schedule_match_provider.dart     searchOpponentsProvider (debounced 300 ms)
+│   │   ├── locale_provider.dart             Language switching (EN/EL)
+│   │   └── notification_panel_provider.dart Real-time notification stream + mark-read
+│   ├── services/
+│   │   └── notification_service.dart        OneSignal wrapper — identify, clear, deep-link routing
 │   ├── widgets/
-│   │   ├── bottom_nav_shell.dart        MD3 NavigationBar shell
-│   │   ├── tier_badge.dart              ELO tier colour badge
-│   │   └── elo_score_card.dart          Dashboard ELO card widget
-│   └── screens/
-│       ├── onboarding/                  SCR-01
-│       ├── auth/                        SCR-02
-│       ├── questionnaire/               SCR-03
-│       ├── home/                        SCR-04
-│       ├── leaderboard/                 SCR-05
-│       ├── profile/                     SCR-06
-│       ├── match/                       SCR-07, SCR-08, SCR-09
-│       ├── tournament/                  SCR-10, SCR-11
-│       ├── organizer/                   SCR-12
-│       ├── settings/                    SCR-13
-│       └── admin/                       SCR-14
+│   │   ├── bottom_nav_shell.dart            MD3 NavigationBar (4 destinations)
+│   │   ├── tier_badge.dart                  Pill badge — colour + label for all 11 tiers
+│   │   ├── elo_score_card.dart              Dashboard ELO card (Barlow Condensed 72 pt)
+│   │   ├── app_bar_actions.dart             Settings / notifications / profile action icons
+│   │   ├── notification_panel.dart          Popup notification list + real-time updates
+│   │   ├── tournament_bracket_viewer.dart   Horizontally scrollable single-elimination bracket
+│   │   └── pending_badge.dart               CountChip + TabWithBadge for pending-action counts
+│   ├── screens/
+│   │   ├── splash/                          Branded splash (session restore)
+│   │   ├── onboarding/                      SCR-01 — 3-slide intro
+│   │   ├── auth/                            SCR-02 — Login + Register (email, Google, Apple)
+│   │   ├── questionnaire/                   SCR-03 — Sport-history questionnaire (shown as dialog)
+│   │   ├── home/                            SCR-04 — Dashboard + recent matches
+│   │   ├── leaderboard/                     SCR-05 — Global rankings + Near Me filter
+│   │   ├── profile/                         SCR-06 — Player profile + edit + avatar upload
+│   │   ├── match/                           SCR-07/08/09 — Submit / inbox / schedule
+│   │   ├── tournament/                      SCR-10/11 — Tournaments list + detail + bracket
+│   │   ├── organizer/                       SCR-12 — Organiser dashboard + per-tournament view
+│   │   ├── settings/                        SCR-13 — Language, location, account
+│   │   └── admin/                           SCR-14 — Dispute resolution + organiser requests
+│   ├── l10n/
+│   │   ├── app_en.arb                       English strings
+│   │   ├── app_el.arb                       Greek strings
+│   │   └── app_localizations.dart           Generated localisation class
+│   └── gen/                                 flutter_gen generated assets
 ├── supabase/
-│   ├── config.toml                      Local dev stack config
-│   └── migrations/
-│       ├── 001_initial_schema.sql       8 tables with constraints
-│       ├── 002_indexes.sql              11 mandatory indexes
-│       ├── 003_rls_policies.sql         Row Level Security
-│       ├── 004_triggers.sql             updated_at, profile create, elo_tier sync
-│       └── 005_edge_function_stubs.sql  Edge Function binding docs
-├── assets/images/                       Static assets (placeholder)
+│   ├── config.toml                          Local dev stack config
+│   ├── migrations/                          21 SQL migrations (applied in order)
+│   └── functions/                           6 Deno Edge Functions
+├── assets/images/
 ├── docs/
-│   ├── ARCHITECTURE.md                  ← this file
-│   └── TODO.md                          Tracked implementation tasks
+│   ├── ARCHITECTURE.md                      ← this file
+│   ├── ELO_SYSTEM.md                        ELO algorithm, tiers, seed, rules
+│   ├── DATABASE.md                          Schema, migrations, triggers, RLS
+│   ├── NOTIFICATIONS.md                     Notification types, delivery chain, deep-link routing
+│   ├── DECISIONS.md                         Architecture decision records
+│   └── TODO.md                              Implementation task tracker
+├── test/
 ├── pubspec.yaml
 ├── analysis_options.yaml
 ├── .env.example
-└── .gitignore
+└── CHANGELOG.md
 ```
 
 ---
@@ -107,23 +134,27 @@ rated/
 
 ### `pubspec.yaml`
 Declares all Dart dependencies. Key groups:
-- **Supabase** (`supabase_flutter`) — replaces Firebase Firestore/Auth used in the prototype
-- **Auth providers** (`google_sign_in`, `sign_in_with_apple`) — required by Apple App Store when any OAuth is offered
-- **Push notifications** (`onesignal_flutter`) — OneSignal SDK; no Firebase dependency; handles APNs automatically
-- **State** (`flutter_riverpod`, `riverpod_annotation`) — code-gen providers via `@riverpod`
-- **Navigation** (`go_router`) — declarative URL-based routing with deep-link support
+- **Supabase** (`supabase_flutter`) — backend, auth, realtime
+- **Auth** (`google_sign_in`, `sign_in_with_apple`) — Apple App Store requires both OAuth providers when any is offered
+- **Push** (`onesignal_flutter`) — no Firebase dependency; OneSignal handles APNs provisioning automatically
+- **State** (`flutter_riverpod`, `riverpod_annotation`) — `@riverpod` code-gen providers
+- **Navigation** (`go_router`) — declarative URL routing with deep-link support
 - **Models** (`freezed_annotation`, `json_annotation`) — immutable, serialisable data classes
-- **Fonts** (`google_fonts`) — Inter (body) + Barlow Condensed (ELO numbers) per PRD §7.1
-- **Charts** (`fl_chart`) — ELO sparkline on player profile (SCR-06)
+- **Fonts** (`google_fonts`) — Barlow Condensed Bold (ELO numbers) + Inter (body)
+- **Charts** (`fl_chart`) — ELO sparkline on player profile
+- **Location** (`geolocator`, `http`) — opt-in GDPR GPS + Nominatim reverse geocoding
+- **Images** (`image_picker`, `cached_network_image`) — avatar upload + CDN caching
 
 ### `analysis_options.yaml`
-Enables `custom_lint` + `riverpod_lint` which statically check that providers are used correctly (catches missing `ref.watch` vs `ref.read` errors at analysis time, not runtime).
+Enables `custom_lint` + `riverpod_lint` which statically check provider usage — catches incorrect `ref.watch` vs `ref.read` at analysis time, not runtime.
 
 ### `.env.example`
-Template for the three environment files (`.env.dev`, `.env.staging`, `.env.production`). Values are injected at build time via `--dart-define-from-file` so no secrets ever enter the source tree. Required keys: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SENTRY_DSN`, `APP_ENV`, `GOOGLE_CLIENT_ID`, `ONESIGNAL_APP_ID`.
+Template for three environment files (`.env.dev`, `.env.staging`, `.env.production`). Values are injected at build time via `--dart-define-from-file` so no secrets enter the source tree.
+
+Required keys: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SENTRY_DSN`, `APP_ENV`, `GOOGLE_CLIENT_ID`, `ONESIGNAL_APP_ID`.
 
 ### `.gitignore`
-Excludes generated Dart files (`*.freezed.dart`, `*.g.dart`), all `.env.*` files, `google-services.json`, and `GoogleService-Info.plist` to prevent secret leakage.
+Excludes generated Dart files (`*.freezed.dart`, `*.g.dart`), all `.env.*` files, and platform credentials (`google-services.json`, `GoogleService-Info.plist`) to prevent secret leakage.
 
 ---
 
@@ -132,17 +163,17 @@ Excludes generated Dart files (`*.freezed.dart`, `*.g.dart`), all `.env.*` files
 ### 4.1 Entry Point
 
 #### `lib/main.dart`
-Initialises all three services in order before `runApp`:
-1. `OneSignal.initialize` — called with `ONESIGNAL_APP_ID` (injected via `--dart-define-from-file`); followed by `requestPermission(false)` which shows the iOS system permission prompt without force-requesting
-2. `Supabase.initialize` — uses PKCE auth flow (more secure than implicit on mobile)
-3. `SentryFlutter.init` — wraps `runApp` so uncaught errors are captured
+Initialises all services in order before `runApp`:
 
-The app is wrapped in `ProviderScope` (Riverpod root) before being handed to Sentry's runner.
+1. **`OneSignal.initialize`** — called with `ONESIGNAL_APP_ID` from `--dart-define-from-file`; `requestPermission(false)` shows the iOS system permission prompt without force-requesting
+2. **`NotificationService.instance.init()`** — registers foreground display and tap-routing listeners before the router is ready
+3. **`Supabase.initialize`** — uses PKCE auth flow (more secure than implicit on mobile)
+4. **`SentryFlutter.init`** — wraps `runApp` so uncaught errors are captured; the app is also wrapped in `ProviderScope` (Riverpod root)
 
-> **No Firebase dependency.** `firebase_options.dart` was removed. OneSignal handles APNs certificate provisioning automatically via its dashboard; no `google-services.json` or `GoogleService-Info.plist` required for push.
+> **No Firebase dependency.** OneSignal handles APNs provisioning automatically via its dashboard. No `google-services.json` or `GoogleService-Info.plist` is required for push.
 
 #### `lib/app.dart`
-`RatedApp` is a `ConsumerWidget` that reads `appRouterProvider` (the go_router instance). Using `MaterialApp.router` instead of `MaterialApp` enables go_router's declarative navigation. Both `theme` and `darkTheme` are provided from day one (PRD §7.1 — dark mode must be defined at scaffold, not added later). `ThemeMode.system` respects the device setting with no manual toggle in v1.
+`RatedApp` is a `ConsumerWidget` reading `appRouterProvider`. `MaterialApp.router` enables go_router declarative navigation. Both `theme` and `darkTheme` are provided from day one (`ThemeMode.system` respects the device setting).
 
 ---
 
@@ -150,151 +181,146 @@ The app is wrapped in `ProviderScope` (Riverpod root) before being handed to Sen
 
 #### `lib/router/app_router.dart`
 
-The central navigation configuration. Key design decisions:
+**`AppRoutes` constants** — all path strings in one `abstract final class` to prevent typo-based routing bugs.
 
-**`AppRoutes` constants** — All path strings live in one `abstract final class` so screens reference `AppRoutes.home` rather than string literals, preventing typo-based routing bugs.
+**`appRouterProvider`** — a `@riverpod`-annotated `GoRouter` that watches `authProvider` as a `refreshListenable`. The router automatically re-evaluates `redirect` whenever auth state changes.
 
-**`appRouterProvider`** — A `@riverpod`-annotated `GoRouter` factory. Because it watches `authStateProvider` and `currentProfileProvider`, the router automatically rebuilds (and re-evaluates the `redirect` callback) whenever auth state changes — no manual navigation calls needed after login/logout.
+**Redirect logic:**
+1. Splash not yet ready → `/splash` (waits for session restore to complete)
+2. Authenticated, arriving at `/splash`, `/onboarding`, or `/login` → `/home`
+3. Unauthenticated, not on `/onboarding` or `/login` → `/onboarding`
 
-**Redirect logic** (PRD §7.3.2):
-1. Unauthenticated → `/login`
-2. Authenticated but `questionnaire_done = false` → `/questionnaire`
-3. Authenticated + done, trying to visit auth screens → `/home`
+The questionnaire is **no longer a redirect gate** — it appears as a dialog from `HomeScreen` when `questionnaire_done = false`. The `/questionnaire` route still exists for deep-link compatibility: it shows the dialog immediately and pops when done.
 
-**`ShellRoute`** — wraps the four bottom-nav destinations (`/home`, `/leaderboard`, `/matches`, `/tournaments`) so the `BottomNavShell` scaffold persists across those tabs while nested routes (e.g. `/leaderboard/:id` for a player profile) push on top without destroying the shell.
+**`ShellRoute`** — wraps the four bottom-nav destinations (`/home`, `/leaderboard`, `/matches`, `/tournaments`) so `BottomNavShell` persists across tabs. Nested routes (e.g. `/leaderboard/:id`) push on top without destroying the shell.
 
-**Transition helpers** — `_slide` uses MD3's standard curve (300 ms `easeInOut`); `_fade` uses the emphasised decelerate variant (350 ms) for full-screen auth replacements per PRD §7.1 Motion tokens.
+**Role-gated routes** — `/organizer`, `/organizer/tournaments/:id`, `/admin/disputes` are declared in the router but not surfaced in the bottom nav. The organiser dashboard is accessible via a profile overflow menu.
 
-**Role-gated routes** (`/organizer`, `/admin/disputes`) — declared in the router but not surfaced in the bottom nav. The organizer dashboard is accessible via a profile overflow menu; the admin disputes screen via a deep link only.
+**Transitions:**
+- `_slide` — 300 ms `easeInOut` horizontal slide (standard push)
+- `_fade` — 350 ms fade (splash and auth screens)
 
 ---
 
 ### 4.3 Theme
 
 #### `lib/theme/app_colors.dart`
-All colour hex values from PRD §7.2.1 (light) and §7.2.2 (dark override). Declared as `abstract final class` constants so they can never be instantiated. The tier badge colours (§7.2.3) are here too, keeping all design tokens in one auditable place.
+All colour hex values for light and dark modes. Declared as `abstract final class` constants — never instantiated. The 11 tier badge colours are here too, keeping all design tokens auditable in one place.
 
-> **WCAG note:** All values were verified at ≥ 4.5:1 contrast ratio as required by PRD §6.1. Do not change hex values without re-running contrast checks.
+> **WCAG:** All values were verified at ≥ 4.5:1 contrast ratio. Do not change hex values without re-running contrast checks.
 
 #### `lib/theme/app_theme.dart`
-Two `ThemeData` objects (`light`, `dark`) built with `ColorScheme.fromSeed(seedColor: AppColors.primary)` — the MD3 tonal palette system derives all 30 colour roles automatically from the seed. Manual overrides are applied only where the PRD specifies exact values (e.g. `tertiary`, `surface`).
+Two `ThemeData` objects (`light`, `dark`) built with `ColorScheme.fromSeed` — MD3 tonal palette derives all 30 colour roles from the seed. Manual overrides only where the design specifies exact values.
 
-`AppTheme` also defines the three border-radius constants used app-wide:
+Border-radius constants used app-wide:
 - `radiusGlobal = 12` — cards, inputs, dialogs
 - `radiusPill = 999` — tier badges, chips
 - `radiusButton = 20` — MD3 button default
 
-Typography uses `google_fonts` with **Barlow Condensed Bold** for `displayLarge`–`headlineMedium` (ELO numbers, ranking figures) and **Inter** for all body/UI text.
+Typography: **Barlow Condensed Bold** for `displayLarge–headlineMedium` (ELO numbers, ranking figures); **Inter** for all body/UI text.
 
 ---
 
 ### 4.4 Models
 
-All six models use **Freezed** for immutability, `copyWith`, equality, and `fromJson`/`toJson`. After scaffold, run `dart run build_runner build` to generate the `.freezed.dart` and `.g.dart` files.
+All models use **Freezed** for immutability, `copyWith`, equality, and `fromJson`/`toJson`. Run `dart run build_runner build` to regenerate after any changes.
 
 | File | Supabase table | Notable |
 |---|---|---|
-| `profile.dart` | `profiles` | `EloTier` enum with `fromRating()` factory mirrors the trigger logic in SQL |
+| `profile.dart` | `profiles` | `EloTier` enum with 11 values (5.0–10.0 at 0.5 intervals); `fromRating()` factory mirrors the `sync_elo_tier` SQL trigger |
 | `match_result.dart` | `match_results` | `SetScore` is a nested Freezed class matching the JSONB `score` column structure |
-| `match_request.dart` | `match_requests` | `expiresAt` is stored in DB as a generated column (`created_at + 72h`) |
-| `tournament.dart` | `tournaments` | `eloMultiplier` maps to `NUMERIC(4,2)`, range 1.0–2.0 per PRD §8.1.7 |
-| `elo_history.dart` | `elo_history` | Append-only; `delta` is a generated column in PostgreSQL |
+| `match_request.dart` | `match_requests` | `expiresAt` is a generated column in DB (`created_at + 72h`) |
+| `tournament.dart` | `tournaments` | `eloMultiplier` range 1.0–1.5 (capped in migration 019) |
+| `elo_history.dart` | `elo_history` | Append-only ledger; `delta` is a PostgreSQL generated column |
 | `notification_item.dart` | `notifications` | `referenceType` enables polymorphic deep-link routing on tap |
+| `bracket_match.dart` | `tournament_bracket_matches` | Slot in a single-elimination bracket (round + position) |
 
 ---
 
 ### 4.5 Providers
 
-#### `lib/providers/auth_provider.dart`
-
-**`authStateProvider`** — a `StreamProvider` wrapping Supabase's `onAuthStateChange` stream. Emits `Session?`; null = logged out. The go_router watches this to trigger redirects automatically.
-
-**`currentProfileProvider`** — a `FutureProvider` that fetches the authenticated user's `profiles` row from Supabase. Uses an explicit `.select()` column list (never `SELECT *`) per PRD §6.2.3 to reduce payload and prevent accidental PII leakage.
+| File | Pattern | Purpose |
+|---|---|---|
+| `auth_provider.dart` | `ChangeNotifier` + `@riverpod FutureProvider` | Session stream, `AuthStatus`, `currentProfileProvider`. Uses `ChangeNotifier` (not `@riverpod`) because it is passed as `refreshListenable` to `GoRouter`. |
+| `profile_provider.dart` | `@riverpod AsyncNotifier` | Own/other profile load, edit, avatar upload/delete |
+| `leaderboard_provider.dart` | `@riverpod FutureProvider` | Paginated global rankings; `nearbyPlayersProvider` (location-filtered) |
+| `tournament_provider.dart` | `@riverpod FutureProvider` + `AsyncNotifier` | Tournament list/detail, `nearbyTournamentsProvider`, registrations, bracket |
+| `match_provider.dart` | `@riverpod AsyncNotifier` | Match submission, confirmation, `friendlyEloExcludedProvider` (tier-gap preview) |
+| `location_provider.dart` | `@riverpod AsyncNotifier` | `LocationPrefs` (consent + radius), `LocationActions` (GDPR consent flow) |
+| `organizer_request_provider.dart` | `@riverpod FutureProvider` + `AsyncNotifier` | Organiser request submit + admin approve/deny |
+| `questionnaire_provider.dart` | `@riverpod AsyncNotifier` | Questionnaire submit → calls `seed-elo` Edge Function |
+| `schedule_match_provider.dart` | `@riverpod FutureProvider` | `searchOpponentsProvider` — debounced 300 ms player search |
+| `locale_provider.dart` | `@riverpod StateNotifier` | Language switching, persisted to `profiles.preferred_language` |
+| `notification_panel_provider.dart` | `@riverpod StreamProvider` + `AsyncNotifier` | Real-time notification stream + mark-as-read |
 
 ---
 
 ### 4.6 Widgets
 
-#### `lib/widgets/bottom_nav_shell.dart`
-MD3 `NavigationBar` with 4 destinations matching PRD §7.3.1. The active destination is derived from `GoRouterState.of(context).matchedLocation` using `startsWith` so that nested routes (e.g. a tournament detail page) keep the Tournaments tab highlighted. Tapping a destination calls `context.go()` rather than `context.push()` to avoid stacking the same tab multiple times.
-
-#### `lib/widgets/tier_badge.dart`
-Renders the pill-shaped tier badge with the correct fill/text colour for all 6 tiers from `AppColors`. Uses `Semantics(label: '${tier.label} tier')` for screen reader support per PRD §6.1 Accessibility. The `small` flag supports compact display on leaderboard rows.
-
-#### `lib/widgets/elo_score_card.dart`
-Dashboard ELO card (PRD §7.4 SCR-04 wireframe). Displays the ELO number in Barlow Condensed 72pt, the tier badge below it, and a three-stat row (Played / Won / Win%). Tapping the card navigates to the player's own profile (SCR-06) — **wiring not yet implemented**.
+| File | Purpose |
+|---|---|
+| `bottom_nav_shell.dart` | MD3 `NavigationBar` (4 destinations: Home, Leaderboard, Matches, Tournaments). Active tab derived from `matchedLocation.startsWith` so nested routes keep the correct tab highlighted. Uses `context.go()` not `context.push()` to avoid tab stacking. |
+| `tier_badge.dart` | Pill-shaped tier badge with correct fill/text colour for all 11 tiers. `Semantics(label: '${tier.label} tier')` for screen readers. `small` flag for compact leaderboard rows. |
+| `elo_score_card.dart` | Dashboard ELO card: Barlow Condensed 72 pt rating, tier badge below it, three-stat row (Played / Won / Win%). |
+| `app_bar_actions.dart` | Row of icon buttons: settings cog, notification bell (with unread badge), profile avatar. |
+| `notification_panel.dart` | Popup overlay listing recent notifications. Streams from `notificationPanelProvider`; marks items as read on open. |
+| `tournament_bracket_viewer.dart` | Horizontally scrollable single-elimination bracket. Renders rounds as columns, matches as cards. |
+| `pending_badge.dart` | `CountChip` (filled circle with count) and `TabWithBadge` (tab label with inline badge) used throughout the app to show pending-action counts. |
 
 ---
 
 ### 4.7 Screens
 
-All screens are fully implemented stubs: they compile, route correctly, and display a placeholder. Implementation details are tracked in [TODO.md](TODO.md).
-
-| Screen | File | PRD ID | Auth | Notes |
+| Screen | File | PRD | Auth | Status |
 |---|---|---|---|---|
-| Onboarding | `onboarding/onboarding_screen.dart` | SCR-01 | No | 3-slide PageView with animated indicator dots. CTA on last slide goes to `/login`. |
-| Login / Register | `auth/login_screen.dart` | SCR-02 | No | Tabbed — Login + Register. Google and Apple Sign-In button stubs present. GDPR consent checkbox stub in Register tab. |
-| Questionnaire | `questionnaire/questionnaire_screen.dart` | SCR-03 | Yes | One-time screen; router blocks access once `questionnaire_done = true`. |
-| Home / Dashboard | `home/home_screen.dart` | SCR-04 | Yes | `EloScoreCard` wired to live `currentProfileProvider`. Two FABs: Submit Match and Schedule Match. |
-| Leaderboard | `leaderboard/leaderboard_screen.dart` | SCR-05 | Yes | Stub — needs paginated Supabase query. |
-| Player Profile | `profile/profile_screen.dart` | SCR-06 | Yes | `playerId` param: null = own, non-null = other. Edit button conditional on ownership. |
-| Submit Match | `match/submit_match_screen.dart` | SCR-07 | Yes | Stub — needs score entry form with set validation. |
-| Match Inbox | `match/match_inbox_screen.dart` | SCR-08 | Yes | Stub — pending results + requests combined. |
-| Schedule Match | `match/schedule_match_screen.dart` | SCR-09 | Yes | Stub — needs ±150 ELO player browse list. |
-| Tournaments List | `tournament/tournaments_list_screen.dart` | SCR-10 | Yes | Stub — Open/Registered/Past filter tabs. |
-| Tournament Detail | `tournament/tournament_detail_screen.dart` | SCR-11 | Yes | Stub — bracket viewer (single-elim tree or round-robin grid). |
-| Organizer Dashboard | `organizer/organizer_dashboard_screen.dart` | SCR-12 | Yes (Organizer+) | Role-gated — not in bottom nav. |
-| Settings | `settings/settings_screen.dart` | SCR-13 | Yes | Language toggle EN/EL, notification prefs, account deletion. |
-| Dispute Resolution | `admin/dispute_resolution_screen.dart` | SCR-14 | Yes (Admin) | Accessible via `/admin/disputes` deep link only. |
+| Splash | `splash/splash_screen.dart` | — | No | Implemented |
+| Onboarding | `onboarding/onboarding_screen.dart` | SCR-01 | No | Implemented |
+| Login / Register | `auth/login_screen.dart` | SCR-02 | No | Email + Google + Apple wired |
+| Questionnaire | `questionnaire/questionnaire_screen.dart` | SCR-03 | Yes | Dialog; seed-ELO call wired |
+| Home / Dashboard | `home/home_screen.dart` | SCR-04 | Yes | EloScoreCard + recent matches |
+| Leaderboard | `leaderboard/leaderboard_screen.dart` | SCR-05 | Yes | Paginated query + Near Me filter |
+| Player Profile | `profile/profile_screen.dart` | SCR-06 | Yes | Avatar upload, extended stats, tier progress bar |
+| Submit Match | `match/submit_match_screen.dart` | SCR-07 | Yes | Score entry + validation wired |
+| Match Inbox | `match/match_inbox_screen.dart` | SCR-08 | Yes | Confirm / dispute / request tabs wired |
+| Schedule Match | `match/schedule_match_screen.dart` | SCR-09 | Yes | Debounced opponent search wired |
+| Tournaments List | `tournament/tournaments_list_screen.dart` | SCR-10 | Yes | Open / Registered / Past / Near Me tabs |
+| Tournament Detail | `tournament/tournament_detail_screen.dart` | SCR-11 | Yes | Info / Participants / Bracket tabs; bracket viewer wired |
+| Organiser Dashboard | `organizer/organizer_dashboard_screen.dart` | SCR-12 | Organiser+ | Per-tournament management screen |
+| Organiser Tournament | `organizer/organizer_tournament_detail_screen.dart` | SCR-12b | Organiser+ | Per-tournament detail and controls |
+| Settings | `settings/settings_screen.dart` | SCR-13 | Yes | Language, location consent, account |
+| Admin Panel | `admin/dispute_resolution_screen.dart` | SCR-14 | Admin | Dispute resolution + organiser request review |
+
+---
+
+### 4.8 Services
+
+#### `lib/services/notification_service.dart`
+Singleton (`NotificationService.instance`) wrapping all OneSignal interactions:
+- **`init()`** — registers foreground display listener (shows push as in-app banner) and tap click listener
+- **`identifyUser(supabaseUserId)`** — calls `OneSignal.login(uid)` to link the device to the authenticated user
+- **`clearUser()`** — calls `OneSignal.logout()` on sign-out so the device is no longer targeted
+- **`resolveRoute(referenceType, referenceId)`** — maps a notification payload pair to a go_router path; also used by the in-app `notification_panel.dart` on tile tap
+
+See [NOTIFICATIONS.md](NOTIFICATIONS.md) for the full routing table and delivery pipeline.
 
 ---
 
 ## 5. supabase/ — Database & Backend
 
-Migrations are applied in order via `supabase db push`. Each file is idempotent-safe for additive changes.
+See [DATABASE.md](DATABASE.md) for the full schema, 21-migration log, triggers, helper functions, and RLS policies.
 
-### 5.1 Migration 001 — Initial Schema
+**Edge Functions (Deno):**
 
-Creates all 8 tables from PRD §8.1 in dependency order (clubs → profiles → questionnaire_responses → elo_history → match_results → match_requests → tournaments → tournament_registrations → notifications). Deferred FK additions (`ALTER TABLE ... ADD CONSTRAINT`) are used where two tables reference each other (e.g. `elo_history` ↔ `match_results`, `match_results` ↔ `tournaments`).
-
-Key design decisions:
-- **UUID PKs everywhere** — prevents ID enumeration attacks; supports future federation (PRD §6.2.1)
-- `elo_history.delta` — `GENERATED ALWAYS AS (elo_after - elo_before) STORED` so it can never disagree with the two component values
-- `match_requests.expires_at` — `GENERATED ALWAYS AS (created_at + interval '72 hours') STORED` so expiry is computed once at insert and never needs updating
-- `profiles.elo_tier` stored as denormalised column (not a view) to make leaderboard queries O(1) per row
-
-### 5.2 Migration 002 — Indexes
-
-11 indexes covering every query pattern identified in PRD §8.3. All are **mandatory from migration v1** — omitting any causes full-table scans on the most frequent operations. Partial indexes (e.g. `WHERE status = 'pending'`) are used on the cron-job filter columns to keep the index small.
-
-### 5.3 Migration 003 — RLS Policies
-
-Implements the permission matrix from PRD §5.5. Two PostgreSQL helper functions (`current_user_role()`, `is_admin()`, `is_organizer_or_admin()`) are declared `SECURITY DEFINER` so they read from the `profiles` table with the function owner's privileges, not the caller's. This prevents privilege escalation via RLS bypass.
-
-Key policy patterns:
-- **profiles** — public profiles readable by all authenticated users; own profile always readable; only admins can change `role`
-- **elo_history** — only the service role (Edge Functions) can insert; players can read their own
-- **notifications** — only the service role can insert; players can only read/update their own
-
-### 5.4 Migration 004 — Triggers
-
-Four trigger types:
-
-1. **`set_updated_at()`** — applied to `profiles`, `match_results`, `match_requests`, `tournaments`. Ensures `updated_at` is always server-set.
-2. **`handle_new_user()`** — fires `AFTER INSERT ON auth.users`. Creates the corresponding `profiles` row automatically using `display_name` from OAuth metadata or the email prefix as fallback. This means the app never has to call a separate "create profile" endpoint after sign-up.
-3. **`sync_elo_tier()`** — fires `BEFORE INSERT OR UPDATE OF elo_rating ON profiles`. Keeps `elo_tier` in sync with `elo_rating` using the tier boundary logic from PRD §7.2.3. This trigger runs synchronously in the same transaction as the ELO update.
-
-### 5.5 Migration 005 — Edge Function Stubs
-
-Documents the five Edge Functions that must be deployed separately. This SQL file does not create functions — it serves as in-database documentation via `COMMENT ON TABLE` and SQL block comments describing each function's trigger, action, and idempotency contract.
-
-| Function | Trigger | Key constraint |
+| Function | Trigger | Purpose |
 |---|---|---|
-| `elo-recalculate` | DB Webhook on `match_results.status → confirmed/overridden` | Idempotent (guard on existing elo_history for same match_id); serializable transaction with `SELECT FOR UPDATE` |
-| `match-auto-confirm` | Cron every hour | Only touches `status = 'pending'` rows older than 48h |
-| `request-expiry` | Cron every hour | Only touches `status = 'pending'` requests past `expires_at` |
-| `seed-elo` | HTTP POST after questionnaire insert | **Formula TBD — Q-02** |
-| `elo-decay` | Cron daily 02:00 UTC | **Disabled by default — Q-10** |
+| `elo-recalculate` | HTTP POST from Flutter (match confirm button) | Validates caller is non-submitter; sets match `confirmed`; calls `apply_elo_changes` RPC |
+| `send-notification` | DB webhook on `notifications INSERT` | Looks up recipient, POSTs to OneSignal REST API |
+| `send-email` | DB webhook on `organizer_requests` change | Sends transactional email via Resend |
+| `notify-nearby-tournament` | Called when tournament `registration_open` → true | Queries `nearby_tournament_notify_targets()`, sends push to each matched player |
+| `anonymise-account` | HTTP POST from Flutter (account deletion) | GDPR Art. 17 — NULLs PII and location data, soft-deletes profile |
+| `seed-elo` | HTTP POST from Flutter (questionnaire submit) | Computes initial ELO from sport-history questionnaire, updates profile |
+
+See [ELO_SYSTEM.md](ELO_SYSTEM.md) for the full rating algorithm.
 
 ---
 
@@ -303,36 +329,38 @@ Documents the five Edge Functions that must be deployed separately. This SQL fil
 ```
 Flutter App
 │
-├── Supabase.instance.client  ←─ initialized in main.dart with env vars
-│   ├── .auth            auth state stream → authStateProvider
-│   ├── .from('profiles').select(...)  → currentProfileProvider
-│   └── .from('match_results')...     → (screen-level providers, TBD)
+├── Supabase.instance.client  ←── initialised in main.dart with env vars
+│   ├── .auth.onAuthStateChange  →  authProvider (ChangeNotifier)
+│   ├── .from('profiles')        →  currentProfileProvider, profileProvider
+│   ├── .from('notifications')   →  notificationPanelProvider (realtime stream)
+│   └── .rpc() / .from(...)      →  match, tournament, leaderboard providers
 │
 ├── go_router (appRouterProvider)
-│   └── watches authStateProvider + currentProfileProvider
-│       → auto-redirects on login/logout/questionnaire state change
+│   └── refreshListenable: authProvider
+│       → auto-redirects on sign-in / sign-out
 │
-├── Firebase.instance
-│   └── firebase_messaging → FCM device token → stored in profiles
-│       (token registration TBD in FCM setup task)
+├── NotificationService (OneSignal)
+│   ├── identifyUser(uid)              → links device to Supabase user
+│   ├── foregroundWillDisplayListener  → shows in-app banner
+│   └── clickListener                  → resolveRoute() → router.push(path)
 │
 └── Sentry
-    └── wraps runApp → captures all unhandled exceptions + performance traces
+    └── wraps runApp → captures unhandled exceptions + performance traces
 
 Supabase (cloud)
 │
 ├── PostgreSQL
-│   ├── Tables (migration 001)
-│   ├── Indexes (migration 002)
-│   ├── RLS (migration 003)
-│   └── Triggers (migration 004)
+│   ├── 21 migrations (schema, indexes, RLS, triggers, functions)
+│   ├── pg_cron jobs (match-auto-confirm, request-expiry — hourly)
+│   └── DB webhooks → Edge Functions on table events
 │
 └── Edge Functions (Deno)
-    ├── elo-recalculate    ← triggered by DB webhook on match confirm
-    ├── match-auto-confirm ← cron hourly
-    ├── request-expiry     ← cron hourly
-    ├── seed-elo           ← HTTP POST from questionnaire screen
-    └── elo-decay          ← cron daily (disabled)
+    ├── elo-recalculate          ← HTTP POST from Flutter on confirm
+    ├── send-notification        ← DB webhook on notifications INSERT
+    ├── send-email               ← DB webhook on organizer_requests change
+    ├── notify-nearby-tournament ← called on registration_open event
+    ├── anonymise-account        ← HTTP POST from Flutter on account delete
+    └── seed-elo                 ← HTTP POST from Flutter after questionnaire
 ```
 
 ---
@@ -344,26 +372,25 @@ Supabase (cloud)
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 
-# 2. Configure Firebase (FCM)
-dart pub global activate flutterfire_cli
-flutterfire configure
-# → replaces lib/firebase_options.dart with real values
-
-# 3. Set up local Supabase
-supabase init         # if not already done
+# 2. Set up local Supabase
 supabase start
-supabase db push      # applies migrations 001–005
+supabase db push      # applies all 21 migrations in order
 
-# 4. Create dev environment file
+# 3. Create dev environment file
 cp .env.example .env.dev
-# Edit .env.dev with real SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN
+# Edit .env.dev: SUPABASE_URL, SUPABASE_ANON_KEY, ONESIGNAL_APP_ID, SENTRY_DSN, GOOGLE_CLIENT_ID
 
-# 5. Run on Android
+# 4. Run on device / emulator
 flutter run --dart-define-from-file=.env.dev
 
-# 6. Deploy Edge Functions (when ready)
+# 5. Run on web (required for Google OAuth redirect to work)
+flutter run -d chrome --dart-define-from-file=.env.dev --web-port=3000
+
+# 6. Deploy Edge Functions
 supabase functions deploy elo-recalculate
-supabase functions deploy match-auto-confirm
-supabase functions deploy request-expiry
+supabase functions deploy send-notification
+supabase functions deploy send-email
+supabase functions deploy notify-nearby-tournament
+supabase functions deploy anonymise-account
 supabase functions deploy seed-elo
 ```

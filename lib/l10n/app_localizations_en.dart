@@ -190,65 +190,133 @@ class AppLocalizationsEn extends AppLocalizations {
   String get questionnaireGetMyRating => 'Get my rating';
 
   @override
-  String get questionnaireFrequencyTitle => 'How often do you play?';
+  String get questionnaireDobTitle => 'Please insert your date of birth';
 
   @override
-  String get questionnaireFrequencyRarely => 'Rarely';
+  String get questionnaireDobPlaceholder => 'Tap to select your date of birth';
 
   @override
-  String get questionnaireFrequencyMonthly => 'Monthly';
+  String get questionnaireYearsTitle =>
+      'How long have you been playing tennis?';
 
   @override
-  String get questionnaireFrequencyWeekly => 'Weekly';
+  String get questionnaireYearsHint => 'Number of years';
 
   @override
-  String get questionnaireFrequencyMultiple => 'Multiple times a week';
+  String get questionnaireYearsUnit => 'years';
 
   @override
-  String get questionnaireLevelTitle => 'How would you rate yourself?';
+  String get questionnaireGreekTitle =>
+      'Have you had any competitive experience in Greece?';
 
   @override
-  String get questionnaireLevelBeginner => 'Beginner';
+  String get questionnaireGreekRecreational => 'No, recreational only';
 
   @override
-  String get questionnaireLevelIntermediate => 'Intermediate';
+  String get questionnaireGreekRecreationalSub =>
+      'I have only played recreationally';
 
   @override
-  String get questionnaireLevelAdvanced => 'Advanced';
+  String get questionnaireGreekNationalU200 =>
+      'National junior – not ranked within top 200';
 
   @override
-  String get questionnaireLevelCompetitive => 'Competitive';
+  String get questionnaireGreekNationalU200Sub =>
+      'Competed in national-level tournaments, never ranked within the top 200';
 
   @override
-  String get questionnaireYearsTitle => 'How many years have you been playing?';
+  String get questionnaireGreekNational20200 =>
+      'National junior – ranked 20–200';
 
   @override
-  String get questionnaireSurfaceTitle => 'Preferred surface?';
+  String get questionnaireGreekNational20200Sub =>
+      'Ranked within 20–200 at U16 or U18';
 
   @override
-  String get questionnaireSurfaceClay => 'Clay';
+  String get questionnaireGreekNationalTop20 => 'National junior – top 20';
 
   @override
-  String get questionnaireSurfaceHard => 'Hard';
+  String get questionnaireGreekNationalTop20Sub =>
+      'Ranked within top 20 at U16 or U18';
 
   @override
-  String get questionnaireSurfaceGrass => 'Grass';
+  String get questionnaireIntlTitle =>
+      'Have you had any international competitive experience?';
 
   @override
-  String get questionnaireSurfaceIndoor => 'Indoor';
+  String get questionnaireIntlNone => 'No international experience';
 
   @override
-  String get questionnaireSurfaceNoPreference => 'No preference';
+  String get questionnaireIntlNoneSub => 'I have not played internationally';
 
   @override
-  String get questionnaireTournamentTitle =>
-      'Have you competed in official tournaments?';
+  String get questionnaireIntlRecreational => 'Recreational international';
 
   @override
-  String get questionnaireTournamentYes => 'Yes';
+  String get questionnaireIntlRecreationalSub =>
+      'ITF Masters, or other recreational international tournaments';
 
   @override
-  String get questionnaireTournamentNo => 'No';
+  String get questionnaireIntlJunior => 'Junior international';
+
+  @override
+  String get questionnaireIntlJuniorSub => 'Tennis Europe, ITF Juniors';
+
+  @override
+  String get questionnaireIntlCareerHighLabel => 'Career high ranking';
+
+  @override
+  String get questionnaireIntlCareerHighHint => 'e.g. 150';
+
+  @override
+  String get questionnaireIntlCareerHighHelper =>
+      'Enter your best ITF Junior ranking number';
+
+  @override
+  String get questionnaireIntlProfessional => 'Professional international';
+
+  @override
+  String get questionnaireIntlProfessionalSub =>
+      'ITF Futures, Challenger, ATP or WTA tournaments';
+
+  @override
+  String get questionnaireIntlAtpWtaQuestion =>
+      'Did you receive an ATP or WTA ranking point?';
+
+  @override
+  String get questionnaireIntlCollege => 'US College';
+
+  @override
+  String get questionnaireIntlCollegeSub =>
+      'Competed on a US college tennis team';
+
+  @override
+  String get questionnaireIntlCollegeDivision =>
+      'Which division did your college compete in?';
+
+  @override
+  String get questionnaireOtherSportTitle =>
+      'Have you ever played another sport at a competitive level?';
+
+  @override
+  String get questionnaireOtherSportRacket => 'Racket sports';
+
+  @override
+  String get questionnaireOtherSportRacketSub =>
+      'Squash, badminton, table tennis, padel or pickleball';
+
+  @override
+  String get questionnaireOtherSportOther => 'Other sports';
+
+  @override
+  String get questionnaireOtherSportOtherSub => 'Any other competitive sport';
+
+  @override
+  String get questionnaireOtherSportNone => 'No competitive sport';
+
+  @override
+  String get questionnaireOtherSportNoneSub =>
+      'I have not played any other sport competitively';
 
   @override
   String get homeTitle => 'RATED';
@@ -497,7 +565,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentsTitle => 'Tournaments';
 
   @override
-  String get tournamentsTabOpen => 'Open';
+  String get tournamentsTabOpen => 'Upcoming';
 
   @override
   String get tournamentsTabInProgress => 'In Progress';
@@ -576,7 +644,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organizerTitle => 'My Tournaments';
 
   @override
-  String get organizerTabOpen => 'Open';
+  String get organizerTabDraft => 'Drafts';
+
+  @override
+  String get organizerTabOpen => 'Upcoming';
 
   @override
   String get organizerTabInProgress => 'In Progress';

@@ -446,125 +446,227 @@ abstract class AppLocalizations {
   /// **'Get my rating'**
   String get questionnaireGetMyRating;
 
-  /// No description provided for @questionnaireFrequencyTitle.
+  /// No description provided for @questionnaireDobTitle.
   ///
   /// In en, this message translates to:
-  /// **'How often do you play?'**
-  String get questionnaireFrequencyTitle;
+  /// **'Please insert your date of birth'**
+  String get questionnaireDobTitle;
 
-  /// No description provided for @questionnaireFrequencyRarely.
+  /// No description provided for @questionnaireDobPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'Rarely'**
-  String get questionnaireFrequencyRarely;
-
-  /// No description provided for @questionnaireFrequencyMonthly.
-  ///
-  /// In en, this message translates to:
-  /// **'Monthly'**
-  String get questionnaireFrequencyMonthly;
-
-  /// No description provided for @questionnaireFrequencyWeekly.
-  ///
-  /// In en, this message translates to:
-  /// **'Weekly'**
-  String get questionnaireFrequencyWeekly;
-
-  /// No description provided for @questionnaireFrequencyMultiple.
-  ///
-  /// In en, this message translates to:
-  /// **'Multiple times a week'**
-  String get questionnaireFrequencyMultiple;
-
-  /// No description provided for @questionnaireLevelTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How would you rate yourself?'**
-  String get questionnaireLevelTitle;
-
-  /// No description provided for @questionnaireLevelBeginner.
-  ///
-  /// In en, this message translates to:
-  /// **'Beginner'**
-  String get questionnaireLevelBeginner;
-
-  /// No description provided for @questionnaireLevelIntermediate.
-  ///
-  /// In en, this message translates to:
-  /// **'Intermediate'**
-  String get questionnaireLevelIntermediate;
-
-  /// No description provided for @questionnaireLevelAdvanced.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get questionnaireLevelAdvanced;
-
-  /// No description provided for @questionnaireLevelCompetitive.
-  ///
-  /// In en, this message translates to:
-  /// **'Competitive'**
-  String get questionnaireLevelCompetitive;
+  /// **'Tap to select your date of birth'**
+  String get questionnaireDobPlaceholder;
 
   /// No description provided for @questionnaireYearsTitle.
   ///
   /// In en, this message translates to:
-  /// **'How many years have you been playing?'**
+  /// **'How long have you been playing tennis?'**
   String get questionnaireYearsTitle;
 
-  /// No description provided for @questionnaireSurfaceTitle.
+  /// No description provided for @questionnaireYearsHint.
   ///
   /// In en, this message translates to:
-  /// **'Preferred surface?'**
-  String get questionnaireSurfaceTitle;
+  /// **'Number of years'**
+  String get questionnaireYearsHint;
 
-  /// No description provided for @questionnaireSurfaceClay.
+  /// No description provided for @questionnaireYearsUnit.
   ///
   /// In en, this message translates to:
-  /// **'Clay'**
-  String get questionnaireSurfaceClay;
+  /// **'years'**
+  String get questionnaireYearsUnit;
 
-  /// No description provided for @questionnaireSurfaceHard.
+  /// No description provided for @questionnaireGreekTitle.
   ///
   /// In en, this message translates to:
-  /// **'Hard'**
-  String get questionnaireSurfaceHard;
+  /// **'Have you had any competitive experience in Greece?'**
+  String get questionnaireGreekTitle;
 
-  /// No description provided for @questionnaireSurfaceGrass.
+  /// No description provided for @questionnaireGreekRecreational.
   ///
   /// In en, this message translates to:
-  /// **'Grass'**
-  String get questionnaireSurfaceGrass;
+  /// **'No, recreational only'**
+  String get questionnaireGreekRecreational;
 
-  /// No description provided for @questionnaireSurfaceIndoor.
+  /// No description provided for @questionnaireGreekRecreationalSub.
   ///
   /// In en, this message translates to:
-  /// **'Indoor'**
-  String get questionnaireSurfaceIndoor;
+  /// **'I have only played recreationally'**
+  String get questionnaireGreekRecreationalSub;
 
-  /// No description provided for @questionnaireSurfaceNoPreference.
+  /// No description provided for @questionnaireGreekNationalU200.
   ///
   /// In en, this message translates to:
-  /// **'No preference'**
-  String get questionnaireSurfaceNoPreference;
+  /// **'National junior – not ranked within top 200'**
+  String get questionnaireGreekNationalU200;
 
-  /// No description provided for @questionnaireTournamentTitle.
+  /// No description provided for @questionnaireGreekNationalU200Sub.
   ///
   /// In en, this message translates to:
-  /// **'Have you competed in official tournaments?'**
-  String get questionnaireTournamentTitle;
+  /// **'Competed in national-level tournaments, never ranked within the top 200'**
+  String get questionnaireGreekNationalU200Sub;
 
-  /// No description provided for @questionnaireTournamentYes.
+  /// No description provided for @questionnaireGreekNational20200.
   ///
   /// In en, this message translates to:
-  /// **'Yes'**
-  String get questionnaireTournamentYes;
+  /// **'National junior – ranked 20–200'**
+  String get questionnaireGreekNational20200;
 
-  /// No description provided for @questionnaireTournamentNo.
+  /// No description provided for @questionnaireGreekNational20200Sub.
   ///
   /// In en, this message translates to:
-  /// **'No'**
-  String get questionnaireTournamentNo;
+  /// **'Ranked within 20–200 at U16 or U18'**
+  String get questionnaireGreekNational20200Sub;
+
+  /// No description provided for @questionnaireGreekNationalTop20.
+  ///
+  /// In en, this message translates to:
+  /// **'National junior – top 20'**
+  String get questionnaireGreekNationalTop20;
+
+  /// No description provided for @questionnaireGreekNationalTop20Sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranked within top 20 at U16 or U18'**
+  String get questionnaireGreekNationalTop20Sub;
+
+  /// No description provided for @questionnaireIntlTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you had any international competitive experience?'**
+  String get questionnaireIntlTitle;
+
+  /// No description provided for @questionnaireIntlNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No international experience'**
+  String get questionnaireIntlNone;
+
+  /// No description provided for @questionnaireIntlNoneSub.
+  ///
+  /// In en, this message translates to:
+  /// **'I have not played internationally'**
+  String get questionnaireIntlNoneSub;
+
+  /// No description provided for @questionnaireIntlRecreational.
+  ///
+  /// In en, this message translates to:
+  /// **'Recreational international'**
+  String get questionnaireIntlRecreational;
+
+  /// No description provided for @questionnaireIntlRecreationalSub.
+  ///
+  /// In en, this message translates to:
+  /// **'ITF Masters, or other recreational international tournaments'**
+  String get questionnaireIntlRecreationalSub;
+
+  /// No description provided for @questionnaireIntlJunior.
+  ///
+  /// In en, this message translates to:
+  /// **'Junior international'**
+  String get questionnaireIntlJunior;
+
+  /// No description provided for @questionnaireIntlJuniorSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tennis Europe, ITF Juniors'**
+  String get questionnaireIntlJuniorSub;
+
+  /// No description provided for @questionnaireIntlCareerHighLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Career high ranking'**
+  String get questionnaireIntlCareerHighLabel;
+
+  /// No description provided for @questionnaireIntlCareerHighHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 150'**
+  String get questionnaireIntlCareerHighHint;
+
+  /// No description provided for @questionnaireIntlCareerHighHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your best ITF Junior ranking number'**
+  String get questionnaireIntlCareerHighHelper;
+
+  /// No description provided for @questionnaireIntlProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional international'**
+  String get questionnaireIntlProfessional;
+
+  /// No description provided for @questionnaireIntlProfessionalSub.
+  ///
+  /// In en, this message translates to:
+  /// **'ITF Futures, Challenger, ATP or WTA tournaments'**
+  String get questionnaireIntlProfessionalSub;
+
+  /// No description provided for @questionnaireIntlAtpWtaQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you receive an ATP or WTA ranking point?'**
+  String get questionnaireIntlAtpWtaQuestion;
+
+  /// No description provided for @questionnaireIntlCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'US College'**
+  String get questionnaireIntlCollege;
+
+  /// No description provided for @questionnaireIntlCollegeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Competed on a US college tennis team'**
+  String get questionnaireIntlCollegeSub;
+
+  /// No description provided for @questionnaireIntlCollegeDivision.
+  ///
+  /// In en, this message translates to:
+  /// **'Which division did your college compete in?'**
+  String get questionnaireIntlCollegeDivision;
+
+  /// No description provided for @questionnaireOtherSportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you ever played another sport at a competitive level?'**
+  String get questionnaireOtherSportTitle;
+
+  /// No description provided for @questionnaireOtherSportRacket.
+  ///
+  /// In en, this message translates to:
+  /// **'Racket sports'**
+  String get questionnaireOtherSportRacket;
+
+  /// No description provided for @questionnaireOtherSportRacketSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Squash, badminton, table tennis, padel or pickleball'**
+  String get questionnaireOtherSportRacketSub;
+
+  /// No description provided for @questionnaireOtherSportOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other sports'**
+  String get questionnaireOtherSportOther;
+
+  /// No description provided for @questionnaireOtherSportOtherSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Any other competitive sport'**
+  String get questionnaireOtherSportOtherSub;
+
+  /// No description provided for @questionnaireOtherSportNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No competitive sport'**
+  String get questionnaireOtherSportNone;
+
+  /// No description provided for @questionnaireOtherSportNoneSub.
+  ///
+  /// In en, this message translates to:
+  /// **'I have not played any other sport competitively'**
+  String get questionnaireOtherSportNoneSub;
 
   /// No description provided for @homeTitle.
   ///
@@ -1013,7 +1115,7 @@ abstract class AppLocalizations {
   /// No description provided for @tournamentsTabOpen.
   ///
   /// In en, this message translates to:
-  /// **'Open'**
+  /// **'Upcoming'**
   String get tournamentsTabOpen;
 
   /// No description provided for @tournamentsTabInProgress.
@@ -1160,10 +1262,16 @@ abstract class AppLocalizations {
   /// **'My Tournaments'**
   String get organizerTitle;
 
+  /// No description provided for @organizerTabDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get organizerTabDraft;
+
   /// No description provided for @organizerTabOpen.
   ///
   /// In en, this message translates to:
-  /// **'Open'**
+  /// **'Upcoming'**
   String get organizerTabOpen;
 
   /// No description provided for @organizerTabInProgress.

@@ -9,27 +9,34 @@ class QuestionnaireActions extends _$QuestionnaireActions {
   AsyncValue<void> build() => const AsyncData(null);
 
   Future<void> submit({
-    required String playingFrequency,
-    required String selfAssessedLevel,
+    required DateTime dateOfBirth,
     required int yearsPlaying,
-    required String preferredSurface,
-    required bool hasCompeted,
+    required String greekExperience,
+    required String internationalExperience,
+    int? juniorCareerHighRanking,
+    bool? receivedAtpWtaPoint,
+    String? usCollegeDivision,
+    String? otherSport,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final response = await Supabase.instance.client.functions.invoke(
         'seed-elo',
         body: {
-          'playing_frequency': playingFrequency,
-          'self_assessed_level': selfAssessedLevel,
+          'date_of_birth': dateOfBirth.toIso8601String().substring(0, 10),
           'years_playing': yearsPlaying,
-          'preferred_surface': preferredSurface,
-          'has_competed': hasCompeted,
+          'greek_experience': greekExperience,
+          'international_experience': internationalExperience,
+          'junior_career_high_ranking': juniorCareerHighRanking,
+          'received_atp_wta_point': receivedAtpWtaPoint,
+          'us_college_division': usCollegeDivision,
+          'other_sport': otherSport,
         },
       );
       if (response.status != 200) {
         throw Exception(
-          (response.data as Map<String, dynamic>?)?['error'] ?? 'Failed to save questionnaire',
+          (response.data as Map<String, dynamic>?)?['error'] ??
+              'Failed to save questionnaire',
         );
       }
     });
