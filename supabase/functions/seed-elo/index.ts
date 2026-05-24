@@ -5,12 +5,7 @@
 // and sets questionnaire_done = true.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 // ── ELO seed algorithm ────────────────────────────────────────────────────────
 //
@@ -124,7 +119,7 @@ function computeSeedElo(params: {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -151,8 +146,39 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Missing required questionnaire fields" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders(req), "Content-Type": "application/json" },
         },
+      );
+    }
+
+    // Age bounds — minimum 16 to participate, maximum 90 to reject nonsensical dates
+    const age = ageFromDob(dateOfBirth);
+    if (age < 16 || age > 90) {
+      return new Response(
+        JSON.stringify({ error: "You must be at least 16 years old to participate" }),
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
+      );
+    }
+
+    // Conditional sub-field validation
+    if (internationalExperience === "junior_intl" &&
+        (juniorCareerHighRanking == null || Number(juniorCareerHighRanking) <= 0)) {
+      return new Response(
+        JSON.stringify({ error: "junior_career_high_ranking required for junior_intl" }),
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
+      );
+    }
+    if (internationalExperience === "professional_adult" && receivedAtpWtaPoint == null) {
+      return new Response(
+        JSON.stringify({ error: "received_atp_wta_point required for professional_adult" }),
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
+      );
+    }
+    if (internationalExperience === "us_college" &&
+        (!usCollegeDivision || typeof usCollegeDivision !== "string")) {
+      return new Response(
+        JSON.stringify({ error: "us_college_division required for us_college" }),
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -165,7 +191,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -177,7 +203,7 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -221,7 +247,7 @@ Deno.serve(async (req) => {
       console.error("questionnaire_responses upsert error:", insertError);
       return new Response(JSON.stringify({ error: insertError.message }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -235,13 +261,13 @@ Deno.serve(async (req) => {
       console.error("profiles update error:", profileError);
       return new Response(JSON.stringify({ error: profileError.message }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ seed_elo: seedElo }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("seed-elo error:", err);
@@ -249,7 +275,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }

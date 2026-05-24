@@ -16,12 +16,7 @@
 //   HTTP method: POST
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "RATED <noreply@rated.app>";
@@ -36,7 +31,7 @@ const EMAIL_TYPES = new Set([
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -52,14 +47,14 @@ Deno.serve(async (req) => {
     if (!EMAIL_TYPES.has(notificationType)) {
       return new Response(
         JSON.stringify({ skipped: true, reason: "type not in email list" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     if (!recipientId) {
       return new Response(
         JSON.stringify({ error: "recipient_id missing" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -67,7 +62,7 @@ Deno.serve(async (req) => {
       console.warn("RESEND_API_KEY not set — skipping email delivery");
       return new Response(
         JSON.stringify({ skipped: true, reason: "RESEND_API_KEY not configured" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -84,7 +79,7 @@ Deno.serve(async (req) => {
       console.error("Could not fetch recipient email:", userError);
       return new Response(
         JSON.stringify({ error: "Recipient email not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -111,19 +106,19 @@ Deno.serve(async (req) => {
       console.error("Resend error:", resendBody);
       return new Response(
         JSON.stringify({ error: "Email delivery failed", detail: resendBody }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 502, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true, resend_id: resendBody.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("send-email error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

@@ -168,6 +168,17 @@ class ProfileEditActions extends _$ProfileEditActions {
     if (result.hasError) throw result.error!;
   }
 
+  Future<void> updateCourtTheme(String playerId, String themeKey) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(() async {
+      await _db
+          .from('profiles')
+          .update({'court_theme': themeKey})
+          .eq('id', playerId);
+    });
+    if (ref.mounted) state = result;
+  }
+
   Future<void> softDelete(String playerId) async {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {

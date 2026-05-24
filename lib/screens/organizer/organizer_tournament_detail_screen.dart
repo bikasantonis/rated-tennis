@@ -5,6 +5,7 @@ import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/tournament_bracket_viewer.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-13 — Per-tournament management screen for organisers.
 ///
@@ -30,7 +31,7 @@ class OrganizerTournamentDetailScreen extends ConsumerWidget {
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(title: Text(l.organizerManageTournament)),
-        body: Center(child: Text('Error: $e')),
+        body: const ErrorStateWidget(),
       ),
       data: (detail) {
         if (detail == null) {
@@ -128,7 +129,7 @@ class _RegistrationsTab extends ConsumerWidget {
 
     return regsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (regs) {
         if (regs.isEmpty) {
           return Center(

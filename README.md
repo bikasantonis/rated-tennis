@@ -42,13 +42,14 @@ flutter run -d chrome --dart-define-from-file=.env.dev --web-port=3000
 
 | Feature | Description |
 |---|---|
-| ELO rankings | 5.0–10.0 scale with tier bands (Beginner → Elite). Multiplier tournaments up to 2×. |
-| Match flow | Submit → confirm (or dispute) → auto ELO recalculation via Edge Function. |
+| ELO rankings | 5.0–10.0 scale with 11 numeric tier bands. Tier progress bar + ELO sparkline on the home card. |
+| Match flow | Submit → confirm (or dispute) → auto ELO recalculation via Edge Function. Win-streak badge and confetti celebration on confirmed wins. |
 | Tournaments | Single-elimination & round-robin, bracket generation, organiser management screen. |
 | Nearby discovery | Opt-in location features: nearby tournaments tab, nearby players leaderboard filter. |
 | Push notifications | OneSignal; match results, requests, nearby tournament openings, organiser events. |
 | GDPR | Explicit consent UI, ~1 km location precision, right to withdraw, right to erasure (Art. 17). |
 | i18n | English + Greek. |
+| Design system | Grand Slam colour palette per nav section (AO / RG / Wimbledon / USO, calendar order). Navy hero colour. IBM Plex Sans body font. Adaptive light + dark themes. |
 
 ---
 

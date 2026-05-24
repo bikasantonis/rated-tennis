@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:rated/models/court_theme.dart';
 import 'package:rated/models/profile.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/locale_provider.dart';
@@ -9,6 +10,9 @@ import 'package:rated/providers/location_provider.dart';
 import 'package:rated/providers/organizer_request_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/utils/legal_urls.dart';
+import 'package:rated/widgets/court_painter.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-13 — Settings: language, organiser request, account management.
 class SettingsScreen extends ConsumerWidget {
@@ -23,7 +27,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l.settingsTitle)),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => const ErrorStateWidget(),
         data: (profile) => ListView(
           children: [
             // ── Language ────────────────────────────────────────────────
@@ -32,6 +36,15 @@ class SettingsScreen extends ConsumerWidget {
               current: profile?.preferredLanguage ?? 'en',
               playerId: profile?.id,
               ref: ref,
+            ),
+
+            const Divider(),
+
+            // ── Appearance ──────────────────────────────────────────────
+            _SectionHeader(title: l.settingsSectionAppearance),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _CourtThemePicker(profile: profile, ref: ref),
             ),
 
             const Divider(),
@@ -45,6 +58,23 @@ class SettingsScreen extends ConsumerWidget {
             // ── Organiser ───────────────────────────────────────────────
             _SectionHeader(title: l.settingsOrganizerSection),
             _OrganizerTile(profile: profile),
+
+            const Divider(),
+
+            // ── Legal ───────────────────────────────────────────────────
+            _SectionHeader(title: l.settingsSectionLegal),
+            ListTile(
+              leading: const Icon(Icons.policy_outlined, color: AppColors.primary),
+              title: const Text('Privacy Policy'),
+              trailing: const Icon(Icons.open_in_new, size: 16),
+              onTap: () => LegalUrls.open(LegalUrls.privacyPolicy),
+            ),
+            ListTile(
+              leading: const Icon(Icons.gavel_outlined, color: AppColors.primary),
+              title: Text(l.settingsTermsOfUse),
+              trailing: const Icon(Icons.open_in_new, size: 16),
+              onTap: () => LegalUrls.open(LegalUrls.termsOfUse),
+            ),
 
             const Divider(),
 
@@ -224,7 +254,7 @@ class _OrganizerTile extends ConsumerWidget {
       ),
       error: (e, _) => ListTile(
         leading: const Icon(Icons.error_outline, color: AppColors.error),
-        title: Text('Error: $e'),
+        title: Text(l.errorGeneric),
       ),
       data: (request) {
         final status = request?['status'] as String?;
@@ -337,7 +367,7 @@ class _LocationSection extends ConsumerWidget {
       ),
       error: (e, _) => ListTile(
         leading: const Icon(Icons.error_outline, color: AppColors.error),
-        title: Text('Error: $e'),
+        title: Text(l.errorGeneric),
       ),
       data: (prefs) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,6 +568,95 @@ class _LocationConsentSheet extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Court theme picker ────────────────────────────────────────────────────────
+
+class _CourtThemePicker extends StatelessWidget {
+  const _CourtThemePicker({required this.profile, required this.ref});
+  final Profile? profile;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final currentKey = profile?.courtTheme ?? 'roland_garros';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text(
+            l.settingsCourtTheme,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: CourtTheme.all.length,
+            separatorBuilder: (context, i) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final theme = CourtTheme.all[i];
+              final selected = theme.dbKey == currentKey;
+              return GestureDetector(
+                onTap: profile == null
+                    ? null
+                    : () async {
+                        await ref
+                            .read(profileEditActionsProvider.notifier)
+                            .updateCourtTheme(profile!.id, theme.dbKey);
+                        ref.invalidate(currentProfileProvider);
+                      },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          width: 2.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.5),
+                        child: CustomPaint(
+                          painter: CourtPainter(theme),
+                          size: const Size(80, 60),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: 80,
+                      child: Text(
+                        theme.displayName,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: selected ? AppColors.primary : null,
+                              fontWeight:
+                                  selected ? FontWeight.w600 : null,
+                            ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

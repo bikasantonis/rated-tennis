@@ -28,6 +28,7 @@
   "actionSendRequest": "Αποστολή πρόκλησης",
 
   "errorGeneric": "Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.",
+  "actionRetry": "Δοκιμάστε ξανά",
   "errorNotLoggedIn": "Δεν είστε συνδεδεμένος.",
   "errorProfileNotFound": "Το προφίλ δεν βρέθηκε.",
   "errorTournamentNotFound": "Το τουρνουά δεν βρέθηκε.",
@@ -323,6 +324,9 @@
   "organizerCountryLabel": "Κωδικός χώρας (π.χ. GR)",
   "organizerUseMyLocation": "Χρήση τοποθεσίας μου",
   "organizerLocationSet": "Τοποθεσία ορίστηκε",
+  "settingsSectionAppearance": "Εμφάνιση",
+  "settingsCourtTheme": "Θέμα Γηπέδου",
+
   "settingsSectionAccount": "Λογαριασμός",
   "settingsLanguageLabel": "Γλώσσα",
   "settingsChooseLanguage": "Επιλέξτε γλώσσα",
@@ -357,6 +361,21 @@
   "settingsChangePasswordSuccess": "Ο κωδικός ενημερώθηκε επιτυχώς.",
 
   "submitMatchEloExcludedBanner": "Μεγάλη διαφορά βαθμολογίας — αυτό το ματς δεν θα επηρεάσει τη βαθμολογία κανενός παίκτη.",
+
+  "homeChallenge": "Πρόκληση",
+  "profileChooseFromGallery": "Επιλογή από γκαλερί",
+  "profileTakePhoto": "Λήψη φωτογραφίας",
+  "profileRemovePhoto": "Αφαίρεση φωτογραφίας",
+  "profileStatRank": "Κατάταξη",
+  "profileStatPeak": "Κορυφή",
+  "profileStatLost": "Ήττες",
+  "profileStatStreak": "Σερί",
+  "profileSectionTournaments": "Τουρνουά",
+  "profileNoTournaments": "Δεν υπάρχουν τουρνουά ακόμα.",
+  "profileSectionPlayingProfile": "Προφίλ Παίκτη",
+  "profileStartQuestionnaire": "Έναρξη",
+  "settingsSectionLegal": "Νομικά",
+  "settingsTermsOfUse": "Όροι Χρήσης",
 
   "eloLabel": "Βαθμολογία {value}",
   "setLabel": "Σετ {number}",

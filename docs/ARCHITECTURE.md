@@ -59,8 +59,8 @@ rated/
 │   ├── router/
 │   │   └── app_router.dart                  go_router — all routes, redirect logic, transitions
 │   ├── theme/
-│   │   ├── app_colors.dart                  Design tokens: light/dark + 11 tier colours
-│   │   └── app_theme.dart                   MD3 ThemeData + Barlow Condensed / Inter typography
+│   │   ├── app_colors.dart                  Design tokens: light/dark surfaces, 11 tier colours, 4 Grand Slam palettes, slamAccent/slamSecondary helpers
+│   │   └── app_theme.dart                   MD3 ThemeData + Barlow Condensed / IBM Plex Sans typography
 │   ├── models/
 │   │   ├── profile.dart                     profiles table + EloTier enum (11 tiers)
 │   │   ├── match_result.dart                match_results table + SetScore
@@ -83,10 +83,15 @@ rated/
 │   │   └── notification_panel_provider.dart Real-time notification stream + mark-read
 │   ├── services/
 │   │   └── notification_service.dart        OneSignal wrapper — identify, clear, deep-link routing
+│   ├── utils/
+│   │   └── streak_utils.dart                computeWinStreak() — shared win/loss streak helper
 │   ├── widgets/
-│   │   ├── bottom_nav_shell.dart            MD3 NavigationBar (4 destinations)
+│   │   ├── bottom_nav_shell.dart            MD3 NavigationBar (4 destinations, per-tab slam accent)
 │   │   ├── tier_badge.dart                  Pill badge — colour + label for all 11 tiers
-│   │   ├── elo_score_card.dart              Dashboard ELO card (Barlow Condensed 72 pt)
+│   │   ├── elo_score_card.dart              Dashboard ELO card (Barlow Condensed 72 pt, sparkline, tier progress, streak badge)
+│   │   ├── elo_sparkline.dart               fl_chart line graph of last 10 ELO history points
+│   │   ├── tier_progress_bar.dart           LinearProgressIndicator from current tier to next
+│   │   ├── win_streak_badge.dart            Flame 🔥 streak pill (only shown for streak ≥ 2)
 │   │   ├── app_bar_actions.dart             Settings / notifications / profile action icons
 │   │   ├── notification_panel.dart          Popup notification list + real-time updates
 │   │   ├── tournament_bracket_viewer.dart   Horizontally scrollable single-elimination bracket
@@ -111,8 +116,8 @@ rated/
 │   └── gen/                                 flutter_gen generated assets
 ├── supabase/
 │   ├── config.toml                          Local dev stack config
-│   ├── migrations/                          21 SQL migrations (applied in order)
-│   └── functions/                           6 Deno Edge Functions
+│   ├── migrations/                          26 SQL migrations (applied in order)
+│   └── functions/                           6 Deno Edge Functions + _shared/cors.ts
 ├── assets/images/
 ├── docs/
 │   ├── ARCHITECTURE.md                      ← this file
@@ -140,8 +145,9 @@ Declares all Dart dependencies. Key groups:
 - **State** (`flutter_riverpod`, `riverpod_annotation`) — `@riverpod` code-gen providers
 - **Navigation** (`go_router`) — declarative URL routing with deep-link support
 - **Models** (`freezed_annotation`, `json_annotation`) — immutable, serialisable data classes
-- **Fonts** (`google_fonts`) — Barlow Condensed Bold (ELO numbers) + Inter (body)
-- **Charts** (`fl_chart`) — ELO sparkline on player profile
+- **Fonts** (`google_fonts`) — Barlow Condensed Bold (ELO numbers/headings) + IBM Plex Sans (body/labels)
+- **Charts** (`fl_chart`) — ELO sparkline on home card and player profile
+- **Celebration** (`confetti`) — match-win confetti burst on the home screen
 - **Location** (`geolocator`, `http`) — opt-in GDPR GPS + Nominatim reverse geocoding
 - **Images** (`image_picker`, `cached_network_image`) — avatar upload + CDN caching
 
@@ -217,7 +223,20 @@ Border-radius constants used app-wide:
 - `radiusPill = 999` — tier badges, chips
 - `radiusButton = 20` — MD3 button default
 
-Typography: **Barlow Condensed Bold** for `displayLarge–headlineMedium` (ELO numbers, ranking figures); **Inter** for all body/UI text.
+Typography: **Barlow Condensed Bold** for `displayLarge–headlineMedium` (ELO numbers, ranking figures); **IBM Plex Sans** for all body/UI text (replaced Inter in the UI redesign).
+
+**Grand Slam colour palette** — each bottom-nav section carries a slam-specific accent applied to active indicators, icons, buttons, and section headers. Order follows the tennis calendar:
+
+| Tab | Slam | Primary accent | Secondary accent |
+|---|---|---|---|
+| 0 — Home | Australian Open | `#006EA7` (hard-court blue) | `#F4C430` (gold) |
+| 1 — Leaderboard | Roland Garros | `#C8440F` (clay) | `#3D6B35` (olive) |
+| 2 — Matches | Wimbledon | `#006B3C` (grass green) | `#5B2D8E` (purple) |
+| 3 — Tournaments | US Open | `#002D72` (asphalt navy) | `#F7A800` (gold) |
+
+Use `AppColors.slamAccent(tabIndex)` / `AppColors.slamSecondary(tabIndex)` to resolve the correct colour.
+
+**Dark mode surfaces:** background `#0A0F1E`, card `#101829`, elevated surface `#141E30`.
 
 ---
 
@@ -259,9 +278,12 @@ All models use **Freezed** for immutability, `copyWith`, equality, and `fromJson
 
 | File | Purpose |
 |---|---|
-| `bottom_nav_shell.dart` | MD3 `NavigationBar` (4 destinations: Home, Leaderboard, Matches, Tournaments). Active tab derived from `matchedLocation.startsWith` so nested routes keep the correct tab highlighted. Uses `context.go()` not `context.push()` to avoid tab stacking. |
+| `bottom_nav_shell.dart` | MD3 `NavigationBar` (4 destinations: Home, Leaderboard, Matches, Tournaments). Active tab derived from `matchedLocation.startsWith` so nested routes keep the correct tab highlighted. Per-tab slam accent applied via `Theme` + `NavigationBarThemeData` wrapper. Uses `context.go()` not `context.push()` to avoid tab stacking. |
 | `tier_badge.dart` | Pill-shaped tier badge with correct fill/text colour for all 11 tiers. `Semantics(label: '${tier.label} tier')` for screen readers. `small` flag for compact leaderboard rows. |
-| `elo_score_card.dart` | Dashboard ELO card: Barlow Condensed 72 pt rating, tier badge below it, three-stat row (Played / Won / Win%). |
+| `elo_score_card.dart` | Dashboard ELO card (ConsumerWidget): Barlow Condensed 72 pt rating, win-streak badge, tier badge, stats row, ELO sparkline, tier progress bar. Accepts `accentColor` (slam colour) and `winStreak` parameters. |
+| `elo_sparkline.dart` | `fl_chart` `LineChart` rendering the last 10 ELO history points as a smooth area chart. Renders nothing when fewer than 2 data points are available. |
+| `tier_progress_bar.dart` | `LinearProgressIndicator` from the current tier threshold to the next, flanked by `TierBadge` widgets. Shows "Elite" at tier 10.0 with a full bar. |
+| `win_streak_badge.dart` | Flame 🔥 + count pill displayed when consecutive-win streak ≥ 2. Returns `SizedBox.shrink()` otherwise. |
 | `app_bar_actions.dart` | Row of icon buttons: settings cog, notification bell (with unread badge), profile avatar. |
 | `notification_panel.dart` | Popup overlay listing recent notifications. Streams from `notificationPanelProvider`; marks items as read on open. |
 | `tournament_bracket_viewer.dart` | Horizontally scrollable single-elimination bracket. Renders rounds as columns, matches as cards. |
@@ -307,7 +329,7 @@ See [NOTIFICATIONS.md](NOTIFICATIONS.md) for the full routing table and delivery
 
 ## 5. supabase/ — Database & Backend
 
-See [DATABASE.md](DATABASE.md) for the full schema, 21-migration log, triggers, helper functions, and RLS policies.
+See [DATABASE.md](DATABASE.md) for the full schema, 26-migration log, triggers, helper functions, and RLS policies.
 
 **Edge Functions (Deno):**
 
@@ -350,7 +372,7 @@ Flutter App
 Supabase (cloud)
 │
 ├── PostgreSQL
-│   ├── 21 migrations (schema, indexes, RLS, triggers, functions)
+│   ├── 26 migrations (schema, indexes, RLS, triggers, functions)
 │   ├── pg_cron jobs (match-auto-confirm, request-expiry — hourly)
 │   └── DB webhooks → Edge Functions on table events
 │
@@ -374,7 +396,7 @@ dart run build_runner build --delete-conflicting-outputs
 
 # 2. Set up local Supabase
 supabase start
-supabase db push      # applies all 21 migrations in order
+supabase db push      # applies all 26 migrations in order
 
 # 3. Create dev environment file
 cp .env.example .env.dev

@@ -21,7 +21,14 @@ class MatchInboxScreen extends ConsumerWidget {
     final requestsCount =
         ref.watch(pendingRequestsProvider).asData?.value.length ?? 0;
 
-    return DefaultTabController(
+    return Theme(
+      data: Theme.of(context).copyWith(
+        tabBarTheme: const TabBarThemeData(
+          indicatorColor: AppColors.wGreen,
+          labelColor: AppColors.wGreen,
+        ),
+      ),
+      child: DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
@@ -41,6 +48,7 @@ class MatchInboxScreen extends ConsumerWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -115,7 +123,7 @@ class _PendingResultCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.sports_tennis, size: 18, color: AppColors.primary),
+                const Icon(Icons.sports_tennis, size: 18, color: AppColors.wGreen),
                 const SizedBox(width: 8),
                 Text(
                   l.inboxWonDef(winnerName, loserName),
@@ -143,8 +151,8 @@ class _PendingResultCard extends StatelessWidget {
                     onPressed: () =>
                         _showDisputeDialog(context, match['id'] as String),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.tertiary,
-                      side: const BorderSide(color: AppColors.tertiary),
+                      foregroundColor: AppColors.wPurple,
+                      side: const BorderSide(color: AppColors.wPurple),
                     ),
                     child: Text(l.actionDispute),
                   ),
@@ -153,6 +161,9 @@ class _PendingResultCard extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: () => _confirm(context, match['id'] as String),
+                    style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.wGreen,
+                        foregroundColor: Colors.white),
                     child: Text(l.actionConfirm),
                   ),
                 ),
@@ -288,7 +299,9 @@ class _DisputeDialogState extends ConsumerState<_DisputeDialog> {
         ),
         FilledButton(
           onPressed: _submit,
-          style: FilledButton.styleFrom(backgroundColor: AppColors.tertiary),
+          style: FilledButton.styleFrom(
+              backgroundColor: AppColors.wPurple,
+              foregroundColor: Colors.white),
           child: Text(l.inboxDisputeSubmit),
         ),
       ],
@@ -380,7 +393,7 @@ class _RequestCard extends StatelessWidget {
             Row(
               children: [
                 const Icon(Icons.calendar_today,
-                    size: 14, color: AppColors.primary),
+                    size: 14, color: AppColors.wGreen),
                 const SizedBox(width: 6),
                 Text(l.inboxProposedDate(proposed),
                     style: Theme.of(context).textTheme.bodySmall),
@@ -390,7 +403,7 @@ class _RequestCard extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.place, size: 14, color: AppColors.primary),
+                  const Icon(Icons.place, size: 14, color: AppColors.wGreen),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(venue,
@@ -417,8 +430,8 @@ class _RequestCard extends StatelessWidget {
                     onPressed: () =>
                         _respond(context, request['id'] as String, false),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.tertiary,
-                      side: const BorderSide(color: AppColors.tertiary),
+                      foregroundColor: AppColors.wPurple,
+                      side: const BorderSide(color: AppColors.wPurple),
                     ),
                     child: Text(l.actionDecline),
                   ),
@@ -428,6 +441,9 @@ class _RequestCard extends StatelessWidget {
                   child: FilledButton(
                     onPressed: () =>
                         _respond(context, request['id'] as String, true),
+                    style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.wGreen,
+                        foregroundColor: Colors.white),
                     child: Text(l.actionAccept),
                   ),
                 ),

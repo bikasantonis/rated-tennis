@@ -9,6 +9,72 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 > Work in progress toward **Beta (end of Apr 2026)**.
 
+### Security
+
+- **GDPR Art. 17 — questionnaire data erasure** (`anonymise-account/index.ts`): Account deletion now hard-deletes the `questionnaire_responses` row (date of birth, career history) in addition to scrubbing the `profiles` row. Previously this PII was retained indefinitely.
+- **CORS hardened across all Edge Functions** (`supabase/functions/_shared/cors.ts`): Extracted a shared `corsHeaders(req)` helper that echoes the request origin only for whitelisted origins (`localhost:3000`, `localhost:8080`; production domain to be added pre-launch per `docs/DEPLOYMENT_CHECKLIST.md`). Unknown browser origins receive an empty `Access-Control-Allow-Origin` header. Replaces six copies of a wildcard `"*"` object.
+- **`seed-elo` age gate** (`seed-elo/index.ts`): Server now rejects `date_of_birth` values that produce an age outside [16, 90] with HTTP 400 and the message "You must be at least 16 years old to participate". Previously any date was accepted, producing garbage seed ELO values for nonsensical inputs.
+- **`seed-elo` sub-field validation** (`seed-elo/index.ts`): Three conditional fields are now validated server-side — `junior_career_high_ranking` (must be a positive integer when `international_experience = 'junior_intl'`), `received_atp_wta_point` (must not be null when `= 'professional_adult'`), `us_college_division` (must be a non-empty string when `= 'us_college'`). Previously missing sub-fields silently fell through to a lower ELO seed.
+- **Location consent DB constraint** (`supabase/migrations/025_location_consent_constraint.sql`): `CHECK (location_consent = true OR (home_lat IS NULL AND home_lng IS NULL AND home_city IS NULL))` added to `profiles`. Prevents location coordinates from being stored when consent is `false` regardless of how the row is written.
+- **Organizer match visibility scoped to own tournaments** (`supabase/migrations/026_rls_hardening.sql`): The `match_results_select` RLS policy now limits organizers to matches belonging to tournaments they own (via `EXISTS` subquery on `tournaments.organizer_id`). Previously `is_organizer_or_admin()` granted read access to every match in the system.
+- **Explicit deny policies on `questionnaire_responses`** (`supabase/migrations/026_rls_hardening.sql`): Added `questionnaire_no_delete` (`USING (false)`) and `questionnaire_no_update` (`USING (false)`) policies to make the immutability intent visible to future reviewers. Behaviour is unchanged; implicit denial is now explicit.
+
+### Fixed
+
+- **Duplicate migration 019 / Google avatar extraction lost** (`supabase/migrations/022_fix_handle_new_user_avatar.sql`): `019_google_avatar.sql` (untracked, never deployed) conflicted with `019_numeric_tiers.sql`; the numeric-tiers version silently won and dropped OAuth avatar extraction. Removed the conflicting file and created migration 022 as the definitive `handle_new_user` merge: robust `display_name` COALESCE with trim/null guard, `avatar_url` populated from `avatar_url` or `picture` OAuth metadata key, `elo_tier = '5.0'` default, correct `SET search_path = ''` and grants.
+- **`elo_history` full-table scan in idempotency check** (`supabase/migrations/023_elo_history_match_id_index.sql`): Added `CREATE INDEX IF NOT EXISTS idx_elo_history_match_id ON public.elo_history (match_id)` so the `apply_elo_changes` guard query (`EXISTS … WHERE match_id = p_match_id`) uses an index instead of a sequential scan.
+- **Duplicate push notifications from overlapping pg_cron** (`supabase/migrations/024_notifications_dedup_and_cron_guard.sql`): Added a partial unique index `idx_notifications_dedup ON notifications (recipient_id, reference_id, type) WHERE reference_id IS NOT NULL` and rewrote the `match-auto-confirm` cron body to use `ON CONFLICT … DO NOTHING` on notification inserts and a `WHERE status = 'pending'` guard on the `UPDATE` to prevent double-firing when consecutive cron runs overlap.
+
+### Added
+
+- **Court theme personalisation** (`lib/models/court_theme.dart`, `lib/widgets/court_painter.dart`, `lib/widgets/elo_score_card.dart`, `lib/providers/court_theme_provider.dart`, `supabase/migrations/027_court_theme.sql`): Players can now choose a grand-slam court surface as the background of their EloScoreCard. A `CustomPainter` draws a top-down landscape tennis court (outer band, inner surface, baselines, sidelines, net, service lines) using proportional geometry so it scales to any card size. Wimbledon includes 16 alternating grass stripes. All card text flips to white for contrast. Five courts available: Australian Open, Roland Garros (default), Wimbledon, US Open, Club Classic. Preference stored in `profiles.court_theme` (Supabase) and syncs across devices.
+- **Settings → Appearance section** (`lib/screens/settings/settings_screen.dart`): New section with a horizontal scrollable court-theme picker showing all five courts as mini `CustomPaint` previews (80×60 dp). Selected court is highlighted with a 2.5 dp primary-colour border. Tapping a court persists the choice to Supabase and refreshes the home card live.
+- **2 new ARB keys** (`app_en.arb` / `app_el.arb`): `settingsSectionAppearance`, `settingsCourtTheme`.
+
+- **`lib/widgets/error_state_widget.dart`**: Shared `ErrorStateWidget({onRetry})` widget — centred error icon, localised `l.errorGeneric` message, and an optional "Try again" `OutlinedButton`. Replaces all raw `Text('Error: $e')` error displays.
+- **`docs/DEPLOYMENT_CHECKLIST.md`**: Pre-launch task list covering `flutter analyze`, test suite, migration push, OneSignal E2E, CORS origin update, key rotation, GDPR verification, DB constraint checks, App Store build steps, and open design questions (Q-02, Q-03, Q-06, Q-10).
+- **`supabase/functions/_shared/cors.ts`**: Shared CORS helper (`corsHeaders(req)`) imported by all six Edge Functions. See Security section above.
+- **15 new ARB keys** (`app_en.arb` / `app_el.arb`): `actionRetry`, `homeChallenge`, `profileChooseFromGallery`, `profileTakePhoto`, `profileRemovePhoto`, `profileStatRank`, `profileStatPeak`, `profileStatLost`, `profileStatStreak`, `profileSectionTournaments`, `profileNoTournaments`, `profileSectionPlayingProfile`, `profileStartQuestionnaire`, `settingsSectionLegal`, `settingsTermsOfUse`.
+
+### Changed
+
+- **All raw error displays replaced** (9 screens): 20 instances of `Text('Error: $e')` / `Center(child: Text('Error: $e'))` replaced with `const ErrorStateWidget()` (or `Text(l.errorGeneric)` for inline `ListTile` titles). Affected screens: `home_screen.dart`, `leaderboard_screen.dart`, `profile_screen.dart`, `schedule_match_screen.dart`, `settings_screen.dart`, `dispute_resolution_screen.dart`, `organizer_tournament_detail_screen.dart`, `organizer_dashboard_screen.dart`, `tournament_detail_screen.dart`, `tournaments_list_screen.dart`.
+- **Hardcoded English strings localised** (4 screens): Replaced 14 literal strings with ARB keys in `home_screen.dart` (FAB label), `profile_screen.dart` (avatar bottom sheet, stats row, section headings, CTA), `settings_screen.dart` (Legal section header, Terms of Use tile), `leaderboard_screen.dart` (settings route path → `AppRoutes.settings`).
+
+### Added — Google Data Disclosure, Avatar Import & Legal Documents
+- **Google consent sheet** (`login_screen.dart`): A bottom sheet now appears before the Google OAuth flow on both Login and Register tabs, disclosing that RATED will receive the user's name, email, and profile photo. Mirrors the existing location consent pattern.
+- **Auto-import Google avatar** (`019_google_avatar.sql`): The `handle_new_user` DB trigger now populates `profiles.avatar_url` from Google OAuth metadata (`avatar_url` or `picture` key) on first sign-up. The field remains editable and is only set on INSERT (existing manual uploads are never overwritten).
+- **Tappable legal links in registration** (`login_screen.dart`): The GDPR consent checkbox text is now a `RichText` with tappable "Privacy Policy" and "Terms of Use" links that open the hosted documents in the device browser.
+- **Legal section in Settings** (`settings_screen.dart`): New "Legal" section above Account with ListTiles for Privacy Policy and Terms of Use, both opening the hosted documents externally.
+- **`lib/utils/legal_urls.dart`**: Central constants for the Privacy Policy and Terms of Use URLs, plus a `LegalUrls.open(url)` helper. Update the placeholder URLs once GitHub Pages is configured.
+- **`docs/privacy-policy.html`**: Full GDPR-compliant Privacy Policy covering Google OAuth data, location data, third-party services (Supabase, Sentry, OneSignal, Nominatim), data retention, and user rights (Arts. 15–22).
+- **`docs/terms.html`**: Terms of Use covering eligibility (16+), acceptable use, ELO integrity, match reporting rules, organiser responsibilities, beta disclaimer, and governing law (Greek/EU).
+- **`url_launcher ^6.3.0`** added to `pubspec.yaml` (was a transitive dependency, now declared directly).
+
+### Changed — UI/UX Redesign (Pro Max)
+- **Grand Slam colour system**: Each bottom-nav tab now carries its own slam-inspired accent palette, ordered by the tennis calendar. Home → Australian Open (AO blue `#006EA7` / gold `#F4C430`); Leaderboard → Roland Garros (clay `#C8440F` / olive `#3D6B35`); Matches → Wimbledon (grass green `#006B3C` / purple `#5B2D8E`); Tournaments → US Open (asphalt navy `#002D72` / gold `#F7A800`). The active tab indicator, selected icon, and section-level accents all reflect the current tab's slam palette.
+- **Dark mode surfaces**: Dark theme now uses deep-court surfaces — background `#0A0F1E`, card `#101829`, input `#141E30` — instead of Material default greys. Light theme background updated to `#F4F7FC` with explicit white cards.
+- **Typography**: Body and label text migrated from Inter to **IBM Plex Sans** (same weight stack). Barlow Condensed retained for all display/headline roles (ELO score, section headings).
+- **EloScoreCard gamification** (`elo_score_card.dart`): Card converted to `ConsumerWidget`; three new elements added below the stats row:
+  - *ELO sparkline* — a subtle `fl_chart` line graph of the last 10 match results, tinted with the tab's slam colour.
+  - *Tier progress bar* — shows progress from the current tier threshold toward the next tier with flanking `TierBadge` labels.
+  - *Win streak badge* — flame 🔥 + count displayed top-right of the ELO number when streak ≥ 2.
+- **Match-win celebration**: First visit to the Home screen after a confirmed win fires a short confetti burst (`confetti ^0.7.0`) in AO blue, AO yellow, and primary navy. Fires once per screen lifetime.
+- **Action-verb dialogs**: The "Skip" confirmation dialog on the questionnaire prompt now reads "Skip questionnaire" instead of "Yes, I'm sure".
+- **Leaderboard** (`leaderboard_screen.dart`): All primary-colour accents replaced with Roland Garros clay — filter chips, location icon, club filter icon, ELO rating text, and distance label.
+- **Match Inbox** (`match_inbox_screen.dart`): Tab indicator and label colour → Wimbledon green. Confirm / Accept buttons → Wimbledon green. Dispute / Decline buttons border/foreground → Wimbledon purple. Dispute dialog submit → Wimbledon purple. Calendar/place icons → Wimbledon green.
+- **Tournaments** (`tournaments_list_screen.dart`): Tab indicator → USO navy. Registration-open status pill → USO gold. In-progress status pill → USO navy. Calendar, format, and location icons → USO navy. Organizer FAB → USO navy.
+- **Streak utility extracted**: `_computeStreak` moved from `profile_screen.dart` to `lib/utils/streak_utils.dart` as the top-level `computeWinStreak()` function; both `HomeScreen` and `ProfileScreen` now share the same implementation.
+
+### Added
+- `lib/widgets/elo_sparkline.dart` — self-contained sparkline widget backed by `fl_chart`.
+- `lib/widgets/tier_progress_bar.dart` — progress bar from current ELO tier to next, reuses `TierBadge`.
+- `lib/widgets/win_streak_badge.dart` — flame streak pill; renders nothing for streaks < 2.
+- `lib/utils/streak_utils.dart` — shared `computeWinStreak()` utility.
+- `AppColors.slamAccent(tabIndex)` / `AppColors.slamSecondary(tabIndex)` — helper methods that return the correct slam colour for a given nav tab index.
+- Dark-mode surface constants: `AppColors.darkBg`, `AppColors.darkCard`, `AppColors.darkSurface`.
+- Light-mode explicit surface constants: `AppColors.lightBg`, `AppColors.lightCard`.
+
 ### Docs
 - **Documentation overhaul** (`docs/`): Rewrote `ARCHITECTURE.md` to reflect current state (21 migrations, 11 providers, 8 widgets, 6 Edge Functions, accurate screen statuses, no Firebase references). Added four new reference documents: `ELO_SYSTEM.md` (rating algorithm, tiers, seed formula, delta bounds, prestige), `DATABASE.md` (all tables, full migration log, triggers, helper functions, RLS, pg_cron), `NOTIFICATIONS.md` (delivery pipeline, all notification types, deep-link routing table, OneSignal config), `DECISIONS.md` (13 architecture decision records covering key technology and design choices).
 

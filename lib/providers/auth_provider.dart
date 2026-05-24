@@ -114,6 +114,7 @@ Future<Profile?> currentProfile(Ref ref) async {
         'questionnaire_done, peak_elo, '
         'location_consent, location_consent_at, home_city, home_lat, home_lng, '
         'notify_nearby_tournaments, nearby_radius_km, '
+        'court_theme, '
         'deleted_at, created_at, updated_at',
       )
       .eq('id', session.user.id)

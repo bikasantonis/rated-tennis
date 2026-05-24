@@ -37,6 +37,9 @@ dependencies:
   # Charts (ELO sparkline)
   fl_chart: ^1.2.0
 
+  # Celebration animation
+  confetti: ^0.7.0
+
   # Image caching
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -60,6 +63,9 @@ dependencies:
 
   # Image picker (avatar upload)
   image_picker: ^1.1.2
+
+  # Open legal documents in external browser
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

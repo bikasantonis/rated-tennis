@@ -124,6 +124,8 @@ abstract class Profile with _$Profile {
     double? homeLng,
     @Default(false) bool notifyNearbyTournaments,
     @Default(50) int nearbyRadiusKm,
+    // ── Personalisation ──────────────────────────────────────────────────────
+    @Default('roland_garros') String courtTheme,
     // ────────────────────────────────────────────────────────────────────────
     DateTime? deletedAt,
     required DateTime createdAt,

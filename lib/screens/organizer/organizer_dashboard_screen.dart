@@ -7,6 +7,7 @@ import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/pending_badge.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-12 — Organiser dashboard: tabbed list of own tournaments + create.
 class OrganizerDashboardScreen extends ConsumerWidget {
@@ -95,7 +96,7 @@ class _TournamentList extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (list) {
         if (list.isEmpty) {
           return Center(

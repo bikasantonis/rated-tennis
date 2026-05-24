@@ -7,6 +7,7 @@ import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/pending_badge.dart';
 import 'package:rated/widgets/tier_badge.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 import 'package:rated/models/profile.dart';
 
 /// SCR-14 — Admin panel: dispute resolution + organiser request management.
@@ -83,7 +84,7 @@ class _DisputesTab extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (matches) {
         if (matches.isEmpty) {
           return Center(
@@ -125,7 +126,7 @@ class _RequestsTab extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (requests) {
         if (requests.isEmpty) {
           return Center(

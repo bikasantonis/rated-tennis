@@ -1,0 +1,131 @@
+{
+  "global": {
+    "color": {
+      "light": {
+        "bg":              { "value": "#F4F7FC", "type": "color", "description": "Page background" },
+        "card":            { "value": "#FFFFFF",  "type": "color", "description": "Card surface" },
+        "surfaceVariant":  { "value": "#E3ECF5",  "type": "color", "description": "Input fill, chip background" },
+        "primary":         { "value": "#1B4F8A",  "type": "color", "description": "Elite navy — brand" },
+        "onPrimary":       { "value": "#FFFFFF",  "type": "color" },
+        "primaryContainer":{ "value": "#D6E4F7",  "type": "color" },
+        "secondary":       { "value": "#2D6A4F",  "type": "color", "description": "Forest green — ELO gain" },
+        "onSecondary":     { "value": "#FFFFFF",  "type": "color" },
+        "secondaryContainer":{ "value": "#D8F3DC","type": "color" },
+        "tertiary":        { "value": "#C1440E",  "type": "color", "description": "Clay — ELO loss" },
+        "tertiaryContainer":{ "value": "#FAE0D4", "type": "color" },
+        "outline":         { "value": "#8AAAC8",  "type": "color" },
+        "onSurface":       { "value": "#1A1A2E",  "type": "color" },
+        "error":           { "value": "#BA1A1A",  "type": "color" }
+      },
+      "dark": {
+        "bg":      { "value": "#0A0F1E", "type": "color" },
+        "card":    { "value": "#101829", "type": "color" },
+        "surface": { "value": "#141E30", "type": "color" },
+        "tertiary":{ "value": "#E8845C", "type": "color", "description": "Clay override for dark mode" }
+      },
+      "slam": {
+        "ao_blue":    { "value": "#006EA7", "type": "color", "description": "Tab 0 — Home accent" },
+        "ao_yellow":  { "value": "#F4C430", "type": "color", "description": "Tab 0 — Home foreground" },
+        "rg_clay":    { "value": "#C8440F", "type": "color", "description": "Tab 1 — Leaderboard accent" },
+        "rg_olive":   { "value": "#3D6B35", "type": "color", "description": "Tab 1 — Leaderboard secondary" },
+        "wim_green":  { "value": "#006B3C", "type": "color", "description": "Tab 2 — Matches accent" },
+        "wim_purple": { "value": "#5B2D8E", "type": "color", "description": "Tab 2 — Matches secondary" },
+        "uso_navy":   { "value": "#002D72", "type": "color", "description": "Tab 3 — Tournaments accent" },
+        "uso_gold":   { "value": "#F7A800", "type": "color", "description": "Tab 3 — Tournaments foreground" }
+      },
+      "tier": {
+        "t5_0":  { "value": "#78909C", "type": "color" },
+        "t5_5":  { "value": "#8D6E63", "type": "color" },
+        "t6_0":  { "value": "#A0522D", "type": "color" },
+        "t6_5":  { "value": "#B87333", "type": "color" },
+        "t7_0":  { "value": "#7B8D9A", "type": "color" },
+        "t7_5":  { "value": "#A0A8B0", "type": "color" },
+        "t8_0":  { "value": "#B8860B", "type": "color" },
+        "t8_5":  { "value": "#DAA520", "type": "color" },
+        "t9_0":  { "value": "#4A7FA5", "type": "color" },
+        "t9_5":  { "value": "#2C5F8A", "type": "color" },
+        "t10_0": { "value": "#1B4F8A", "type": "color", "description": "Elite — same as primary" }
+      },
+      "semantic": {
+        "eloGain":   { "value": "#2D6A4F", "type": "color" },
+        "eloLoss":   { "value": "#C1440E", "type": "color" },
+        "winStreak": { "value": "#FF6B00", "type": "color" }
+      }
+    },
+    "borderRadius": {
+      "card":    { "value": "12",  "type": "borderRadius", "description": "Cards and inputs" },
+      "button":  { "value": "20",  "type": "borderRadius", "description": "FilledButton" },
+      "pill":    { "value": "999", "type": "borderRadius", "description": "Badges and chips" },
+      "navPill": { "value": "14",  "type": "borderRadius", "description": "Active nav item highlight" }
+    },
+    "spacing": {
+      "xxs": { "value": "4",  "type": "spacing" },
+      "xs":  { "value": "8",  "type": "spacing" },
+      "sm":  { "value": "12", "type": "spacing" },
+      "md":  { "value": "16", "type": "spacing" },
+      "lg":  { "value": "24", "type": "spacing", "description": "Card inner padding" }
+    },
+    "sizing": {
+      "buttonHeight":      { "value": "48", "type": "sizing", "description": "FilledButton min height" },
+      "navBarHeight":      { "value": "60", "type": "sizing", "description": "Visible nav bar (excl. safe area)" },
+      "appBarHeight":      { "value": "64", "type": "sizing", "description": "Material 3 app bar" },
+      "navIconSize":       { "value": "24", "type": "sizing" },
+      "progressBarHeight": { "value": "6",  "type": "sizing" }
+    },
+    "typography": {
+      "display": {
+        "fontFamily": { "value": "Barlow Condensed", "type": "fontFamilies" },
+        "fontWeight": { "value": "700",               "type": "fontWeights" },
+        "fontSize":   { "value": "72",                "type": "fontSizes" },
+        "lineHeight": { "value": "1.0",               "type": "lineHeights" },
+        "description": "ELO score number"
+      },
+      "headlineLarge": {
+        "fontFamily": { "value": "Barlow Condensed", "type": "fontFamilies" },
+        "fontWeight": { "value": "700",               "type": "fontWeights" },
+        "fontSize":   { "value": "34",                "type": "fontSizes" }
+      },
+      "headlineMedium": {
+        "fontFamily": { "value": "Barlow Condensed", "type": "fontFamilies" },
+        "fontWeight": { "value": "700",               "type": "fontWeights" },
+        "fontSize":   { "value": "28",                "type": "fontSizes" }
+      },
+      "headlineSmall": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "600",               "type": "fontWeights" },
+        "fontSize":   { "value": "24",                "type": "fontSizes" }
+      },
+      "titleLarge": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "600",               "type": "fontWeights" },
+        "fontSize":   { "value": "22",                "type": "fontSizes" }
+      },
+      "titleMedium": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "500",               "type": "fontWeights" },
+        "fontSize":   { "value": "16",                "type": "fontSizes" }
+      },
+      "bodyLarge": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "400",               "type": "fontWeights" },
+        "fontSize":   { "value": "16",                "type": "fontSizes" }
+      },
+      "bodyMedium": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "400",               "type": "fontWeights" },
+        "fontSize":   { "value": "14",                "type": "fontSizes" }
+      },
+      "labelLarge": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "500",               "type": "fontWeights" },
+        "fontSize":   { "value": "14",                "type": "fontSizes" }
+      },
+      "labelSmall": {
+        "fontFamily": { "value": "IBM Plex Sans",    "type": "fontFamilies" },
+        "fontWeight": { "value": "500",               "type": "fontWeights" },
+        "fontSize":   { "value": "11",                "type": "fontSizes",
+        "description": "Nav bar labels" }
+      }
+    }
+  }
+}

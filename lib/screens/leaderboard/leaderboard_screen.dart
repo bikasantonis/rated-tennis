@@ -8,6 +8,8 @@ import 'package:rated/providers/location_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/tier_badge.dart';
+import 'package:rated/router/app_router.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 import 'package:rated/models/profile.dart';
 
 /// SCR-05 — Leaderboard: paginated (50/page), optional club filter.
@@ -54,7 +56,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           IconButton(
             icon: Icon(
               Icons.location_on,
-              color: _nearMe ? AppColors.primary : null,
+              color: _nearMe ? AppColors.rgClay : null,
             ),
             tooltip: l.leaderboardNearMe,
             onPressed: () {
@@ -65,7 +67,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     content: Text(l.tournamentsLocationPromptBody),
                     action: SnackBarAction(
                       label: l.tournamentsGoToSettings,
-                      onPressed: () => context.push('/settings'),
+                      onPressed: () => context.push(AppRoutes.settings),
                     ),
                   ),
                 );
@@ -132,7 +134,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   style: const TextStyle(color: AppColors.outline)),
               const SizedBox(height: 20),
               FilledButton.tonal(
-                onPressed: () => context.push('/settings'),
+                onPressed: () => context.push(AppRoutes.settings),
                 child: Text(l.tournamentsGoToSettings),
               ),
             ],
@@ -143,7 +145,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
     return nearbyAsync!.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (rows) {
         if (rows.isEmpty) {
           return Center(
@@ -200,7 +202,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   ) {
     return pageAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (rows) {
         if (rows.isEmpty && _page == 0) {
           return Center(child: Text(l.leaderboardNoPlayers));
@@ -265,7 +267,7 @@ class _ClubFilterButton extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: Icon(
         Icons.filter_list,
-        color: selectedClubId != null ? AppColors.primary : null,
+        color: selectedClubId != null ? AppColors.rgClay : null,
       ),
       tooltip: l.leaderboardFilterByClub,
       onSelected: (id) {
@@ -307,8 +309,8 @@ class _FilterChip extends StatelessWidget {
             deleteIcon: const Icon(Icons.close, size: 16),
             onDeleted: onRemove,
             backgroundColor:
-                AppColors.primary.withValues(alpha: 0.12),
-            labelStyle: const TextStyle(color: AppColors.primary),
+                AppColors.rgClay.withValues(alpha: 0.12),
+            labelStyle: const TextStyle(color: AppColors.rgClay),
           ),
         ],
       ),
@@ -366,14 +368,14 @@ class _LeaderboardRow extends StatelessWidget {
             elo.toStringAsFixed(1),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.rgClay,
                 ),
           ),
           if (distanceKm != null)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_on, size: 10, color: AppColors.primary),
+                const Icon(Icons.location_on, size: 10, color: AppColors.rgClay),
                 const SizedBox(width: 2),
                 Text(
                   AppLocalizations.of(context)!
@@ -381,7 +383,7 @@ class _LeaderboardRow extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .labelSmall
-                      ?.copyWith(color: AppColors.primary),
+                      ?.copyWith(color: AppColors.rgClay),
                 ),
               ],
             ),

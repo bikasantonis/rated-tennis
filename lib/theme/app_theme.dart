@@ -21,7 +21,7 @@ abstract final class AppTheme {
     secondaryContainer: AppColors.secondaryContainer,
     tertiary: AppColors.tertiary,
     tertiaryContainer: AppColors.tertiaryContainer,
-    surface: AppColors.surface,
+    surface: AppColors.lightBg,
     onSurface: AppColors.onSurface,
     surfaceContainerHighest: AppColors.surfaceVariant,
     outline: AppColors.outline,
@@ -34,6 +34,8 @@ abstract final class AppTheme {
     brightness: Brightness.dark,
   ).copyWith(
     tertiary: AppColors.tertiaryDark,
+    surface: AppColors.darkBg,
+    surfaceContainerHighest: AppColors.darkSurface,
   );
 
   static final _textTheme = TextTheme(
@@ -42,16 +44,16 @@ abstract final class AppTheme {
     displaySmall: GoogleFonts.barlowCondensed(fontWeight: FontWeight.w700),
     headlineLarge: GoogleFonts.barlowCondensed(fontWeight: FontWeight.w700),
     headlineMedium: GoogleFonts.barlowCondensed(fontWeight: FontWeight.w600),
-    headlineSmall: GoogleFonts.inter(fontWeight: FontWeight.w600),
-    titleLarge: GoogleFonts.inter(fontWeight: FontWeight.w600),
-    titleMedium: GoogleFonts.inter(fontWeight: FontWeight.w500),
-    titleSmall: GoogleFonts.inter(fontWeight: FontWeight.w500),
-    bodyLarge: GoogleFonts.inter(),
-    bodyMedium: GoogleFonts.inter(),
-    bodySmall: GoogleFonts.inter(),
-    labelLarge: GoogleFonts.inter(fontWeight: FontWeight.w500),
-    labelMedium: GoogleFonts.inter(fontWeight: FontWeight.w500),
-    labelSmall: GoogleFonts.inter(),
+    headlineSmall: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w600),
+    titleLarge: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w600),
+    titleMedium: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w500),
+    titleSmall: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w500),
+    bodyLarge: GoogleFonts.ibmPlexSans(),
+    bodyMedium: GoogleFonts.ibmPlexSans(),
+    bodySmall: GoogleFonts.ibmPlexSans(),
+    labelLarge: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w500),
+    labelMedium: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w500),
+    labelSmall: GoogleFonts.ibmPlexSans(),
   );
 
   static ThemeData get light => ThemeData(
@@ -59,6 +61,7 @@ abstract final class AppTheme {
         colorScheme: _lightColorScheme,
         textTheme: _textTheme,
         cardTheme: CardThemeData(
+          color: AppColors.lightCard,
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusGlobal),
@@ -87,6 +90,7 @@ abstract final class AppTheme {
         colorScheme: _darkColorScheme,
         textTheme: _textTheme,
         cardTheme: CardThemeData(
+          color: AppColors.darkCard,
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusGlobal),

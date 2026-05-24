@@ -81,6 +81,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get errorGeneric => 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.';
 
   @override
+  String get actionRetry => 'Δοκιμάστε ξανά';
+
+  @override
   String get errorNotLoggedIn => 'Δεν είστε συνδεδεμένος.';
 
   @override
@@ -966,6 +969,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get organizerLocationSet => 'Τοποθεσία ορίστηκε';
 
   @override
+  String get settingsSectionAppearance => 'Εμφάνιση';
+
+  @override
+  String get settingsCourtTheme => 'Θέμα Γηπέδου';
+
+  @override
   String get settingsSectionAccount => 'Λογαριασμός';
 
   @override
@@ -1060,6 +1069,48 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get submitMatchEloExcludedBanner =>
       'Μεγάλη διαφορά βαθμολογίας — αυτό το ματς δεν θα επηρεάσει τη βαθμολογία κανενός παίκτη.';
+
+  @override
+  String get homeChallenge => 'Πρόκληση';
+
+  @override
+  String get profileChooseFromGallery => 'Επιλογή από γκαλερί';
+
+  @override
+  String get profileTakePhoto => 'Λήψη φωτογραφίας';
+
+  @override
+  String get profileRemovePhoto => 'Αφαίρεση φωτογραφίας';
+
+  @override
+  String get profileStatRank => 'Κατάταξη';
+
+  @override
+  String get profileStatPeak => 'Κορυφή';
+
+  @override
+  String get profileStatLost => 'Ήττες';
+
+  @override
+  String get profileStatStreak => 'Σερί';
+
+  @override
+  String get profileSectionTournaments => 'Τουρνουά';
+
+  @override
+  String get profileNoTournaments => 'Δεν υπάρχουν τουρνουά ακόμα.';
+
+  @override
+  String get profileSectionPlayingProfile => 'Προφίλ Παίκτη';
+
+  @override
+  String get profileStartQuestionnaire => 'Έναρξη';
+
+  @override
+  String get settingsSectionLegal => 'Νομικά';
+
+  @override
+  String get settingsTermsOfUse => 'Όροι Χρήσης';
 
   @override
   String eloLabel(String value) {

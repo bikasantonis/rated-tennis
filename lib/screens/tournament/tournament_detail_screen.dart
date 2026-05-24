@@ -7,6 +7,7 @@ import 'package:rated/providers/tournament_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/tier_badge.dart';
 import 'package:rated/widgets/tournament_bracket_viewer.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 import 'package:rated/models/profile.dart';
 
 /// SCR-11 — Tournament detail: info, participants, bracket, registration CTA.
@@ -28,7 +29,7 @@ class TournamentDetailScreen extends ConsumerWidget {
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(title: Text(l.tournamentDetailTitle)),
-        body: Center(child: Text('Error: $e')),
+        body: const ErrorStateWidget(),
       ),
       data: (t) {
         if (t == null) {
@@ -122,7 +123,7 @@ class _ParticipantsTab extends ConsumerWidget {
           ref.invalidate(tournamentRegistrationsProvider(tournamentId)),
       child: regsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => const ErrorStateWidget(),
         data: (regs) => regs.isEmpty
             ? Center(
                 child: Text(l.tournamentDetailNoParticipants,

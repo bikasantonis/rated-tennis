@@ -1,3 +1,4 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,8 +11,11 @@ import 'package:rated/providers/questionnaire_prompt_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/providers/court_theme_provider.dart';
+import 'package:rated/utils/streak_utils.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/elo_score_card.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-04 — Home / Dashboard.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -22,22 +26,47 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  // Prevents the dialog from being triggered more than once per screen lifetime.
   bool _promptScheduled = false;
+  bool _celebrationShown = false;
+  late final ConfettiController _confettiCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiCtrl = ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(currentProfileProvider);
 
-    // When the profile first loads and questionnaire is not done, check whether
-    // this is the first time the user has seen the prompt (registration only).
     ref.listen<AsyncValue<Profile?>>(currentProfileProvider, (_, next) {
       if (_promptScheduled) return;
       final profile = next.asData?.value;
       if (profile == null || profile.questionnaireDone) return;
       _promptScheduled = true;
       _maybeShowQuestionnairePrompt(profile.id);
+    });
+
+    // Fire confetti once when the newest confirmed match is a win.
+    ref.listen<AsyncValue<List<Map<String, dynamic>>>>(recentMatchesProvider,
+        (_, next) {
+      if (_celebrationShown) return;
+      final matches = next.asData?.value ?? [];
+      if (matches.isEmpty) return;
+      final userId = ref.read(currentProfileProvider).asData?.value?.id;
+      if (userId == null) return;
+      if (matches.first['winner_id'] == userId) {
+        _celebrationShown = true;
+        _confettiCtrl.play();
+      }
     });
 
     return Scaffold(
@@ -47,9 +76,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => const ErrorStateWidget(),
         data: (profile) {
           if (profile == null) return const SizedBox.shrink();
+
+          final recentMatches =
+              ref.watch(recentMatchesProvider).asData?.value ?? [];
+          final streak = computeWinStreak(recentMatches, profile.id);
+          final courtTheme = ref.watch(courtThemeProvider);
+
           return Stack(
             children: [
               RefreshIndicator(
@@ -60,15 +95,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
                   children: [
-                    EloScoreCard(profile: profile),
+                    EloScoreCard(
+                      profile: profile,
+                      accentColor: AppColors.aoBlue,
+                      winStreak: streak,
+                      courtTheme: courtTheme,
+                    ),
                     const SizedBox(height: 24),
                     Text(
                       l.homeRecentMatches,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.aoBlue,
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     _RecentMatchesList(currentUserId: profile.id),
                   ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiCtrl,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  numberOfParticles: 20,
+                  colors: const [
+                    AppColors.aoBlue,
+                    AppColors.aoYellow,
+                    AppColors.primary,
+                  ],
+                  shouldLoop: false,
                 ),
               ),
               Positioned(
@@ -76,9 +133,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 left: 16,
                 child: FloatingActionButton.extended(
                   heroTag: 'challenge',
+                  backgroundColor: AppColors.aoBlue,
+                  foregroundColor: Colors.white,
                   onPressed: () => context.push(AppRoutes.scheduleMatch),
                   icon: const Icon(Icons.sports_tennis),
-                  label: const Text('Challenge'),
+                  label: Text(l.homeChallenge),
                 ),
               ),
             ],
@@ -87,6 +146,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'submit',
+        backgroundColor: AppColors.aoBlue,
+        foregroundColor: Colors.white,
         onPressed: () => context.push(AppRoutes.submitMatch),
         icon: const Icon(Icons.add),
         label: Text(l.homeSubmitMatch),
@@ -94,18 +155,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Checks SharedPreferences; if the prompt has never been shown for this user,
-  /// marks it as shown and then opens the two-step questionnaire dialog.
   Future<void> _maybeShowQuestionnairePrompt(String userId) async {
     final shouldShow =
         await ref.read(questionnairePromptProvider(userId).future);
     if (!shouldShow || !mounted) return;
 
-    // Mark immediately so a hot-restart or rapid navigation cannot show it twice.
     await markQuestionnairePromptShown(ref.container, userId);
     if (!mounted) return;
 
-    // Schedule after the current frame so we never call showDialog during a build.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final takeQuestionnaire = await _showPromptDialog();
@@ -137,7 +194,7 @@ class _QuestionnairePromptDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.sports_tennis, size: 48, color: AppColors.primary),
+          const Icon(Icons.sports_tennis, size: 48, color: AppColors.aoBlue),
           const SizedBox(height: 16),
           Text(
             'Before you start your RATED journey, we would like to ask you some questions to help us set up your first rating!',
@@ -202,7 +259,7 @@ class _QuestionnairePromptDialog extends StatelessWidget {
                 onPressed: () => Navigator.pop(ctx, true),
                 style: TextButton.styleFrom(
                     foregroundColor: AppColors.outline),
-                child: const Text("Yes, I'm sure"),
+                child: const Text('Skip questionnaire'),
               ),
             ],
           ),
@@ -211,11 +268,8 @@ class _QuestionnairePromptDialog extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      // User confirmed they want to skip — close the outer dialog with false.
       Navigator.pop(context, false);
     }
-    // If confirmed == false (chose "I'll take it now"), the skip dialog closes
-    // and we fall back to the outer prompt dialog still visible.
   }
 }
 

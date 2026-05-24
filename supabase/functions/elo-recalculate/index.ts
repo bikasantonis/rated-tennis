@@ -6,16 +6,11 @@
 // Idempotent: apply_elo_changes is a no-op if history rows already exist.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -23,7 +18,7 @@ Deno.serve(async (req) => {
     if (!matchId) {
       return new Response(
         JSON.stringify({ error: "match_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -31,7 +26,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Not authenticated" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -47,7 +42,7 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -61,7 +56,7 @@ Deno.serve(async (req) => {
     if (matchError || !match) {
       return new Response(
         JSON.stringify({ error: "Match not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -69,7 +64,7 @@ Deno.serve(async (req) => {
     if (match.status !== "pending") {
       return new Response(
         JSON.stringify({ error: `Match is already ${match.status}` }),
-        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 409, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -81,7 +76,7 @@ Deno.serve(async (req) => {
     if (!isParticipant || isSubmitter) {
       return new Response(
         JSON.stringify({ error: "Only the opponent may confirm this result" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 403, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -95,7 +90,7 @@ Deno.serve(async (req) => {
       console.error("match update error:", updateError);
       return new Response(
         JSON.stringify({ error: updateError.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -108,19 +103,19 @@ Deno.serve(async (req) => {
       console.error("apply_elo_changes error:", rpcError);
       return new Response(
         JSON.stringify({ error: rpcError.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("elo-recalculate error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

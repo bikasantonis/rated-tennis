@@ -28,6 +28,7 @@
   "actionSendRequest": "Send challenge",
 
   "errorGeneric": "Something went wrong. Please try again.",
+  "actionRetry": "Try again",
   "errorNotLoggedIn": "Not logged in.",
   "errorProfileNotFound": "Profile not found.",
   "errorTournamentNotFound": "Tournament not found.",
@@ -332,6 +333,9 @@
   "organizerCountryLabel": "Country code (e.g. GR)",
   "organizerUseMyLocation": "Use my location",
   "organizerLocationSet": "Location set",
+  "settingsSectionAppearance": "Appearance",
+  "settingsCourtTheme": "Court Theme",
+
   "settingsSectionAccount": "Account",
   "settingsLanguageLabel": "Language",
   "settingsChooseLanguage": "Choose language",
@@ -366,6 +370,21 @@
   "settingsChangePasswordSuccess": "Password updated successfully.",
 
   "submitMatchEloExcludedBanner": "Large rating gap — this match won\u2019t affect either player\u2019s rating.",
+
+  "homeChallenge": "Challenge",
+  "profileChooseFromGallery": "Choose from gallery",
+  "profileTakePhoto": "Take a photo",
+  "profileRemovePhoto": "Remove photo",
+  "profileStatRank": "Rank",
+  "profileStatPeak": "Peak",
+  "profileStatLost": "Lost",
+  "profileStatStreak": "Streak",
+  "profileSectionTournaments": "Tournaments",
+  "profileNoTournaments": "No tournaments yet.",
+  "profileSectionPlayingProfile": "Playing Profile",
+  "profileStartQuestionnaire": "Start",
+  "settingsSectionLegal": "Legal",
+  "settingsTermsOfUse": "Terms of Use",
 
   "eloLabel": "Rating {value}",
   "@eloLabel": { "placeholders": { "value": { "type": "String" } } },

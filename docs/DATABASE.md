@@ -248,6 +248,11 @@ Migrations are applied in filename order via `supabase db push`. Each file is na
 | 019 | `019_numeric_tiers.sql` | 11 numeric tiers (replaces 6 named tiers); delta clamp [0.01, 0.20]; tournament multiplier cap at 1.5×; friendly void for tier gap > 1.5; rewrite of `apply_elo_changes` | See ELO_SYSTEM.md §5–7 for full rationale |
 | 020 | `020_avatars_storage.sql` | `avatars` Storage bucket + RLS | Players can upload/replace/delete their own avatar; public read; RLS prevents cross-user writes |
 | 021 | `021_questionnaire_v2.sql` | Drop old subjective columns; add sport-history columns to `questionnaire_responses` | Self-reported level was unreliable; competitive history is objective and age-adjusted |
+| 022 | `022_fix_handle_new_user_avatar.sql` | Definitive merge of `handle_new_user`: robust display_name COALESCE, OAuth avatar extraction (`avatar_url` / `picture`), `SET search_path = ''`, correct grants | Resolved three conflicting definitions in migrations 013, 019_google_avatar (deleted), 019_numeric_tiers; Google Sign-In avatars now saved on first sign-up |
+| 023 | `023_elo_history_match_id_index.sql` | `CREATE INDEX IF NOT EXISTS idx_elo_history_match_id ON elo_history (match_id)` | Eliminates full-table scan in `apply_elo_changes` idempotency guard |
+| 024 | `024_notifications_dedup_and_cron_guard.sql` | Partial unique index on `notifications (recipient_id, reference_id, type) WHERE reference_id IS NOT NULL`; `match-auto-confirm` cron rewritten with `ON CONFLICT DO NOTHING` and `WHERE status = 'pending'` guard | Prevents duplicate notifications when consecutive cron runs overlap |
+| 025 | `025_location_consent_constraint.sql` | `CHECK (location_consent = true OR (home_lat IS NULL AND home_lng IS NULL AND home_city IS NULL))` on `profiles` | Enforces at DB level that coordinates cannot be stored without consent |
+| 026 | `026_rls_hardening.sql` | Drops and recreates `match_results_select` scoped to organizer's own tournaments; adds `questionnaire_no_delete` and `questionnaire_no_update` explicit deny policies | Closes organizer over-read; makes questionnaire immutability intent explicit |
 
 ---
 

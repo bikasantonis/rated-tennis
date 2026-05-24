@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/auth_provider.dart';
+import 'package:rated/theme/app_colors.dart';
+import 'package:rated/utils/legal_urls.dart';
 
 /// SCR-02 — Login / Sign-Up (tabbed).
 /// Email+password, Google OAuth, Apple Sign-In.
@@ -66,6 +69,8 @@ class _LoginTabState extends ConsumerState<LoginTab> {
   }
 
   Future<void> _signInWithGoogle() async {
+    final confirmed = await _showGoogleConsentSheet(context);
+    if (!confirmed || !mounted) return;
     await ref.read(authActionsProvider.notifier).signInWithGoogle();
     _showErrorIfAny();
   }
@@ -371,7 +376,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
             const SizedBox(height: 20),
             // GDPR Art. 6 — consent checkbox with timestamp stored on submit
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Checkbox(
                   value: _gdprConsent,
@@ -380,14 +385,9 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
                       : (v) => setState(() => _gdprConsent = v ?? false),
                 ),
                 Expanded(
-                  child: GestureDetector(
-                    onTap: isLoading
-                        ? null
-                        : () => setState(() => _gdprConsent = !_gdprConsent),
-                    child: Text(
-                      l.loginPrivacyConsent,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: _LegalConsentText(enabled: !isLoading),
                   ),
                 ),
               ],
@@ -426,6 +426,8 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
   }
 
   Future<void> _registerWithGoogle() async {
+    final confirmed = await _showGoogleConsentSheet(context);
+    if (!confirmed || !mounted) return;
     await ref.read(authActionsProvider.notifier).signInWithGoogle();
     _showResultMessage();
   }
@@ -478,6 +480,144 @@ String? _validatePassword(String? v) {
     return 'Password must contain at least one number';
   }
   return null;
+}
+
+// ── Google consent sheet ──────────────────────────────────────────────────────
+
+/// Shows a bottom sheet disclosing what RATED receives from Google before
+/// the OAuth flow starts. Returns true if the user confirms, false if cancelled.
+Future<bool> _showGoogleConsentSheet(BuildContext context) async {
+  final result = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => const _GoogleConsentSheet(),
+  );
+  return result ?? false;
+}
+
+class _GoogleConsentSheet extends StatelessWidget {
+  const _GoogleConsentSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.outline.withAlpha(80),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              const Icon(Icons.login, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Text('Signing in with Google',
+                  style: theme.textTheme.titleMedium),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'RATED will receive the following from your Google account:',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          Text('• Your name\n• Your email address\n• Your profile photo',
+              style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'This data is used to create and identify your RATED profile. '
+              'You can update your display name and photo at any time in Settings.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: AppColors.primary),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Continue with Google'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Legal consent text (register tab) ────────────────────────────────────────
+
+class _LegalConsentText extends StatelessWidget {
+  const _LegalConsentText({required this.enabled});
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final linkStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: AppColors.primary,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.primary,
+    );
+    final plainStyle = theme.textTheme.bodyMedium;
+
+    return RichText(
+      text: TextSpan(
+        style: plainStyle,
+        children: [
+          const TextSpan(text: 'I agree to the '),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: enabled ? linkStyle : linkStyle?.copyWith(color: AppColors.outline),
+            recognizer: enabled
+                ? (TapGestureRecognizer()
+                  ..onTap = () => LegalUrls.open(LegalUrls.privacyPolicy))
+                : null,
+          ),
+          const TextSpan(text: ' and '),
+          TextSpan(
+            text: 'Terms of Use',
+            style: enabled ? linkStyle : linkStyle?.copyWith(color: AppColors.outline),
+            recognizer: enabled
+                ? (TapGestureRecognizer()
+                  ..onTap = () => LegalUrls.open(LegalUrls.termsOfUse))
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Maps Supabase/auth errors to user-friendly messages.

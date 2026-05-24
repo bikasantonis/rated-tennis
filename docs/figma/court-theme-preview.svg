@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Court Theme — EloCard Preview (v3)
+  5 court variants · landscape top-down · 200×230 dp card
+  Wimbledon: 16 alternating grass stripes (dark #006B3C / light #4DB379)
+  Import into Figma: File → Import | Swap fonts: Barlow Condensed (ELO) + IBM Plex Sans (body)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="360" viewBox="0 0 1140 360">
+  <defs>
+
+    <filter id="card-shadow" x="-8%" y="-8%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#1A1A2E" flood-opacity="0.14"/>
+    </filter>
+
+    <!--
+      Shared card clip — 200×230, rx=8.
+      One definition reused across all 5 translated card groups.
+    -->
+    <clipPath id="card-clip">
+      <rect width="200" height="230" rx="8"/>
+    </clipPath>
+
+    <!--
+      Court geometry (landscape, baselines inset 10px from card edges):
+        x=10   left baseline
+        x=52   left service line
+        x=100  net
+        x=148  right service line
+        x=190  right baseline
+
+        y=65   top doubles sideline
+        y=77   top singles sideline
+        y=123  centre service line
+        y=169  bottom singles sideline
+        y=181  bottom doubles sideline
+
+      Service box layout (landscape):
+        bottom-left  (x 52–100,  y 123–169)  ← "16 won"    — centred at (76,  146)
+        bottom-right (x 100–148, y 123–169)  ← "24 played" — centred at (124, 146)
+        right alley  (x 148–190, full h)     ← "67%"       — at centre service (y=123)
+    -->
+    <symbol id="court-lines">
+      <!-- baselines -->
+      <line x1="10"  y1="65"  x2="10"  y2="181" stroke="white" stroke-width="1.5"/>
+      <line x1="190" y1="65"  x2="190" y2="181" stroke="white" stroke-width="1.5"/>
+      <!-- doubles sidelines -->
+      <line x1="10"  y1="65"  x2="190" y2="65"  stroke="white" stroke-width="1.5"/>
+      <line x1="10"  y1="181" x2="190" y2="181" stroke="white" stroke-width="1.5"/>
+      <!-- singles sidelines -->
+      <line x1="10"  y1="77"  x2="190" y2="77"  stroke="white" stroke-width="1"/>
+      <line x1="10"  y1="169" x2="190" y2="169" stroke="white" stroke-width="1"/>
+      <!-- net (thicker) -->
+      <line x1="100" y1="65"  x2="100" y2="181" stroke="white" stroke-width="2"/>
+      <!-- service lines (vertical) -->
+      <line x1="52"  y1="77"  x2="52"  y2="169" stroke="white" stroke-width="1"/>
+      <line x1="148" y1="77"  x2="148" y2="169" stroke="white" stroke-width="1"/>
+      <!-- centre service line (horizontal T-bisector) -->
+      <line x1="52"  y1="123" x2="148" y2="123" stroke="white" stroke-width="1"/>
+    </symbol>
+
+    <!--
+      Card content — all white fills.
+
+      TOP OUTER BAND (y 0–65):
+        ELO, tier badge, win-streak badge
+
+      INSIDE COURT:
+        "16 won"       bottom-left service box — vertically centred in box (y 123–169)
+        "24 played"    bottom-right service box — vertically centred
+        "67% win rate" right alley at centre service line y=123
+
+      BOTTOM OUTER BAND (y 181–230):
+        Sparkline — entirely below bottom doubles line
+        Progress bar — no tier-number labels (removed to avoid cramping)
+    -->
+    <symbol id="card-content">
+
+      <!-- ELO number -->
+      <text x="12" y="55"
+            font-family="'Barlow Condensed', Georgia, serif"
+            font-weight="700" font-size="38" fill="white">7.2</text>
+
+      <!-- Tier badge -->
+      <rect x="68" y="40" width="46" height="15" rx="7.5"
+            fill="white" fill-opacity="0.22"/>
+      <text x="91" y="51.5" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="8.5"
+            font-weight="600" fill="white">Tier 7.0</text>
+
+      <!-- Win-streak badge -->
+      <rect x="143" y="8" width="47" height="16" rx="8" fill="#FF6B00"/>
+      <text x="166.5" y="20" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="8.5"
+            font-weight="700" fill="white">WIN x3</text>
+
+      <!--
+        Stats — vertically centred in their respective boxes.
+        Box y=123–169 (height=46). Combined text block ≈24px tall.
+        Number baseline → y=147. Label baseline → y=158.
+      -->
+
+      <!-- bottom-left service box (x 52–100) centre x=76 -->
+      <text x="76" y="147" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="16"
+            font-weight="600" fill="white">16</text>
+      <text x="76" y="158" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="8"
+            fill="white" fill-opacity="0.78">won</text>
+
+      <!-- bottom-right service box (x 100–148) centre x=124 -->
+      <text x="124" y="147" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="16"
+            font-weight="600" fill="white">24</text>
+      <text x="124" y="158" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="8"
+            fill="white" fill-opacity="0.78">played</text>
+
+      <!-- right alley at centre service line (x 148–190) centre x=169, y≈123 -->
+      <text x="169" y="120" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="15"
+            font-weight="600" fill="white">67%</text>
+      <text x="169" y="132" text-anchor="middle"
+            font-family="system-ui, sans-serif" font-size="7.5"
+            fill="white" fill-opacity="0.78">win rate</text>
+
+      <!-- Sparkline — fully below bottom doubles line (y 181) -->
+      <polyline
+        points="10,214 30,207 52,211 76,200 100,204 124,194 148,197 170,190 190,192"
+        fill="none" stroke="white" stroke-width="1.5"
+        stroke-opacity="0.85" stroke-linejoin="round" stroke-linecap="round"/>
+
+      <!-- Tier progress bar — no labels (avoids cramping) -->
+      <rect x="12" y="220" width="176" height="5" rx="2.5"
+            fill="white" fill-opacity="0.2"/>
+      <rect x="12" y="220" width="88" height="5" rx="2.5" fill="white"/>
+
+    </symbol>
+
+  </defs>
+
+  <!-- Sheet background -->
+  <rect width="1140" height="360" fill="#F4F7FC"/>
+
+  <!-- Header -->
+  <text x="570" y="36" text-anchor="middle"
+        font-family="Georgia, serif" font-weight="700" font-size="16"
+        fill="#1A1A2E">Court Theme — EloCard Preview</text>
+  <text x="570" y="53" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="10"
+        fill="#8AAAC8">Landscape top-down · baselines inset · white lines fully opaque · Default: Roland Garros</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Card 1 — Australian Open
+       inner: #006EA7  outer: #005D8E
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(30,68)" filter="url(#card-shadow)">
+    <g clip-path="url(#card-clip)">
+      <rect width="200" height="230" fill="#005D8E"/>
+      <rect x="10" y="65" width="180" height="116" fill="#006EA7"/>
+      <use href="#court-lines"/>
+      <use href="#card-content"/>
+    </g>
+  </g>
+  <text x="130" y="312" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="11"
+        font-weight="600" fill="#1A1A2E">Australian Open</text>
+  <text x="130" y="326" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        fill="#8AAAC8">#006EA7 · #005D8E</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Card 2 — Roland Garros  ★ default
+       uniform #C8440F clay
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(250,68)" filter="url(#card-shadow)">
+    <g clip-path="url(#card-clip)">
+      <rect width="200" height="230" fill="#C8440F"/>
+      <rect x="10" y="65" width="180" height="116" fill="#C8440F"/>
+      <use href="#court-lines"/>
+      <use href="#card-content"/>
+    </g>
+  </g>
+  <text x="350" y="312" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="11"
+        font-weight="600" fill="#1A1A2E">Roland Garros</text>
+  <text x="350" y="326" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        font-weight="600" fill="#C8440F">★ default · #C8440F</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Card 3 — Wimbledon
+       16 alternating grass stripes covering x=10–190, y=65–181
+       Dark:  #006B3C (8 stripes)
+       Light: #4DB379 (8 stripes, 7.25 px each)
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(470,68)" filter="url(#card-shadow)">
+    <g clip-path="url(#card-clip)">
+      <!-- outer band: solid dark green -->
+      <rect width="200" height="230" fill="#006B3C"/>
+      <!-- 16 alternating stripes, x=10–190, each 7.25 px tall -->
+      <rect x="10" y="65.00" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="72.25" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="79.50" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="86.75" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="94.00" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="101.25" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="108.50" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="115.75" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="123.00" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="130.25" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="137.50" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="144.75" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="152.00" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="159.25" width="180" height="7.25" fill="#4DB379"/>
+      <rect x="10" y="166.50" width="180" height="7.25" fill="#006B3C"/>
+      <rect x="10" y="173.75" width="180" height="7.25" fill="#4DB379"/>
+      <use href="#court-lines"/>
+      <use href="#card-content"/>
+    </g>
+  </g>
+  <text x="570" y="312" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="11"
+        font-weight="600" fill="#1A1A2E">Wimbledon</text>
+  <text x="570" y="326" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        fill="#8AAAC8">#006B3C · #4DB379 stripes</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Card 4 — US Open
+       inner: #002D72 (navy)  outer: #1A5C30 (court green)
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(690,68)" filter="url(#card-shadow)">
+    <g clip-path="url(#card-clip)">
+      <rect width="200" height="230" fill="#1A5C30"/>
+      <rect x="10" y="65" width="180" height="116" fill="#002D72"/>
+      <use href="#court-lines"/>
+      <use href="#card-content"/>
+    </g>
+  </g>
+  <text x="790" y="312" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="11"
+        font-weight="600" fill="#1A1A2E">US Open</text>
+  <text x="790" y="326" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        fill="#8AAAC8">#002D72 · #1A5C30</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Card 5 — Club Classic
+       inner: #5B2D8E (wPurple)  outer: #2E5E1E (club green)
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(910,68)" filter="url(#card-shadow)">
+    <g clip-path="url(#card-clip)">
+      <rect width="200" height="230" fill="#2E5E1E"/>
+      <rect x="10" y="65" width="180" height="116" fill="#5B2D8E"/>
+      <use href="#court-lines"/>
+      <use href="#card-content"/>
+    </g>
+  </g>
+  <text x="1010" y="312" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="11"
+        font-weight="600" fill="#1A1A2E">Club Classic</text>
+  <text x="1010" y="326" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        fill="#8AAAC8">#5B2D8E · #2E5E1E</text>
+
+  <!-- Footer -->
+  <text x="570" y="352" text-anchor="middle"
+        font-family="system-ui, sans-serif" font-size="9"
+        fill="#8AAAC8">Swap fonts: Barlow Condensed Bold (ELO) · IBM Plex Sans (all other text)</text>
+
+</svg>

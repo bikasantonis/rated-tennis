@@ -242,6 +242,12 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Please try again.'**
   String get errorGeneric;
 
+  /// No description provided for @actionRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get actionRetry;
+
   /// No description provided for @errorNotLoggedIn.
   ///
   /// In en, this message translates to:
@@ -1832,6 +1838,18 @@ abstract class AppLocalizations {
   /// **'Location set'**
   String get organizerLocationSet;
 
+  /// No description provided for @settingsSectionAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsSectionAppearance;
+
+  /// No description provided for @settingsCourtTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Court Theme'**
+  String get settingsCourtTheme;
+
   /// No description provided for @settingsSectionAccount.
   ///
   /// In en, this message translates to:
@@ -2011,6 +2029,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Large rating gap — this match won’t affect either player’s rating.'**
   String get submitMatchEloExcludedBanner;
+
+  /// No description provided for @homeChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge'**
+  String get homeChallenge;
+
+  /// No description provided for @profileChooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get profileChooseFromGallery;
+
+  /// No description provided for @profileTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get profileTakePhoto;
+
+  /// No description provided for @profileRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get profileRemovePhoto;
+
+  /// No description provided for @profileStatRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank'**
+  String get profileStatRank;
+
+  /// No description provided for @profileStatPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak'**
+  String get profileStatPeak;
+
+  /// No description provided for @profileStatLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost'**
+  String get profileStatLost;
+
+  /// No description provided for @profileStatStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get profileStatStreak;
+
+  /// No description provided for @profileSectionTournaments.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournaments'**
+  String get profileSectionTournaments;
+
+  /// No description provided for @profileNoTournaments.
+  ///
+  /// In en, this message translates to:
+  /// **'No tournaments yet.'**
+  String get profileNoTournaments;
+
+  /// No description provided for @profileSectionPlayingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing Profile'**
+  String get profileSectionPlayingProfile;
+
+  /// No description provided for @profileStartQuestionnaire.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get profileStartQuestionnaire;
+
+  /// No description provided for @settingsSectionLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get settingsSectionLegal;
+
+  /// No description provided for @settingsTermsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get settingsTermsOfUse;
 
   /// No description provided for @eloLabel.
   ///

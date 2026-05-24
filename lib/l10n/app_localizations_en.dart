@@ -81,6 +81,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
+  String get actionRetry => 'Try again';
+
+  @override
   String get errorNotLoggedIn => 'Not logged in.';
 
   @override
@@ -959,6 +962,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organizerLocationSet => 'Location set';
 
   @override
+  String get settingsSectionAppearance => 'Appearance';
+
+  @override
+  String get settingsCourtTheme => 'Court Theme';
+
+  @override
   String get settingsSectionAccount => 'Account';
 
   @override
@@ -1052,6 +1061,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get submitMatchEloExcludedBanner =>
       'Large rating gap — this match won’t affect either player’s rating.';
+
+  @override
+  String get homeChallenge => 'Challenge';
+
+  @override
+  String get profileChooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get profileTakePhoto => 'Take a photo';
+
+  @override
+  String get profileRemovePhoto => 'Remove photo';
+
+  @override
+  String get profileStatRank => 'Rank';
+
+  @override
+  String get profileStatPeak => 'Peak';
+
+  @override
+  String get profileStatLost => 'Lost';
+
+  @override
+  String get profileStatStreak => 'Streak';
+
+  @override
+  String get profileSectionTournaments => 'Tournaments';
+
+  @override
+  String get profileNoTournaments => 'No tournaments yet.';
+
+  @override
+  String get profileSectionPlayingProfile => 'Playing Profile';
+
+  @override
+  String get profileStartQuestionnaire => 'Start';
+
+  @override
+  String get settingsSectionLegal => 'Legal';
+
+  @override
+  String get settingsTermsOfUse => 'Terms of Use';
 
   @override
   String eloLabel(String value) {

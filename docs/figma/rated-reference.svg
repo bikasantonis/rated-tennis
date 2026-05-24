@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1500"
+     font-family="'IBM Plex Sans', system-ui, -apple-system, sans-serif">
+  <style>
+    .lbl  { font-size: 11px; font-weight: 600; fill: #1A1A2E; }
+    .hex  { font-size: 10px; fill: #8AAAC8; }
+    .sec  { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; fill: #8AAAC8; }
+    .lbl-dk { font-size: 11px; font-weight: 600; fill: #C4D4E4; }
+    .note { font-size: 11px; fill: #8AAAC8; }
+  </style>
+
+  <!-- background -->
+  <rect width="1440" height="1500" fill="#F4F7FC"/>
+
+  <!-- ═══════════════════════════════
+       HEADER
+  ═══════════════════════════════ -->
+  <rect width="1440" height="72" fill="#0A0F1E"/>
+  <text x="48" y="45" fill="#FFFFFF" font-size="26" font-weight="700"
+        font-family="'Barlow Condensed', system-ui, sans-serif" letter-spacing="1">RATED</text>
+  <text x="128" y="45" fill="#8AAAC8" font-size="22" font-weight="300"
+        font-family="'Barlow Condensed', system-ui, sans-serif"> — Design Reference</text>
+  <text x="1392" y="36" fill="#8AAAC8" font-size="10" text-anchor="end">Install fonts: Barlow Condensed + IBM Plex Sans (Google Fonts)</text>
+  <text x="1392" y="52" fill="#8AAAC8" font-size="10" text-anchor="end">Mobile frame: 390 × 844 px  ·  1 Figma px = 1 Flutter dp</text>
+
+  <!-- ═══════════════════════════════
+       LIGHT THEME COLORS
+  ═══════════════════════════════ -->
+  <text x="48" y="100" class="sec">LIGHT THEME</text>
+
+  <rect x="48"   y="110" width="120" height="72" rx="8" fill="#F4F7FC" stroke="#DDE5EF" stroke-width="1.5"/>
+  <text x="108"  y="194" class="lbl" text-anchor="middle">bg</text>
+  <text x="108"  y="207" class="hex" text-anchor="middle">#F4F7FC</text>
+
+  <rect x="184"  y="110" width="120" height="72" rx="8" fill="#FFFFFF" stroke="#DDE5EF" stroke-width="1.5"/>
+  <text x="244"  y="194" class="lbl" text-anchor="middle">card</text>
+  <text x="244"  y="207" class="hex" text-anchor="middle">#FFFFFF</text>
+
+  <rect x="320"  y="110" width="120" height="72" rx="8" fill="#E3ECF5"/>
+  <text x="380"  y="194" class="lbl" text-anchor="middle">surface-variant</text>
+  <text x="380"  y="207" class="hex" text-anchor="middle">#E3ECF5</text>
+
+  <rect x="456"  y="110" width="120" height="72" rx="8" fill="#1B4F8A"/>
+  <text x="516"  y="194" class="lbl" text-anchor="middle">primary</text>
+  <text x="516"  y="207" class="hex" text-anchor="middle">#1B4F8A</text>
+
+  <rect x="592"  y="110" width="120" height="72" rx="8" fill="#2D6A4F"/>
+  <text x="652"  y="194" class="lbl" text-anchor="middle">secondary</text>
+  <text x="652"  y="207" class="hex" text-anchor="middle">#2D6A4F</text>
+
+  <rect x="728"  y="110" width="120" height="72" rx="8" fill="#C1440E"/>
+  <text x="788"  y="194" class="lbl" text-anchor="middle">tertiary</text>
+  <text x="788"  y="207" class="hex" text-anchor="middle">#C1440E</text>
+
+  <rect x="864"  y="110" width="120" height="72" rx="8" fill="#8AAAC8"/>
+  <text x="924"  y="194" class="lbl" text-anchor="middle">outline</text>
+  <text x="924"  y="207" class="hex" text-anchor="middle">#8AAAC8</text>
+
+  <rect x="1000" y="110" width="120" height="72" rx="8" fill="#1A1A2E"/>
+  <text x="1060" y="194" class="lbl" text-anchor="middle">on-surface</text>
+  <text x="1060" y="207" class="hex" text-anchor="middle">#1A1A2E</text>
+
+  <rect x="1136" y="110" width="120" height="72" rx="8" fill="#BA1A1A"/>
+  <text x="1196" y="194" class="lbl" text-anchor="middle">error</text>
+  <text x="1196" y="207" class="hex" text-anchor="middle">#BA1A1A</text>
+
+  <!-- ═══════════════════════════════
+       DARK THEME COLORS
+  ═══════════════════════════════ -->
+  <rect x="0" y="228" width="1440" height="152" fill="#0A0F1E"/>
+  <text x="48" y="252" class="sec">DARK THEME</text>
+
+  <rect x="48"  y="260" width="120" height="72" rx="8" fill="#0A0F1E" stroke="#1B4F8A" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="108" y="344" class="lbl-dk" text-anchor="middle">bg</text>
+  <text x="108" y="358" class="hex" text-anchor="middle">#0A0F1E</text>
+
+  <rect x="184" y="260" width="120" height="72" rx="8" fill="#101829" stroke="#141E30" stroke-width="1.5"/>
+  <text x="244" y="344" class="lbl-dk" text-anchor="middle">card</text>
+  <text x="244" y="358" class="hex" text-anchor="middle">#101829</text>
+
+  <rect x="320" y="260" width="120" height="72" rx="8" fill="#141E30"/>
+  <text x="380" y="344" class="lbl-dk" text-anchor="middle">surface</text>
+  <text x="380" y="358" class="hex" text-anchor="middle">#141E30</text>
+
+  <rect x="456" y="260" width="120" height="72" rx="8" fill="#E8845C"/>
+  <text x="516" y="344" class="lbl-dk" text-anchor="middle">tertiary (dark)</text>
+  <text x="516" y="358" class="hex" text-anchor="middle">#E8845C</text>
+
+  <!-- ═══════════════════════════════
+       GRAND SLAM ACCENTS
+  ═══════════════════════════════ -->
+  <text x="48" y="404" class="sec">GRAND SLAM ACCENTS — tab 0: Home (AO) · tab 1: Leaderboard (RG) · tab 2: Matches (WIM) · tab 3: Tournaments (USO)</text>
+
+  <rect x="48"   y="414" width="120" height="72" rx="8" fill="#006EA7"/>
+  <text x="108"  y="498" class="lbl" text-anchor="middle">AO — Blue</text>
+  <text x="108"  y="511" class="hex" text-anchor="middle">#006EA7</text>
+
+  <rect x="184"  y="414" width="120" height="72" rx="8" fill="#F4C430"/>
+  <text x="244"  y="498" class="lbl" text-anchor="middle">AO — Yellow</text>
+  <text x="244"  y="511" class="hex" text-anchor="middle">#F4C430</text>
+
+  <rect x="344"  y="414" width="120" height="72" rx="8" fill="#C8440F"/>
+  <text x="404"  y="498" class="lbl" text-anchor="middle">RG — Clay</text>
+  <text x="404"  y="511" class="hex" text-anchor="middle">#C8440F</text>
+
+  <rect x="480"  y="414" width="120" height="72" rx="8" fill="#3D6B35"/>
+  <text x="540"  y="498" class="lbl" text-anchor="middle">RG — Olive</text>
+  <text x="540"  y="511" class="hex" text-anchor="middle">#3D6B35</text>
+
+  <rect x="640"  y="414" width="120" height="72" rx="8" fill="#006B3C"/>
+  <text x="700"  y="498" class="lbl" text-anchor="middle">WIM — Green</text>
+  <text x="700"  y="511" class="hex" text-anchor="middle">#006B3C</text>
+
+  <rect x="776"  y="414" width="120" height="72" rx="8" fill="#5B2D8E"/>
+  <text x="836"  y="498" class="lbl" text-anchor="middle">WIM — Purple</text>
+  <text x="836"  y="511" class="hex" text-anchor="middle">#5B2D8E</text>
+
+  <rect x="936"  y="414" width="120" height="72" rx="8" fill="#002D72"/>
+  <text x="996"  y="498" class="lbl" text-anchor="middle">USO — Navy</text>
+  <text x="996"  y="511" class="hex" text-anchor="middle">#002D72</text>
+
+  <rect x="1072" y="414" width="120" height="72" rx="8" fill="#F7A800"/>
+  <text x="1132" y="498" class="lbl" text-anchor="middle">USO — Gold</text>
+  <text x="1132" y="511" class="hex" text-anchor="middle">#F7A800</text>
+
+  <!-- ═══════════════════════════════
+       TIER COLORS
+  ═══════════════════════════════ -->
+  <text x="48" y="545" class="sec">TIER COLORS — 5.0 → 10.0 · used on profile page and leaderboard badges</text>
+
+  <rect x="48"   y="555" width="110" height="56" rx="8" fill="#78909C"/>
+  <text x="103"  y="623" class="lbl" text-anchor="middle">5.0</text>
+  <text x="103"  y="636" class="hex" text-anchor="middle">#78909C</text>
+
+  <rect x="170"  y="555" width="110" height="56" rx="8" fill="#8D6E63"/>
+  <text x="225"  y="623" class="lbl" text-anchor="middle">5.5</text>
+  <text x="225"  y="636" class="hex" text-anchor="middle">#8D6E63</text>
+
+  <rect x="292"  y="555" width="110" height="56" rx="8" fill="#A0522D"/>
+  <text x="347"  y="623" class="lbl" text-anchor="middle">6.0</text>
+  <text x="347"  y="636" class="hex" text-anchor="middle">#A0522D</text>
+
+  <rect x="414"  y="555" width="110" height="56" rx="8" fill="#B87333"/>
+  <text x="469"  y="623" class="lbl" text-anchor="middle">6.5</text>
+  <text x="469"  y="636" class="hex" text-anchor="middle">#B87333</text>
+
+  <rect x="536"  y="555" width="110" height="56" rx="8" fill="#7B8D9A"/>
+  <text x="591"  y="623" class="lbl" text-anchor="middle">7.0</text>
+  <text x="591"  y="636" class="hex" text-anchor="middle">#7B8D9A</text>
+
+  <rect x="658"  y="555" width="110" height="56" rx="8" fill="#A0A8B0"/>
+  <text x="713"  y="623" class="lbl" text-anchor="middle">7.5</text>
+  <text x="713"  y="636" class="hex" text-anchor="middle">#A0A8B0</text>
+
+  <rect x="780"  y="555" width="110" height="56" rx="8" fill="#B8860B"/>
+  <text x="835"  y="623" class="lbl" text-anchor="middle">8.0</text>
+  <text x="835"  y="636" class="hex" text-anchor="middle">#B8860B</text>
+
+  <rect x="902"  y="555" width="110" height="56" rx="8" fill="#DAA520"/>
+  <text x="957"  y="623" class="lbl" text-anchor="middle">8.5</text>
+  <text x="957"  y="636" class="hex" text-anchor="middle">#DAA520</text>
+
+  <rect x="1024" y="555" width="110" height="56" rx="8" fill="#4A7FA5"/>
+  <text x="1079" y="623" class="lbl" text-anchor="middle">9.0</text>
+  <text x="1079" y="636" class="hex" text-anchor="middle">#4A7FA5</text>
+
+  <rect x="1146" y="555" width="110" height="56" rx="8" fill="#2C5F8A"/>
+  <text x="1201" y="623" class="lbl" text-anchor="middle">9.5</text>
+  <text x="1201" y="636" class="hex" text-anchor="middle">#2C5F8A</text>
+
+  <rect x="1268" y="555" width="110" height="56" rx="8" fill="#1B4F8A"/>
+  <text x="1323" y="623" class="lbl" text-anchor="middle">10.0 Elite</text>
+  <text x="1323" y="636" class="hex" text-anchor="middle">#1B4F8A</text>
+
+  <!-- ═══════════════════════════════
+       SEMANTIC COLORS
+  ═══════════════════════════════ -->
+  <text x="48" y="668" class="sec">SEMANTIC</text>
+
+  <rect x="48"  y="678" width="120" height="56" rx="8" fill="#2D6A4F"/>
+  <text x="108" y="746" class="lbl" text-anchor="middle">ELO Gain</text>
+  <text x="108" y="759" class="hex" text-anchor="middle">#2D6A4F</text>
+
+  <rect x="184" y="678" width="120" height="56" rx="8" fill="#C1440E"/>
+  <text x="244" y="746" class="lbl" text-anchor="middle">ELO Loss</text>
+  <text x="244" y="759" class="hex" text-anchor="middle">#C1440E</text>
+
+  <rect x="320" y="678" width="120" height="56" rx="8" fill="#FF6B00"/>
+  <text x="380" y="746" class="lbl" text-anchor="middle">Win Streak</text>
+  <text x="380" y="759" class="hex" text-anchor="middle">#FF6B00</text>
+
+  <!-- ═══════════════════════════════
+       DIVIDER
+  ═══════════════════════════════ -->
+  <line x1="48" y1="790" x2="1392" y2="790" stroke="#D4DEE9" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════
+       TYPOGRAPHY
+  ═══════════════════════════════ -->
+  <text x="48" y="822" class="sec">TYPOGRAPHY — in Figma: select all text, swap system-ui for Barlow Condensed (headlines) and IBM Plex Sans (body)</text>
+
+  <!-- Display 72 -->
+  <text x="48" y="912" fill="#1B4F8A" font-size="72" font-weight="700"
+        font-family="'Barlow Condensed', system-ui, sans-serif">7.5</text>
+  <text x="192" y="870" class="sec">Display / ELO Score</text>
+  <text x="192" y="890" fill="#1A1A2E" font-size="13">Barlow Condensed · 700 · 72 px · line-height 1.0</text>
+
+  <!-- Headline 28 -->
+  <text x="48" y="952" fill="#1A1A2E" font-size="28" font-weight="700"
+        font-family="'Barlow Condensed', system-ui, sans-serif">Match History</text>
+  <text x="296" y="942" class="sec">Headline Large</text>
+  <text x="296" y="958" fill="#1A1A2E" font-size="13">Barlow Condensed · 700 · 28 px</text>
+
+  <!-- Title 22 -->
+  <text x="48" y="988" fill="#1A1A2E" font-size="22" font-weight="600">Upcoming Tournaments</text>
+  <text x="340" y="980" class="sec">Title Large</text>
+  <text x="340" y="996" fill="#1A1A2E" font-size="13">IBM Plex Sans · 600 · 22 px</text>
+
+  <!-- Body 16 -->
+  <text x="48" y="1020" fill="#1A1A2E" font-size="16" font-weight="400">You have 3 pending match results.</text>
+  <text x="368" y="1012" class="sec">Body Large</text>
+  <text x="368" y="1028" fill="#1A1A2E" font-size="13">IBM Plex Sans · 400 · 16 px</text>
+
+  <!-- Label 11 -->
+  <text x="48" y="1050" fill="#8AAAC8" font-size="11" font-weight="500">Leaderboard · 24 players nearby</text>
+  <text x="296" y="1042" class="sec">Label / Nav</text>
+  <text x="296" y="1058" fill="#1A1A2E" font-size="13">IBM Plex Sans · 500 · 11 px</text>
+
+  <!-- ═══════════════════════════════
+       DIVIDER
+  ═══════════════════════════════ -->
+  <line x1="48" y1="1080" x2="1392" y2="1080" stroke="#D4DEE9" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════
+       SPACING SCALE
+  ═══════════════════════════════ -->
+  <text x="48" y="1112" class="sec">SPACING SCALE — use only these values</text>
+
+  <rect x="48"  y="1122" width="4"  height="4"  rx="1" fill="#1B4F8A"/>
+  <text x="58"  y="1132" fill="#1A1A2E" font-size="12">4 dp (xxs)</text>
+
+  <rect x="148" y="1118" width="8"  height="8"  rx="1" fill="#1B4F8A"/>
+  <text x="162" y="1132" fill="#1A1A2E" font-size="12">8 dp (xs)</text>
+
+  <rect x="240" y="1114" width="12" height="12" rx="1" fill="#1B4F8A"/>
+  <text x="258" y="1132" fill="#1A1A2E" font-size="12">12 dp (sm)</text>
+
+  <rect x="344" y="1110" width="16" height="16" rx="1" fill="#1B4F8A"/>
+  <text x="366" y="1132" fill="#1A1A2E" font-size="12">16 dp (md)</text>
+
+  <rect x="448" y="1104" width="24" height="24" rx="1" fill="#1B4F8A"/>
+  <text x="478" y="1132" fill="#1A1A2E" font-size="12">24 dp (lg) — card padding</text>
+
+  <!-- ═══════════════════════════════
+       BORDER RADIUS
+  ═══════════════════════════════ -->
+  <text x="48" y="1168" class="sec">BORDER RADIUS</text>
+
+  <!-- r=12 Card -->
+  <rect x="48"  y="1180" width="140" height="80" rx="12" fill="#FFFFFF" stroke="#DDE5EF" stroke-width="1.5"/>
+  <text x="118" y="1276" class="lbl" text-anchor="middle">Card / Input</text>
+  <text x="118" y="1291" class="hex" text-anchor="middle">r = 12 px</text>
+
+  <!-- r=20 Button -->
+  <rect x="224" y="1196" width="200" height="48" rx="20" fill="#1B4F8A"/>
+  <text x="324" y="1226" fill="#FFFFFF" font-size="15" font-weight="600" text-anchor="middle">FilledButton</text>
+  <text x="324" y="1276" class="lbl" text-anchor="middle">Button</text>
+  <text x="324" y="1291" class="hex" text-anchor="middle">r = 20 px · min-h = 48 px</text>
+
+  <!-- r=14 Nav pill -->
+  <rect x="462" y="1204" width="96" height="32" rx="14" fill="#006EA7"/>
+  <text x="510" y="1225" fill="#F4C430" font-size="12" font-weight="700" text-anchor="middle">Home</text>
+  <text x="510" y="1276" class="lbl" text-anchor="middle">Nav item pill</text>
+  <text x="510" y="1291" class="hex" text-anchor="middle">r = 14 px</text>
+
+  <!-- r=999 Badge -->
+  <rect x="598" y="1208" width="88" height="24" rx="999" fill="#FF6B00" fill-opacity="0.12"
+        stroke="#FF6B00" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="642" y="1224" fill="#FF6B00" font-size="12" font-weight="700" text-anchor="middle">🔥 5</text>
+  <text x="642" y="1276" class="lbl" text-anchor="middle">Badge / Pill</text>
+  <text x="642" y="1291" class="hex" text-anchor="middle">r = 999 px (fully round)</text>
+
+  <!-- ═══════════════════════════════
+       KEY HEIGHTS
+  ═══════════════════════════════ -->
+  <text x="48" y="1330" class="sec">KEY HEIGHTS</text>
+
+  <rect x="48" y="1342" width="520" height="122" rx="8" fill="#FFFFFF" stroke="#DDE5EF" stroke-width="1"/>
+  <text x="68" y="1368" fill="#1A1A2E" font-size="13">FilledButton                     48 dp (minimum)</text>
+  <text x="68" y="1390" fill="#1A1A2E" font-size="13">Bottom navigation bar      ~60 dp visible + system safe area</text>
+  <text x="68" y="1412" fill="#1A1A2E" font-size="13">App bar (Material 3)         64 dp</text>
+  <text x="68" y="1434" fill="#1A1A2E" font-size="13">Progress bar                   6 dp tall</text>
+  <text x="68" y="1456" fill="#1A1A2E" font-size="13">Nav icon                         24 dp</text>
+
+  <!-- footer -->
+  <text x="48" y="1488" class="note">All values in logical pixels (dp). 1 Figma px = 1 Flutter dp at 1× — never design at 2× and halve values. Fonts: install Barlow Condensed + IBM Plex Sans from Google Fonts before editing.</text>
+
+</svg>

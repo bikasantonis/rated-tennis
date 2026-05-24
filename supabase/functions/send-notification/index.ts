@@ -4,19 +4,14 @@
 // and sends a push notification via the OneSignal REST API.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID")!;
 const ONESIGNAL_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY")!;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -33,7 +28,7 @@ Deno.serve(async (req) => {
     if (!recipientId) {
       return new Response(
         JSON.stringify({ error: "recipient_id missing" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -52,7 +47,7 @@ Deno.serve(async (req) => {
     if (profileError || !profile) {
       return new Response(
         JSON.stringify({ error: "Recipient not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -92,19 +87,19 @@ Deno.serve(async (req) => {
       console.error("OneSignal error:", osBody);
       return new Response(
         JSON.stringify({ error: "OneSignal delivery failed", detail: osBody }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 502, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true, onesignal_id: osBody.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("send-notification error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

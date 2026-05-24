@@ -10,6 +10,7 @@ import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/pending_badge.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-10 — Tournament list with status tabs.
 class TournamentsListScreen extends ConsumerStatefulWidget {
@@ -67,7 +68,14 @@ class _TournamentsListScreenState
             .length ??
         0;
 
-    return Scaffold(
+    return Theme(
+      data: Theme.of(context).copyWith(
+        tabBarTheme: const TabBarThemeData(
+          indicatorColor: AppColors.usoNavy,
+          labelColor: AppColors.usoNavy,
+        ),
+      ),
+      child: Scaffold(
       appBar: AppBar(
         title: Text(l.tournamentsTitle),
         actions: const [AppBarActions()],
@@ -103,11 +111,14 @@ class _TournamentsListScreenState
       ),
       floatingActionButton: isOrganizer
           ? FloatingActionButton.extended(
+              backgroundColor: AppColors.usoNavy,
+              foregroundColor: Colors.white,
               onPressed: () => context.push(AppRoutes.organizerDashboard),
               icon: const Icon(Icons.add),
               label: Text(l.actionCreate),
             )
           : null,
+    ),
     );
   }
 }
@@ -124,7 +135,7 @@ class _TournamentTab extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (list) {
         if (list.isEmpty) {
           return Center(
@@ -161,7 +172,7 @@ class _NearMeTournamentTab extends ConsumerWidget {
 
     return prefsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => const ErrorStateWidget(),
       data: (prefs) {
         // No consent — prompt user to enable location in Settings.
         if (!prefs.locationConsent || !prefs.hasLocation) {
@@ -200,7 +211,7 @@ class _NearMeTournamentTab extends ConsumerWidget {
 
         return async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => const ErrorStateWidget(),
           data: (list) {
             if (list.isEmpty) {
               return Center(
@@ -257,8 +268,8 @@ class _TournamentCard extends StatelessWidget {
     final eloMax = (t['elo_max'] as num?)?.toDouble() ?? 10.0;
 
     final statusColor = switch (status) {
-      'registration_open' => AppColors.eloGain,
-      'in_progress' => AppColors.primary,
+      'registration_open' => AppColors.usoGold,
+      'in_progress' => AppColors.usoNavy,
       'completed' => AppColors.outline,
       _ => AppColors.outline,
     };
@@ -315,13 +326,13 @@ class _TournamentCard extends StatelessWidget {
               Row(
                 children: [
                   const Icon(Icons.calendar_today,
-                      size: 14, color: AppColors.primary),
+                      size: 14, color: AppColors.usoNavy),
                   const SizedBox(width: 6),
                   Text(l.tournamentStarts(startsAt),
                       style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(width: 16),
                   const Icon(Icons.format_list_bulleted,
-                      size: 14, color: AppColors.primary),
+                      size: 14, color: AppColors.usoNavy),
                   const SizedBox(width: 6),
                   Text(formatLabel,
                     style: Theme.of(context).textTheme.bodySmall),
@@ -341,7 +352,7 @@ class _TournamentCard extends StatelessWidget {
                   if (distanceKm != null) ...[
                     const SizedBox(width: 12),
                     const Icon(Icons.location_on,
-                        size: 12, color: AppColors.primary),
+                        size: 12, color: AppColors.usoNavy),
                     const SizedBox(width: 2),
                     Text(
                       l.tournamentDistanceKm(
@@ -349,7 +360,7 @@ class _TournamentCard extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
-                          ?.copyWith(color: AppColors.primary),
+                          ?.copyWith(color: AppColors.usoNavy),
                     ),
                   ],
                 ],

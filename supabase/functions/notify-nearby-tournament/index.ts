@@ -13,16 +13,11 @@
 // never returns personal location data to the client.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -40,7 +35,7 @@ Deno.serve(async (req) => {
     if (!tournamentId) {
       return new Response(
         JSON.stringify({ error: "tournament id missing" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -53,7 +48,7 @@ Deno.serve(async (req) => {
     if (!isOpeningRegistration) {
       return new Response(
         JSON.stringify({ skipped: true, reason: "status not transitioning to registration_open" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -63,7 +58,7 @@ Deno.serve(async (req) => {
     if (venueLat === null || venueLng === null) {
       return new Response(
         JSON.stringify({ skipped: true, reason: "tournament has no venue location" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -82,14 +77,14 @@ Deno.serve(async (req) => {
       console.error("nearby_tournament_notify_targets error:", targetsError);
       return new Response(
         JSON.stringify({ error: "Failed to query notification targets", detail: targetsError }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     if (!targets || targets.length === 0) {
       return new Response(
         JSON.stringify({ ok: true, notified: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -127,13 +122,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ ok: true, notified: totalInserted }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("notify-nearby-tournament error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

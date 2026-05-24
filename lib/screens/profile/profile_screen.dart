@@ -10,6 +10,8 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/utils/streak_utils.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-06 — Player profile (own or another player's public profile).
 class ProfileScreen extends ConsumerWidget {
@@ -26,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
     return selfAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
+      error: (e, _) => const Scaffold(body: ErrorStateWidget()),
       data: (self) {
         final targetId = playerId ?? self?.id;
         if (targetId == null) {
@@ -81,7 +83,7 @@ class _ProfileViewState extends ConsumerState<_ProfileView> {
       ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => const ErrorStateWidget(),
         data: (profile) {
           if (profile == null) {
             return Center(child: Text(l.errorProfileNotFound));
@@ -149,30 +151,33 @@ class _ProfileViewState extends ConsumerState<_ProfileView> {
     // On web, ImagePicker uses a file input — source is ignored for web.
     final action = await showModalBottomSheet<_AvatarAction>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(ctx, _AvatarAction.gallery),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Take a photo'),
-              onTap: () => Navigator.pop(ctx, _AvatarAction.camera),
-            ),
-            if (currentAvatarUrl != null)
+      builder: (ctx) {
+        final lCtx = AppLocalizations.of(ctx)!;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('Remove photo',
-                    style: TextStyle(color: Colors.red)),
-                onTap: () => Navigator.pop(ctx, _AvatarAction.remove),
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(lCtx.profileChooseFromGallery),
+                onTap: () => Navigator.pop(ctx, _AvatarAction.gallery),
               ),
-          ],
-        ),
-      ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: Text(lCtx.profileTakePhoto),
+                onTap: () => Navigator.pop(ctx, _AvatarAction.camera),
+              ),
+              if (currentAvatarUrl != null)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: Text(lCtx.profileRemovePhoto,
+                      style: const TextStyle(color: Colors.red)),
+                  onTap: () => Navigator.pop(ctx, _AvatarAction.remove),
+                ),
+            ],
+          ),
+        );
+      },
     );
     if (action == null || !context.mounted) return;
 
@@ -298,7 +303,7 @@ class _ProfileBody extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (matches) {
-        final streak = _computeStreak(matches, targetId);
+        final streak = computeWinStreak(matches, targetId);
 
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -422,7 +427,7 @@ class _ProfileBody extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _Stat(
-                          label: 'Rank',
+                          label: l.profileStatRank,
                           value: rankAsync.when(
                             data: (r) => r != null ? '#$r' : '—',
                             loading: () => '…',
@@ -430,15 +435,15 @@ class _ProfileBody extends ConsumerWidget {
                           ),
                         ),
                         _Stat(
-                          label: 'Peak',
+                          label: l.profileStatPeak,
                           value: peakElo != null
                               ? peakElo.toStringAsFixed(1)
                               : elo.toStringAsFixed(1),
                         ),
                         _Stat(
-                            label: 'Lost', value: '$lost'),
+                            label: l.profileStatLost, value: '$lost'),
                         _Stat(
-                          label: 'Streak',
+                          label: l.profileStatStreak,
                           value: streak == 0
                               ? '—'
                               : streak > 0
@@ -493,7 +498,7 @@ class _ProfileBody extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // ── Tournament history ───────────────────────────────────────────
-            Text('Tournaments',
+            Text(l.profileSectionTournaments,
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             tournamentsAsync.when(
@@ -504,7 +509,7 @@ class _ProfileBody extends ConsumerWidget {
                   ? Padding(
                       padding:
                           const EdgeInsets.symmetric(vertical: 12),
-                      child: Text('No tournaments yet.',
+                      child: Text(l.profileNoTournaments,
                           style: const TextStyle(
                               color: AppColors.outline)),
                     )
@@ -585,25 +590,6 @@ class _ProfileBody extends ConsumerWidget {
     );
   }
 
-  /// Counts consecutive W/L from newest match. Positive = win streak.
-  int _computeStreak(List<Map<String, dynamic>> matches, String playerId) {
-    if (matches.isEmpty) return 0;
-    int streak = 0;
-    bool? streakWin;
-    for (final m in matches) {
-      final won = m['winner_id'] == playerId;
-      if (streakWin == null) {
-        streakWin = won;
-        streak = won ? 1 : -1;
-      } else if (won == streakWin) {
-        streak += won ? 1 : -1;
-      } else {
-        break;
-      }
-    }
-    return streak;
-  }
-
   String _monthYear(DateTime d) {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -671,7 +657,7 @@ class _PlayingProfileSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Playing Profile',
+            Text(AppLocalizations.of(context)!.profileSectionPlayingProfile,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     )),
@@ -1064,7 +1050,7 @@ class _QuestionnaireCta extends StatelessWidget {
                   onPressed: onTap,
                   style:
                       FilledButton.styleFrom(padding: EdgeInsets.zero),
-                  child: const Text('Start'),
+                  child: Text(AppLocalizations.of(context)!.profileStartQuestionnaire),
                 ),
               ),
             ],

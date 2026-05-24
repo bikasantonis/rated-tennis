@@ -10,6 +10,7 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/match_provider.dart';
 import 'package:rated/providers/schedule_match_provider.dart';
 import 'package:rated/theme/app_colors.dart';
+import 'package:rated/widgets/error_state_widget.dart';
 
 /// SCR-09 — Schedule a match: browse players ±1.5 ELO, send request.
 class ScheduleMatchScreen extends ConsumerStatefulWidget {
@@ -51,7 +52,7 @@ class _ScheduleMatchScreenState extends ConsumerState<ScheduleMatchScreen> {
           return playersAsync.when(
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e')),
+            error: (e, _) => const ErrorStateWidget(),
             data: (players) => _selected == null
                 ? _PlayerListView(
                     players: players,

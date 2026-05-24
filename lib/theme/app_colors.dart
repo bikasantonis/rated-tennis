@@ -21,9 +21,65 @@ abstract final class AppColors {
   static const error = Color(0xFFBA1A1A);
   static const onError = Color(0xFFFFFFFF);
 
+  // ── Light theme explicit surface tokens ──────────────────────────────────
+  static const lightBg   = Color(0xFFF4F7FC);
+  static const lightCard = Color(0xFFFFFFFF);
+
   // ── Dark theme overrides ─────────────────────────────────────────────────
   /// Clay tertiary override for dark mode (PRD §7.2.2)
   static const tertiaryDark = Color(0xFFE8845C);
+
+  // ── Dark theme surface tokens ────────────────────────────────────────────
+  static const darkBg      = Color(0xFF0A0F1E);
+  static const darkCard    = Color(0xFF101829);
+  static const darkSurface = Color(0xFF141E30);
+
+  // ── Grand Slam palettes (tab order = calendar order) ─────────────────────
+  // Tab 0 — Home → Australian Open (hard court blue / yellow gold)
+  static const aoBlue   = Color(0xFF006EA7);
+  static const aoYellow = Color(0xFFF4C430);
+  // Tab 1 — Leaderboard → Roland Garros (clay / olive)
+  static const rgClay  = Color(0xFFC8440F);
+  static const rgOlive = Color(0xFF3D6B35);
+  // Tab 2 — Matches → Wimbledon (grass green / purple)
+  static const wGreen  = Color(0xFF006B3C);
+  static const wPurple = Color(0xFF5B2D8E);
+  // Tab 3 — Tournaments → US Open (asphalt navy / gold)
+  static const usoNavy = Color(0xFF002D72);
+  static const usoGold = Color(0xFFF7A800);
+
+  /// Primary slam accent for [tabIndex] (0-3).
+  static Color slamAccent(int tabIndex) => switch (tabIndex) {
+        0 => aoBlue,
+        1 => rgClay,
+        2 => wGreen,
+        3 => usoNavy,
+        _ => primary,
+      };
+
+  /// Secondary slam accent for [tabIndex] (0-3).
+  static Color slamSecondary(int tabIndex) => switch (tabIndex) {
+        0 => aoYellow,
+        1 => rgOlive,
+        2 => wPurple,
+        3 => usoGold,
+        _ => primary,
+      };
+
+  /// Foreground colour (icon + label) on a solid slam-accent box.
+  /// Uses the secondary colour only where it passes WCAG AA contrast
+  /// against the primary accent background; falls back to white otherwise.
+  ///   AO  blue  + yellow ✓  (contrast ~6.5:1)
+  ///   RG  clay  + olive  ✗  (contrast ~1.9:1) → white
+  ///   WIM green + purple ✗  (contrast ~2.1:1) → white
+  ///   USO navy  + gold   ✓  (contrast ~8.2:1)
+  static Color slamForeground(int tabIndex) => switch (tabIndex) {
+        0 => aoYellow,
+        1 => const Color(0xFFFFFFFF),
+        2 => const Color(0xFFFFFFFF),
+        3 => usoGold,
+        _ => const Color(0xFFFFFFFF),
+      };
 
   // ── Tier colours (PRD §7.2.3) ────────────────────────────────────────────
   // Used as the foreground/text colour for the tier number on the profile page

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — RATED</title>
+  <style>
+    :root {
+      --primary: #006EA7;
+      --bg: #F4F7FC;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --muted: #5f6b7a;
+      --border: #dde3eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0 16px 64px;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 40px 24px 32px;
+      margin: 0 -16px 40px;
+    }
+    header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    header p  { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    .container { max-width: 760px; margin: 0 auto; }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 36px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--border);
+    }
+    p { margin: 10px 0; }
+    ul { padding-left: 20px; margin: 10px 0; }
+    ul li { margin: 6px 0; }
+    .callout {
+      background: #e8f4fb;
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 4px;
+      margin: 16px 0;
+      font-size: 0.93rem;
+      color: #004f7a;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.93rem; }
+    th { background: var(--primary); color: #fff; padding: 10px 12px; text-align: left; }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    a { color: var(--primary); }
+    footer { margin-top: 56px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>Privacy Policy</h1>
+    <p>RATED &mdash; Universal Tennis Ranking &nbsp;|&nbsp; Effective date: 11 May 2026</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="callout">
+    This policy explains what personal data RATED collects when you use our app, why we collect it,
+    how long we keep it, and what rights you have under the General Data Protection Regulation (GDPR).
+  </div>
+
+  <h2>1. Who We Are</h2>
+  <p>
+    RATED (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;the app&rdquo;) is a tennis ranking platform
+    for club players. The data controller responsible for your personal data is:
+  </p>
+  <ul>
+    <li><strong>Contact email:</strong> <a href="mailto:bikasantonis@gmail.com">bikasantonis@gmail.com</a></li>
+  </ul>
+  <p>If you have any questions about this policy or your data, please reach out at the address above.</p>
+
+  <h2>2. Data We Collect</h2>
+
+  <h2 style="font-size:1rem; color: var(--text); border:none; margin-top:16px;">2a. When you sign in with Google</h2>
+  <p>
+    When you choose &ldquo;Sign in with Google&rdquo;, Google shares the following with RATED via OAuth 2.0
+    (scopes: <code>email</code>, <code>profile</code>):
+  </p>
+  <table>
+    <tr><th>Data</th><th>How it is used</th></tr>
+    <tr><td>Email address</td><td>Identifies your account; used for notifications</td></tr>
+    <tr><td>Display name</td><td>Pre-fills your RATED profile name (editable)</td></tr>
+    <tr><td>Profile photo URL</td><td>Pre-fills your avatar (replaceable at any time)</td></tr>
+  </table>
+  <p>We do not request access to your Google Calendar, Contacts, Gmail, or any other Google service.</p>
+
+  <h2 style="font-size:1rem; color: var(--text); border:none; margin-top:16px;">2b. When you register with email</h2>
+  <p>We collect your <strong>display name</strong>, <strong>email address</strong>, and a hashed password.
+  We record the timestamp of your explicit consent to this Privacy Policy (GDPR Art. 6(1)(a)).</p>
+
+  <h2 style="font-size:1rem; color: var(--text); border:none; margin-top:16px;">2c. Match and ranking data</h2>
+  <p>
+    We store your <strong>match history</strong>, <strong>ELO rating</strong>, <strong>ELO tier</strong>,
+    <strong>win/loss record</strong>, and <strong>peak ELO</strong>. This is the core purpose of the app —
+    to maintain a fair and verifiable ranking.
+  </p>
+
+  <h2 style="font-size:1rem; color: var(--text); border:none; margin-top:16px;">2d. Location data (optional, opt-in)</h2>
+  <p>
+    If you enable the <em>Location</em> feature in Settings, we collect your approximate home location
+    (rounded to ~1 km precision) and store it as a city name plus rounded coordinates. This is used to:
+  </p>
+  <ul>
+    <li>Show tournaments near you</li>
+    <li>Show players near you on the leaderboard</li>
+    <li>Send push notifications about tournaments opening in your area</li>
+  </ul>
+  <p>
+    Location data is collected only after your explicit consent. You can withdraw consent and delete
+    your location data at any time from <strong>Settings &rarr; Location</strong>.
+  </p>
+
+  <h2 style="font-size:1rem; color: var(--text); border:none; margin-top:16px;">2e. Device and usage data</h2>
+  <p>
+    Our crash-reporting tool (Sentry) automatically collects device type, OS version, and crash
+    stack traces when the app encounters an error. This data does not identify you personally and
+    is used solely to fix bugs.
+  </p>
+
+  <h2>3. Legal Basis for Processing (GDPR Art. 6)</h2>
+  <table>
+    <tr><th>Processing activity</th><th>Legal basis</th></tr>
+    <tr><td>Account creation &amp; profile management</td><td>Contract (Art. 6(1)(b))</td></tr>
+    <tr><td>Match history &amp; ELO ranking</td><td>Contract (Art. 6(1)(b))</td></tr>
+    <tr><td>Location-based features</td><td>Consent (Art. 6(1)(a))</td></tr>
+    <tr><td>Email registration consent timestamp</td><td>Consent (Art. 6(1)(a))</td></tr>
+    <tr><td>Crash reporting &amp; error monitoring</td><td>Legitimate interests (Art. 6(1)(f))</td></tr>
+    <tr><td>Push notifications</td><td>Consent (Art. 6(1)(a))</td></tr>
+  </table>
+
+  <h2>4. Third-Party Services</h2>
+  <table>
+    <tr><th>Service</th><th>Purpose</th><th>Data shared</th></tr>
+    <tr><td><strong>Supabase</strong> (EU region)</td><td>Database &amp; authentication</td><td>All profile and match data</td></tr>
+    <tr><td><strong>Google</strong></td><td>OAuth sign-in</td><td>Email, name, photo (on sign-in)</td></tr>
+    <tr><td><strong>Sentry</strong></td><td>Crash reporting</td><td>Device info, error traces</td></tr>
+    <tr><td><strong>OneSignal</strong></td><td>Push notifications</td><td>Device push token</td></tr>
+    <tr><td><strong>Nominatim / OpenStreetMap</strong></td><td>Reverse geocoding (location feature)</td><td>Rounded coordinates (EU-hosted, no account required)</td></tr>
+  </table>
+  <p>We do not sell your data to any third party.</p>
+
+  <h2>5. Data Retention</h2>
+  <ul>
+    <li><strong>Active accounts:</strong> Data is retained for as long as your account exists.</li>
+    <li><strong>Deleted accounts:</strong> When you delete your account, all personally identifiable
+    information is permanently erased within 30 days. Match records are anonymised (player references
+    are removed) so historical ranking statistics remain accurate.</li>
+    <li><strong>Location data:</strong> Deleted immediately when you revoke location consent.</li>
+  </ul>
+
+  <h2>6. Your Rights (GDPR Arts. 15–22)</h2>
+  <p>As a data subject you have the right to:</p>
+  <ul>
+    <li><strong>Access</strong> — request a copy of the data we hold about you.</li>
+    <li><strong>Rectification</strong> — correct inaccurate data (you can edit your profile directly in the app).</li>
+    <li><strong>Erasure</strong> — delete your account and all associated PII via <strong>Settings &rarr; Delete account</strong>.</li>
+    <li><strong>Portability</strong> — request your data in a structured, machine-readable format.</li>
+    <li><strong>Restriction</strong> — ask us to stop processing your data in certain circumstances.</li>
+    <li><strong>Objection</strong> — object to processing based on legitimate interests.</li>
+    <li><strong>Withdraw consent</strong> — for consent-based processing (location, notifications) at any time via Settings.</li>
+  </ul>
+  <p>
+    To exercise any of these rights, email us at
+    <a href="mailto:bikasantonis@gmail.com">bikasantonis@gmail.com</a>.
+    We will respond within 30 days. You also have the right to lodge a complaint with your
+    national data protection authority (in Greece: <a href="https://www.dpa.gr" target="_blank">www.dpa.gr</a>).
+  </p>
+
+  <h2>7. Security</h2>
+  <p>
+    Your data is stored in Supabase's EU infrastructure with row-level security policies ensuring
+    users can only access their own records. Passwords are hashed and never stored in plain text.
+    Location coordinates are rounded before storage (data minimisation, GDPR Art. 5(1)(c)).
+  </p>
+
+  <h2>8. Changes to This Policy</h2>
+  <p>
+    We may update this policy as the app evolves. Material changes will be communicated via an
+    in-app notice. The effective date at the top of this page always reflects the latest version.
+  </p>
+
+  <h2>9. Contact</h2>
+  <p>
+    Questions or requests: <a href="mailto:bikasantonis@gmail.com">bikasantonis@gmail.com</a>
+  </p>
+
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 RATED &mdash; All rights reserved
+  </div>
+</footer>
+</body>
+</html>
