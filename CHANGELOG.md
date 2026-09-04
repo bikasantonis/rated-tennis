@@ -7,7 +7,21 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-> Work in progress toward **Beta (end of Apr 2026)**.
+> Work in progress toward **Public Launch**.
+
+### Security / Release Hardening
+
+- **Package ID renamed** (`android/app/build.gradle.kts`, `android/app/src/main/kotlin/`, `ios/Runner.xcodeproj/project.pbxproj`): Application ID changed from `io.supabase.rated.rated` to `com.rated.app` on both Android and iOS. The OAuth deep-link scheme (`io.supabase.rated://login-callback`) is unchanged.
+- **Android release signing configured** (`android/app/build.gradle.kts`, `android/app/key.properties.template`): `build.gradle.kts` now reads signing credentials from `android/app/key.properties` (excluded from git). Falls back to debug keys when the file is absent. Template with `keytool` instructions at `key.properties.template`.
+- **R8 minification enabled for release** (`android/app/build.gradle.kts`, `android/app/proguard-rules.pro`): `isMinifyEnabled = true` and `isShrinkResources = true` set in the release buildType. ProGuard rules cover Flutter, Supabase, Sentry, OneSignal, and Kotlin serialisation.
+- **Legal document URLs fixed** (`lib/utils/legal_urls.dart`): Corrected to `bikasantonis.github.io/rated-tennis/` — the previous `bikasantonis.github.io/rated/` 404'd because the GitHub repo is named `rated-tennis`, not `rated`. Verified both `/privacy-policy` and `/terms` now resolve (HTTP 200).
+- **Router debug logging scoped to debug builds** (`lib/router/app_router.dart`): `debugLogDiagnostics` changed from `true` to `kDebugMode` so route-transition logs no longer appear in release builds.
+
+### Changed
+
+- **Web metadata updated** (`web/index.html`, `web/manifest.json`): Replaced Flutter boilerplate title/description with RATED-specific copy. Added Open Graph tags (`og:title`, `og:description`, `og:image`). `theme_color` updated from Flutter default `#0175C2` to brand primary `#1B4F8A`; `background_color` set to dark-mode surface `#0A0F1E`.
+- **Accessibility: tooltips on bare icon buttons** (`lib/screens/leaderboard/leaderboard_screen.dart`, `lib/screens/auth/login_screen.dart`): Leaderboard pagination chevrons now have `'Previous page'` / `'Next page'` tooltips; password-visibility toggles carry dynamic `'Show password'` / `'Hide password'` tooltips. All other icon buttons already had tooltips.
+- **Centered app bar titles** (`home_screen.dart`, `leaderboard_screen.dart`, `match_inbox_screen.dart`, `tournaments_list_screen.dart`): Added `centerTitle: true` to all four main screen `AppBar` widgets so "RATED", "Leaderboard", "Matches", and "Tournaments" titles display in the horizontal center of the bar. Tab rows (To Confirm / Challenges) are unaffected.
 
 ### Security
 
@@ -27,6 +41,8 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Tier-upgrade path hint on ELO score card** (`lib/utils/tier_path_calculator.dart`, `lib/widgets/tier_info_button.dart`, `lib/widgets/elo_score_card.dart`): An ⓘ icon appears next to the tier badge for any player below the maximum tier. On desktop/web, hovering reveals a popup; on mobile and mobile web, tapping shows it. The popup shows how many rating points remain to the next tier and a randomised-but-realistic suggested path (e.g. "2× Tier 8.5 players and 3× Tier 8.0 players") computed client-side using the same ELO formula as the database (`K=0.15`, `d=1.67`, delta clamped to [0.01, 0.20]). The suggestion is seeded from the player's current rating so it changes naturally as they improve but stays stable within a session. Hides automatically for Tier 10.0 (max-tier) players.
+
 - **Court theme personalisation** (`lib/models/court_theme.dart`, `lib/widgets/court_painter.dart`, `lib/widgets/elo_score_card.dart`, `lib/providers/court_theme_provider.dart`, `supabase/migrations/027_court_theme.sql`): Players can now choose a grand-slam court surface as the background of their EloScoreCard. A `CustomPainter` draws a top-down landscape tennis court (outer band, inner surface, baselines, sidelines, net, service lines) using proportional geometry so it scales to any card size. Wimbledon includes 16 alternating grass stripes. All card text flips to white for contrast. Five courts available: Australian Open, Roland Garros (default), Wimbledon, US Open, Club Classic. Preference stored in `profiles.court_theme` (Supabase) and syncs across devices.
 - **Settings → Appearance section** (`lib/screens/settings/settings_screen.dart`): New section with a horizontal scrollable court-theme picker showing all five courts as mini `CustomPaint` previews (80×60 dp). Selected court is highlighted with a 2.5 dp primary-colour border. Tapping a court persists the choice to Supabase and refreshes the home card live.
 - **2 new ARB keys** (`app_en.arb` / `app_el.arb`): `settingsSectionAppearance`, `settingsCourtTheme`.
@@ -37,6 +53,8 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **15 new ARB keys** (`app_en.arb` / `app_el.arb`): `actionRetry`, `homeChallenge`, `profileChooseFromGallery`, `profileTakePhoto`, `profileRemovePhoto`, `profileStatRank`, `profileStatPeak`, `profileStatLost`, `profileStatStreak`, `profileSectionTournaments`, `profileNoTournaments`, `profileSectionPlayingProfile`, `profileStartQuestionnaire`, `settingsSectionLegal`, `settingsTermsOfUse`.
 
 ### Changed
+
+- **EloScoreCard court-theme layout redesigned for responsive correctness** (`lib/widgets/elo_score_card.dart`): The court-mode card now derives its dimensions from a fixed aspect ratio (1.214 : 1) that preserves real doubles-court proportions (23.77 m × 10.97 m). A `LayoutBuilder` computes `cardH = (availableWidth / 1.214).clamp(0, 360 dp)` and `cardW = cardH × 1.214`, so on narrow phones the card fills the width while on wide screens width is capped by the max-height limit. All content is placed via `Positioned` at coordinates computed from the same proportional constants used by `CourtPainter` (`lsx`, `cx`, `tyS`, `csy`, `byS`, `byD`, etc.), so stats and controls are always inside non-overlapping court zones regardless of screen size. Stats (`Played`, `Won`, `Win %`) are centred inside the left-deuce, right-deuce, and right-ad service boxes respectively; the ELO rating and tier badge sit in the top outer band; the sparkline and tier progress bar anchor to the bottom outer band.
 
 - **All raw error displays replaced** (9 screens): 20 instances of `Text('Error: $e')` / `Center(child: Text('Error: $e'))` replaced with `const ErrorStateWidget()` (or `Text(l.errorGeneric)` for inline `ListTile` titles). Affected screens: `home_screen.dart`, `leaderboard_screen.dart`, `profile_screen.dart`, `schedule_match_screen.dart`, `settings_screen.dart`, `dispute_resolution_screen.dart`, `organizer_tournament_detail_screen.dart`, `organizer_dashboard_screen.dart`, `tournament_detail_screen.dart`, `tournaments_list_screen.dart`.
 - **Hardcoded English strings localised** (4 screens): Replaced 14 literal strings with ARB keys in `home_screen.dart` (FAB label), `profile_screen.dart` (avatar bottom sheet, stats row, section headings, CTA), `settings_screen.dart` (Legal section header, Terms of Use tile), `leaderboard_screen.dart` (settings route path → `AppRoutes.settings`).
