@@ -1,0 +1,10 @@
+# Copy this file to android/app/key.properties and fill in your values.
+# key.properties is in .gitignore and must NEVER be committed.
+#
+# To generate a new keystore:
+#   keytool -genkey -v -keystore rated-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias rated
+#
+storePassword=<your-keystore-password>
+keyPassword=<your-key-password>
+keyAlias=rated
+storeFile=<absolute-path-to-rated-release.jks>
