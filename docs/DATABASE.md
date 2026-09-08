@@ -56,6 +56,7 @@ One row per authenticated user. Auto-created by the `handle_new_user` trigger wh
 | `home_city` | varchar(100)? | City name from Nominatim reverse geocoding |
 | `home_lat` / `home_lng` | double precision? | Rounded to ~1 km precision before storage |
 | `notify_nearby_tournaments` | boolean | Default false; independent of `location_consent` |
+| `court_theme` | text | Default `'roland_garros'`; one of `australian_open` \| `roland_garros` \| `wimbledon` \| `us_open` \| `club_classic`. EloScoreCard background |
 | `nearby_radius_km` | integer | 25 / 50 / 100 / 150 (check constraint) |
 | `deleted_at` | timestamptz? | Soft-delete; anonymise-account Edge Function sets this |
 | `created_at` / `updated_at` | timestamptz | |
@@ -253,6 +254,7 @@ Migrations are applied in filename order via `supabase db push`. Each file is na
 | 024 | `024_notifications_dedup_and_cron_guard.sql` | Partial unique index on `notifications (recipient_id, reference_id, type) WHERE reference_id IS NOT NULL`; `match-auto-confirm` cron rewritten with `ON CONFLICT DO NOTHING` and `WHERE status = 'pending'` guard | Prevents duplicate notifications when consecutive cron runs overlap |
 | 025 | `025_location_consent_constraint.sql` | `CHECK (location_consent = true OR (home_lat IS NULL AND home_lng IS NULL AND home_city IS NULL))` on `profiles` | Enforces at DB level that coordinates cannot be stored without consent |
 | 026 | `026_rls_hardening.sql` | Drops and recreates `match_results_select` scoped to organizer's own tournaments; adds `questionnaire_no_delete` and `questionnaire_no_update` explicit deny policies | Closes organizer over-read; makes questionnaire immutability intent explicit |
+| 027 | `027_court_theme.sql` | `court_theme TEXT NOT NULL DEFAULT 'roland_garros'` added to `profiles` | Stores the player's chosen court background for the EloScoreCard so the preference syncs across devices |
 
 ---
 

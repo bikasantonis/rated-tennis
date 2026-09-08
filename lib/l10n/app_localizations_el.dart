@@ -1126,4 +1126,21 @@ class AppLocalizationsEl extends AppLocalizations {
   String pageLabel(int number) {
     return 'Σελίδα $number';
   }
+
+  @override
+  String tierPathTitle(String tier) {
+    return 'Πορεία για Tier $tier';
+  }
+
+  @override
+  String tierPathEloNeeded(String elo) {
+    return '+$elo βαθμολογία ακόμα';
+  }
+
+  @override
+  String get tierPathSuggested => 'Ένας τρόπος να φτάσεις εκεί:';
+
+  @override
+  String get tierPathDisclaimer =>
+      'Κατά προσέγγιση — τα κέρδη ποικίλλουν ανά αντίπαλο';
 }

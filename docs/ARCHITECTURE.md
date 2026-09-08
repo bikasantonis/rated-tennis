@@ -1,6 +1,6 @@
 # RATED — Architecture & Developer Reference
 
-> Last updated: 2026-04-30.
+> Last updated: 2026-09-08.
 > For a new developer: read this file first, then [ELO_SYSTEM.md](ELO_SYSTEM.md) for rating logic, [DATABASE.md](DATABASE.md) for schema details, [NOTIFICATIONS.md](NOTIFICATIONS.md) for the push pipeline, and [DECISIONS.md](DECISIONS.md) for why key choices were made.
 
 ---
@@ -116,7 +116,7 @@ rated/
 │   └── gen/                                 flutter_gen generated assets
 ├── supabase/
 │   ├── config.toml                          Local dev stack config
-│   ├── migrations/                          26 SQL migrations (applied in order)
+│   ├── migrations/                          27 SQL migrations (applied in order)
 │   └── functions/                           6 Deno Edge Functions + _shared/cors.ts
 ├── assets/images/
 ├── docs/

@@ -1,4 +1,4 @@
-package io.supabase.rated.rated
+package com.rated.app
 
 import io.flutter.embedding.android.FlutterActivity
 

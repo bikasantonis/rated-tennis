@@ -78,6 +78,7 @@ class _TournamentsListScreenState
       child: Scaffold(
       appBar: AppBar(
         title: Text(l.tournamentsTitle),
+        centerTitle: true,
         actions: const [AppBarActions()],
         bottom: TabBar(
           controller: _tabs,

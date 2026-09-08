@@ -33,6 +33,7 @@ class MatchInboxScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.inboxTitle),
+          centerTitle: true,
           actions: const [AppBarActions()],
           bottom: TabBar(
             tabs: [

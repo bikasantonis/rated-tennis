@@ -2131,6 +2131,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {number}'**
   String pageLabel(int number);
+
+  /// No description provided for @tierPathTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Path to Tier {tier}'**
+  String tierPathTitle(String tier);
+
+  /// No description provided for @tierPathEloNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'+{elo} rating to go'**
+  String tierPathEloNeeded(String elo);
+
+  /// No description provided for @tierPathSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'One way to get there:'**
+  String get tierPathSuggested;
+
+  /// No description provided for @tierPathDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate — actual gains vary by opponent rating'**
+  String get tierPathDisclaimer;
 }
 
 class _AppLocalizationsDelegate

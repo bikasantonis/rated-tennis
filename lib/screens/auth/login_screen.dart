@@ -199,6 +199,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
                   ),
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                   onPressed: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
                 ),
@@ -363,6 +364,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
                   ),
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                   onPressed: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
                 ),

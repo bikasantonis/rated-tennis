@@ -391,5 +391,12 @@
   "setLabel": "Set {number}",
   "@setLabel": { "placeholders": { "number": { "type": "int" } } },
   "pageLabel": "Page {number}",
-  "@pageLabel": { "placeholders": { "number": { "type": "int" } } }
+  "@pageLabel": { "placeholders": { "number": { "type": "int" } } },
+
+  "tierPathTitle": "Path to Tier {tier}",
+  "@tierPathTitle": { "placeholders": { "tier": { "type": "String" } } },
+  "tierPathEloNeeded": "+{elo} rating to go",
+  "@tierPathEloNeeded": { "placeholders": { "elo": { "type": "String" } } },
+  "tierPathSuggested": "One way to get there:",
+  "tierPathDisclaimer": "Approximate — actual gains vary by opponent rating"
 }
