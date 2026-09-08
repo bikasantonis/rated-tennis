@@ -15,6 +15,11 @@ build/
 *.env
 dart_defines*.json
 
+# Android signing — defense-in-depth (also covered by android/.gitignore)
+key.properties
+*.jks
+*.keystore
+
 # Dart/Flutter generated
 *.freezed.dart
 *.g.dart
@@ -27,6 +32,9 @@ GoogleService-Info.plist
 # Supabase
 .branches
 .temp
+
+# Cloudflare Wrangler (local cache: account id, Pages project metadata)
+.wrangler/
 
 # IDE
 .idea/

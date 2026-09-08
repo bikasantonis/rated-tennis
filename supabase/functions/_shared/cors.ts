@@ -7,14 +7,11 @@
 //   - Unknown browser Origin: return "" which causes the browser to block the
 //     response, preventing cross-site credential abuse.
 //
-// ⚠️  BEFORE PRODUCTION LAUNCH: add the deployed web domain to ALLOWED_ORIGINS.
-//     See docs/DEPLOYMENT_CHECKLIST.md → "Update CORS allowed origins".
-
 const ALLOWED_ORIGINS = new Set([
   "http://localhost:3000", // Flutter web dev (--web-port=3000)
   "http://localhost:8080", // Alternative dev port
-  // TODO(launch): uncomment and set the production web domain
-  // "https://app.ratedtennis.gr",
+  "https://ratedtennis.gr", //production web domain
+  "https://ratedtennis.com", //production alternative domain
 ]);
 
 export function corsHeaders(req: Request): Record<string, string> {
