@@ -51,6 +51,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.leaderboardTitle),
+        centerTitle: true,
         actions: [
           // Near Me toggle button
           IconButton(
@@ -418,12 +419,14 @@ class _PaginationBar extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
+            tooltip: 'Previous page',
             onPressed: onPrev,
           ),
           Text(l.leaderboardPage(page + 1),
               style: Theme.of(context).textTheme.bodyMedium),
           IconButton(
             icon: const Icon(Icons.chevron_right),
+            tooltip: 'Next page',
             onPressed: onNext,
           ),
         ],

@@ -72,6 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.homeTitle),
+        centerTitle: true,
         actions: const [AppBarActions()],
       ),
       body: profileAsync.when(
