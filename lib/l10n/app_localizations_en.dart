@@ -1118,4 +1118,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String pageLabel(int number) {
     return 'Page $number';
   }
+
+  @override
+  String tierPathTitle(String tier) {
+    return 'Path to Tier $tier';
+  }
+
+  @override
+  String tierPathEloNeeded(String elo) {
+    return '+$elo rating to go';
+  }
+
+  @override
+  String get tierPathSuggested => 'One way to get there:';
+
+  @override
+  String get tierPathDisclaimer =>
+      'Approximate — actual gains vary by opponent rating';
 }

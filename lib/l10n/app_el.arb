@@ -379,5 +379,10 @@
 
   "eloLabel": "Βαθμολογία {value}",
   "setLabel": "Σετ {number}",
-  "pageLabel": "Σελίδα {number}"
+  "pageLabel": "Σελίδα {number}",
+
+  "tierPathTitle": "Πορεία για Tier {tier}",
+  "tierPathEloNeeded": "+{elo} βαθμολογία ακόμα",
+  "tierPathSuggested": "Ένας τρόπος να φτάσεις εκεί:",
+  "tierPathDisclaimer": "Κατά προσέγγιση — τα κέρδη ποικίλλουν ανά αντίπαλο"
 }
