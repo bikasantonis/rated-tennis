@@ -174,7 +174,7 @@ If `|winner_tier_floor − loser_tier_floor| > 1.5`, the match is voided:
 
 A gap of exactly 1.5 is **allowed** (strict `>` comparison). Tournament matches are **never** voided regardless of tier gap.
 
-The match result itself is still recorded and visible in both players' history — only the ELO change is suppressed. The client can preview this before submitting via `friendlyEloExcludedProvider` in `match_provider.dart`.
+The match result itself is still recorded and visible in both players' history — only the ELO change is suppressed. A voided match **does** count toward `profiles.matches_played` / `matches_won` (migration 028), so Played always agrees with the match feed. The client can preview the void before submitting via `friendlyEloExcludedProvider` in `match_provider.dart`, and both the Home feed and the profile history render a `NotRatedChip` in place of the delta once the match is settled.
 
 **Rationale:** Prevents a high-rated player from farming easy wins against much weaker opponents for ELO gain in friendly matches.
 

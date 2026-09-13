@@ -255,6 +255,7 @@ Migrations are applied in filename order via `supabase db push`. Each file is na
 | 025 | `025_location_consent_constraint.sql` | `CHECK (location_consent = true OR (home_lat IS NULL AND home_lng IS NULL AND home_city IS NULL))` on `profiles` | Enforces at DB level that coordinates cannot be stored without consent |
 | 026 | `026_rls_hardening.sql` | Drops and recreates `match_results_select` scoped to organizer's own tournaments; adds `questionnaire_no_delete` and `questionnaire_no_update` explicit deny policies | Closes organizer over-read; makes questionnaire immutability intent explicit |
 | 027 | `027_court_theme.sql` | `court_theme TEXT NOT NULL DEFAULT 'roland_garros'` added to `profiles` | Stores the player's chosen court background for the EloScoreCard so the preference syncs across devices |
+| 028 | `028_match_counters.sql` | `sync_match_counters()` trigger on `match_results` + one-shot backfill of `profiles.matches_played` / `matches_won` | Both columns existed since 001 but had no writer, so every profile read 0 Played / 0 Won. A status trigger (not `apply_elo_changes`, which early-returns for ELO-excluded matches) covers all four confirmation paths. A counted match is `status IN ('confirmed','overridden')` — tournament and ELO-excluded matches count as Played so the counters always agree with the match feed. |
 
 ---
 
@@ -269,6 +270,7 @@ Migrations are applied in filename order via `supabase db push`. Each file is na
 | `trg_notify_match_disputed` | `match_results` | AFTER UPDATE OF `status` | `notify_match_disputed()` | NF-03: notifies original submitter when disputed |
 | `trg_notify_match_request_received` | `match_requests` | AFTER INSERT | `notify_match_request_received()` | NF-04: notifies recipient of challenge request |
 | `trg_notify_match_request_responded` | `match_requests` | AFTER UPDATE OF `status` | `notify_match_request_responded()` | NF-05: notifies requester of accept/decline |
+| `trg_match_counters` | `match_results` | AFTER INSERT OR UPDATE | `sync_match_counters()` | Maintains `profiles.matches_played` / `matches_won` when a match enters or leaves `status IN ('confirmed','overridden')` |
 
 ---
 
@@ -290,6 +292,7 @@ Migrations are applied in filename order via `supabase db push`. Each file is na
 | `nearby_tournament_notify_targets()` | `(p_tournament_id uuid) → TABLE(user_id uuid)` | DEFINER | Returns user IDs who should receive a push when a tournament opens. Used by `notify-nearby-tournament` Edge Function. |
 | `notify_match_excluded()` | `(winner_id, loser_id, match_id uuid) → void` | DEFINER | Inserts two `match_elo_excluded` notification rows when a friendly is voided by tier gap. |
 | `get_player_rank()` | `(p_player_id uuid) → integer` | — | Returns the player's current global rank by `elo_rating DESC`. |
+| `sync_match_counters()` | trigger | DEFINER | Increments/decrements `profiles.matches_played` / `matches_won` as a match enters or leaves the counted status set. No-ops when the status and participants are unchanged; locks both profile rows in `id` order to avoid deadlocking against `apply_elo_changes`. |
 
 ---
 

@@ -182,7 +182,8 @@ class _PendingResultCard extends StatelessWidget {
       final l = AppLocalizations.of(context)!;
       final st = ref.read(matchActionsProvider);
       if (st is AsyncData) {
-        ref.invalidate(pendingResultsProvider);
+        // MatchActions.confirmMatch already invalidates the inbox, the Home feed
+        // and the rating providers — see _invalidateMatchViews.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l.inboxConfirmSuccess)),
         );

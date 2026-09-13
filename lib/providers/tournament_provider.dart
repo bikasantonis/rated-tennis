@@ -5,6 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:rated/models/bracket_match.dart';
+import 'package:rated/providers/auth_provider.dart';
+import 'package:rated/providers/match_provider.dart';
+import 'package:rated/providers/profile_provider.dart';
 
 part 'tournament_provider.g.dart';
 
@@ -437,6 +440,7 @@ class DisputeActions extends _$DisputeActions {
       }).eq('id', matchId);
       await _db.rpc('apply_elo_changes', params: {'p_match_id': matchId});
     });
+    if (state is AsyncData) _invalidateAfterResolution();
   }
 
   /// Admin overrides: keeps original score, marks as overridden.
@@ -451,5 +455,24 @@ class DisputeActions extends _$DisputeActions {
       }).eq('id', matchId);
       await _db.rpc('apply_elo_changes', params: {'p_match_id': matchId});
     });
+    if (state is AsyncData) _invalidateAfterResolution();
+  }
+
+  /// Resolving a dispute settles the match, which moves the participants'
+  /// matches_played / matches_won (trigger from migration 028) and their
+  /// ratings. Drop the cached views so the queue and — when the admin is also a
+  /// participant — their own Home card reflect it without a manual refresh.
+  void _invalidateAfterResolution() {
+    if (!ref.mounted) return;
+    ref.invalidate(disputedMatchesProvider);
+    ref.invalidate(recentMatchesProvider);
+    ref.invalidate(pendingResultsProvider);
+    ref.invalidate(currentProfileProvider);
+    final uid = _uid;
+    if (uid != null) {
+      ref.invalidate(eloHistoryProvider(uid));
+      ref.invalidate(playerProfileProvider(uid));
+      ref.invalidate(playerMatchesProvider(uid));
+    }
   }
 }
