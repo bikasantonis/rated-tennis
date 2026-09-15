@@ -1104,6 +1104,59 @@ class AppLocalizationsEl extends AppLocalizations {
   String get profileSectionPlayingProfile => 'Προφίλ Παίκτη';
 
   @override
+  String profilePlayingAge(int age) {
+    return 'Ηλικία $age';
+  }
+
+  @override
+  String profilePlayingYears(String years) {
+    return '$years χρ. στο τένις';
+  }
+
+  @override
+  String get profilePlayingGreekRecreational => 'Ερασιτεχνικά';
+
+  @override
+  String get profilePlayingGreekNationalU200 => 'Εθνικό νέων · εκτός top 200';
+
+  @override
+  String get profilePlayingGreekNational20200 => 'Εθνικό νέων · 20–200';
+
+  @override
+  String get profilePlayingGreekNationalTop20 => 'Εθνικό νέων · top 20';
+
+  @override
+  String get profilePlayingIntlRecreational => 'Διεθνώς ερασιτεχνικά';
+
+  @override
+  String get profilePlayingIntlJunior => 'Διεθνές νέων';
+
+  @override
+  String get profilePlayingIntlPro => 'Επαγγελματικά';
+
+  @override
+  String get profilePlayingIntlCollege => 'US College';
+
+  @override
+  String profilePlayingCollegeDivision(String division) {
+    return 'US College · $division';
+  }
+
+  @override
+  String profilePlayingJuniorRanking(int rank) {
+    return 'ITF Jr. καλύτερη θέση #$rank';
+  }
+
+  @override
+  String get profilePlayingAtpWtaPoint => 'Βαθμός ATP/WTA';
+
+  @override
+  String get profilePlayingRacketSports => 'Αθλήματα ρακέτας';
+
+  @override
+  String get profilePlayingOtherSport => 'Άλλο άθλημα';
+
+  @override
   String get profileStartQuestionnaire => 'Έναρξη';
 
   @override

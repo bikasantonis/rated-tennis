@@ -140,7 +140,7 @@ rated/
 │   │   ├── questionnaire/                   SCR-03 — Sport-history questionnaire (shown as dialog)
 │   │   ├── home/                            SCR-04 — Dashboard + recent matches
 │   │   ├── leaderboard/                     SCR-05 — Global rankings + club filter + Near Me
-│   │   ├── profile/                         SCR-06 — Player profile + edit + avatar upload
+│   │   ├── profile/                         SCR-06 — Player profile + edit + avatar upload + Playing Profile chips (own profile only)
 │   │   ├── match/                           SCR-07/08/09 — Submit / inbox / schedule (challenge)
 │   │   ├── tournament/                      SCR-10/11 — Tournaments list + detail + bracket
 │   │   ├── organizer/                       SCR-12 — Organiser dashboard + per-tournament view

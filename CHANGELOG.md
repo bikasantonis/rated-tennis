@@ -7,7 +7,9 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+
+- **Playing Profile card queried columns dropped by migration 021** (`lib/providers/profile_provider.dart`, `lib/screens/profile/profile_screen.dart`, `lib/l10n/`): `playerQuestionnaire` still selected `playing_frequency`, `self_assessed_level`, `preferred_surface` and `has_competed` — four columns removed by the questionnaire v2 migration. PostgREST rejected the query with HTTP 400, the provider's `AsyncValue` landed in `error`, and the profile screen's `error: (e, _) => const SizedBox.shrink()` swallowed the card, so no questionnaire data had been visible anywhere in the app since migration 021. The provider now selects the v2 columns and `_PlayingProfileSection` renders them as chips: age, years playing, Greek competitive experience, international experience (folding in the US college division), ITF junior career high, ATP/WTA point, and other competitive sport. `date_of_birth` is fetched but never rendered verbatim — the chip shows a derived age, per the data-minimisation rationale in `docs/DECISIONS.md`. Chip labels are localised in English and Greek (15 new ARB keys). `international_experience = 'none'` and `other_sport = 'none'` render no chip. Note that `questionnaire_select_own` RLS scopes this row to its owner and to admins, so the card only ever appears on your own profile.
 
 ---
 

@@ -604,49 +604,72 @@ class _ProfileBody extends ConsumerWidget {
 
 class _PlayingProfileSection extends StatelessWidget {
   const _PlayingProfileSection({required this.questionnaire});
+
+  /// A `questionnaire_responses` row (v2 columns — migration 021).
   final Map<String, dynamic> questionnaire;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final chips = <Widget>[];
 
-    final years = questionnaire['years_playing'];
+    // Age is derived from date_of_birth — the raw date is never rendered.
+    final age = _ageFrom(questionnaire['date_of_birth'] as String?);
+    if (age != null) {
+      chips.add(_InfoChip(
+        icon: Icons.cake_outlined,
+        label: l.profilePlayingAge(age),
+      ));
+    }
+
+    final years = questionnaire['years_playing'] as int?;
     if (years != null) {
       chips.add(_InfoChip(
         icon: Icons.history_outlined,
-        label: '${years == 0 ? '<1' : years} ${years == 1 ? 'year' : 'years'}',
+        label: l.profilePlayingYears(years == 0 ? '<1' : '$years'),
       ));
     }
 
-    final freq = questionnaire['playing_frequency'] as String?;
-    if (freq != null) {
+    final greek = _greekLabel(questionnaire['greek_experience'] as String?, l);
+    if (greek != null) {
+      chips.add(_InfoChip(icon: Icons.flag_outlined, label: greek));
+    }
+
+    // A college division subsumes the plain "US College" international chip.
+    final intlRaw = questionnaire['international_experience'] as String?;
+    final division = questionnaire['us_college_division'] as String?;
+    final intl = _intlLabel(intlRaw, division, l);
+    if (intl != null) {
       chips.add(_InfoChip(
-        icon: Icons.schedule_outlined,
-        label: _freqLabel(freq),
+        icon: intlRaw == 'us_college'
+            ? Icons.school_outlined
+            : Icons.public_outlined,
+        label: intl,
       ));
     }
 
-    final surface = questionnaire['preferred_surface'] as String?;
-    if (surface != null) {
+    final juniorRank = questionnaire['junior_career_high_ranking'] as int?;
+    if (juniorRank != null) {
       chips.add(_InfoChip(
-        icon: Icons.sports_tennis_outlined,
-        label: _capitalise(surface),
+        icon: Icons.leaderboard_outlined,
+        label: l.profilePlayingJuniorRanking(juniorRank),
       ));
     }
 
-    final level = questionnaire['self_assessed_level'] as String?;
-    if (level != null) {
+    if (questionnaire['received_atp_wta_point'] as bool? ?? false) {
       chips.add(_InfoChip(
-        icon: Icons.bar_chart_outlined,
-        label: _capitalise(level),
+        icon: Icons.workspace_premium_outlined,
+        label: l.profilePlayingAtpWtaPoint,
       ));
     }
 
-    final competed = questionnaire['has_competed'] as bool?;
-    if (competed != null) {
+    final otherSport = questionnaire['other_sport'] as String?;
+    if (otherSport == 'racket_sports' || otherSport == 'other_sports') {
       chips.add(_InfoChip(
-        icon: Icons.emoji_events_outlined,
-        label: competed ? 'Tournament player' : 'Recreational',
+        icon: Icons.sports_outlined,
+        label: otherSport == 'racket_sports'
+            ? l.profilePlayingRacketSports
+            : l.profilePlayingOtherSport,
       ));
     }
 
@@ -658,7 +681,7 @@ class _PlayingProfileSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context)!.profileSectionPlayingProfile,
+            Text(l.profileSectionPlayingProfile,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     )),
@@ -670,17 +693,41 @@ class _PlayingProfileSection extends StatelessWidget {
     );
   }
 
-  String _freqLabel(String v) => switch (v) {
-        'daily' => 'Daily',
-        'several_times_week' => 'Several times/week',
-        'weekly' => 'Weekly',
-        'biweekly' => 'Every 2 weeks',
-        'monthly' => 'Monthly',
-        _ => _capitalise(v),
+  /// Completed years between [dob] (an ISO `yyyy-MM-dd` date) and today.
+  /// Returns null for a missing, unparseable or implausible date.
+  static int? _ageFrom(String? dob) {
+    if (dob == null) return null;
+    final birth = DateTime.tryParse(dob);
+    if (birth == null) return null;
+    final now = DateTime.now();
+    var age = now.year - birth.year;
+    if (now.month < birth.month ||
+        (now.month == birth.month && now.day < birth.day)) {
+      age--;
+    }
+    return (age < 0 || age > 120) ? null : age;
+  }
+
+  static String? _greekLabel(String? v, AppLocalizations l) => switch (v) {
+        'recreational' => l.profilePlayingGreekRecreational,
+        'national_u200' => l.profilePlayingGreekNationalU200,
+        'national_20_200' => l.profilePlayingGreekNational20200,
+        'national_top20' => l.profilePlayingGreekNationalTop20,
+        _ => null,
       };
 
-  String _capitalise(String v) =>
-      v.isEmpty ? v : '${v[0].toUpperCase()}${v.substring(1)}';
+  /// `none` yields no chip — an absent international record is not a fact
+  /// worth a pill. `us_college` folds the division in when one was given.
+  static String? _intlLabel(String? v, String? division, AppLocalizations l) =>
+      switch (v) {
+        'recreational_intl' => l.profilePlayingIntlRecreational,
+        'junior_intl' => l.profilePlayingIntlJunior,
+        'professional_adult' => l.profilePlayingIntlPro,
+        'us_college' => division != null
+            ? l.profilePlayingCollegeDivision(division)
+            : l.profilePlayingIntlCollege,
+        _ => null,
+      };
 }
 
 class _InfoChip extends StatelessWidget {
