@@ -55,15 +55,21 @@ Future<List<Map<String, dynamic>>> playerMatches(
   return List<Map<String, dynamic>>.from(results as List);
 }
 
-/// Questionnaire answers for a player (visible if profile is public).
+/// Questionnaire answers for a player.
+///
+/// RLS (`questionnaire_select_own`) restricts this row to its owner and to
+/// admins, so the playing profile only ever renders on your own profile.
+/// Columns follow the v2 questionnaire (migration 021) — `date_of_birth` is
+/// fetched to derive an age, never rendered verbatim.
 @riverpod
 Future<Map<String, dynamic>?> playerQuestionnaire(
     Ref ref, String playerId) async {
   final data = await _db
       .from('questionnaire_responses')
       .select(
-        'playing_frequency, self_assessed_level, '
-        'years_playing, preferred_surface, has_competed',
+        'date_of_birth, years_playing, greek_experience, '
+        'international_experience, junior_career_high_ranking, '
+        'received_atp_wta_point, us_college_division, other_sport',
       )
       .eq('player_id', playerId)
       .maybeSingle();
