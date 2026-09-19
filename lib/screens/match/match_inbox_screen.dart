@@ -63,6 +63,9 @@ class _PendingResultsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final async = ref.watch(pendingResultsProvider);
+    // While any inbox action is in flight every card's buttons are disabled,
+    // so a slow elo-recalculate call can't be fired twice.
+    final busy = ref.watch(matchActionsProvider.select((s) => s.isLoading));
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -80,8 +83,11 @@ class _PendingResultsTab extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             itemCount: results.length,
             separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, i) =>
-                _PendingResultCard(match: results[i], ref: ref),
+            itemBuilder: (context, i) => _PendingResultCard(
+              key: ValueKey(results[i]['id']),
+              match: results[i],
+              busy: busy,
+            ),
           ),
         );
       },
@@ -89,10 +95,27 @@ class _PendingResultsTab extends ConsumerWidget {
   }
 }
 
-class _PendingResultCard extends StatelessWidget {
-  const _PendingResultCard({required this.match, required this.ref});
+class _PendingResultCard extends ConsumerStatefulWidget {
+  const _PendingResultCard({
+    required this.match,
+    required this.busy,
+    super.key,
+  });
   final Map<String, dynamic> match;
-  final WidgetRef ref;
+
+  /// True while any inbox action is in flight.
+  final bool busy;
+
+  @override
+  ConsumerState<_PendingResultCard> createState() => _PendingResultCardState();
+}
+
+class _PendingResultCardState extends ConsumerState<_PendingResultCard> {
+  /// Set on the Confirm tap. Left true on success — the refreshed inbox drops
+  /// this card — so the button never flashes back to "Confirm" in between.
+  bool _confirming = false;
+
+  Map<String, dynamic> get match => widget.match;
 
   String _formatScore(dynamic score) {
     if (score is! List) return '—';
@@ -149,8 +172,10 @@ class _PendingResultCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () =>
-                        _showDisputeDialog(context, match['id'] as String),
+                    onPressed: widget.busy
+                        ? null
+                        : () => _showDisputeDialog(
+                            context, match['id'] as String),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.wPurple,
                       side: const BorderSide(color: AppColors.wPurple),
@@ -161,11 +186,19 @@ class _PendingResultCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () => _confirm(context, match['id'] as String),
+                    onPressed: widget.busy || _confirming
+                        ? null
+                        : () => _confirm(match['id'] as String),
                     style: FilledButton.styleFrom(
                         backgroundColor: AppColors.wGreen,
                         foregroundColor: Colors.white),
-                    child: Text(l.actionConfirm),
+                    child: _confirming
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l.actionConfirm),
                   ),
                 ),
               ],
@@ -176,22 +209,22 @@ class _PendingResultCard extends StatelessWidget {
     );
   }
 
-  Future<void> _confirm(BuildContext context, String matchId) async {
+  Future<void> _confirm(String matchId) async {
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _confirming = true);
+
+    // On success MatchActions.confirmMatch invalidates the inbox, the Home feed
+    // and the rating providers — see _invalidateMatchViews.
     await ref.read(matchActionsProvider.notifier).confirmMatch(matchId);
-    if (context.mounted) {
-      final l = AppLocalizations.of(context)!;
-      final st = ref.read(matchActionsProvider);
-      if (st is AsyncData) {
-        // MatchActions.confirmMatch already invalidates the inbox, the Home feed
-        // and the rating providers — see _invalidateMatchViews.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.inboxConfirmSuccess)),
-        );
-      } else if (st is AsyncError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(st.error.toString())),
-        );
-      }
+    if (!mounted) return;
+
+    final st = ref.read(matchActionsProvider);
+    if (st is AsyncError) {
+      setState(() => _confirming = false);
+      messenger.showSnackBar(SnackBar(content: Text(st.error.toString())));
+    } else {
+      messenger.showSnackBar(SnackBar(content: Text(l.inboxConfirmSuccess)));
     }
   }
 

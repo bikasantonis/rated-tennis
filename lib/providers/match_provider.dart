@@ -113,7 +113,13 @@ Future<List<Map<String, dynamic>>> pendingRequests(Ref ref) async {
 // Match actions notifier
 // ---------------------------------------------------------------------------
 
-@riverpod
+/// Kept alive on purpose. Actions are fired with `ref.read` and must outlive the
+/// widget that started them: as an auto-dispose notifier nothing watched it from
+/// the inbox, so it was disposed during the elo-recalculate await, `ref.mounted`
+/// turned false and `_invalidateMatchViews` was skipped — the confirmed match
+/// stayed in the inbox and the ELO card kept its pre-confirm counters until a
+/// manual refresh. The state is a single `AsyncValue<void>`, so keeping it is free.
+@Riverpod(keepAlive: true)
 class MatchActions extends _$MatchActions {
   @override
   AsyncValue<void> build() => const AsyncData(null);
