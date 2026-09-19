@@ -35,7 +35,10 @@ Future<List<Map<String, dynamic>>> eloHistory(Ref ref, String playerId) async {
   return List<Map<String, dynamic>>.from(results as List);
 }
 
-/// Last 10 confirmed matches for a player's match history tab.
+/// Last 10 settled matches for a player's match history tab.
+///
+/// Status set matches the one counted by `sync_match_counters` (migration 028)
+/// so the history and the Played/Won counters always agree.
 @riverpod
 Future<List<Map<String, dynamic>>> playerMatches(
     Ref ref, String playerId) async {
@@ -43,13 +46,14 @@ Future<List<Map<String, dynamic>>> playerMatches(
       .from('match_results')
       .select(
         'id, winner_id, loser_id, score, match_type, status, played_at, '
+        'elo_excluded, '
         'winner:profiles!winner_id(display_name), '
         'loser:profiles!loser_id(display_name), '
         'elo_history(delta), ' // RLS returns only the authenticated user's row
         'tournament:tournaments!tournament_id(name)',
       )
       .or('winner_id.eq.$playerId,loser_id.eq.$playerId')
-      .eq('status', 'confirmed')
+      .inFilter('status', ['confirmed', 'overridden'])
       .order('played_at', ascending: false)
       .limit(10);
   return List<Map<String, dynamic>>.from(results as List);

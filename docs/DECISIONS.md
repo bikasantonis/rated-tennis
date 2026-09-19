@@ -9,7 +9,7 @@ Key choices made during design and development, with rationale and trade-offs. A
 **Decision:** Use Supabase (PostgreSQL + PostgREST + Realtime) as the backend instead of Firebase (Firestore + Cloud Functions).
 
 **Why:**
-- **EU data residency.** Supabase runs on eu-central-1 (Frankfurt), satisfying GDPR's requirement that personal data stays within the EEA. Firebase does not guarantee EU-only data processing at the individual record level.
+- **EU data residency.** Production runs in eu-west-1 (Ireland) and the dev project in eu-central-1 (Frankfurt), so personal data stays within the EEA as GDPR expects. Firebase does not guarantee EU-only data processing at the individual record level.
 - **Relational schema.** Players, matches, ratings, and tournaments are deeply relational. PostgreSQL joins, transactions, generated columns, and foreign key constraints handle this naturally. Firestore's document model would require denormalisation and client-side joins.
 - **Row-Level Security.** Supabase exposes PostgreSQL RLS directly to the client SDK. A single `is_admin()` helper function gates all admin writes. Firestore Security Rules cannot express multi-table role checks of the same complexity.
 - **SQL migrations.** The `supabase/migrations/` directory provides a reproducible, reviewable, version-controlled schema history. Firestore has no equivalent.
@@ -176,3 +176,57 @@ Key choices made during design and development, with rationale and trade-offs. A
 - **Age adjustment is meaningful.** A former national top-20 player at 60 should seed lower than the same player at 30. The new algorithm accounts for age decline explicitly.
 
 **Trade-offs:** Players with no competitive history (the recreational path) are harder to differentiate. The bottom tiers (5.0–6.5) will have more initial clustering. The `years_playing` field is retained as the primary differentiator for recreational players.
+
+---
+
+## ADR-14: Separate DEV and PROD projects, CLI linked to DEV, guarded prod pushes (2026-09-13)
+
+**Decision:** Keep two Supabase projects — DEV (`ikjdfsjflzwkhlbootbx`, eu-central-1) and PROD (`jkjndgcjyalmglnvvdrd`, eu-west-1). Leave the CLI linked to DEV permanently, and reach PROD only through `scripts/push-prod.ps1`. DEV doubles as staging; there is no third project.
+
+**Why:**
+- **The dangerous target was the default.** Until 2026-09-13 the CLI was linked to PROD, so a plain `supabase db push` shipped untested migrations straight to production and `supabase db reset --linked` would have wiped it. Migration 028 reached PROD before DEV.
+- **A deliberate, auditable path to PROD.** The script refuses a dirty working tree, warns off non-`main` branches, shows `migration list` and a dry run, requires typing `prod`, and relinks DEV in a `finally` block so the CLI can never be left pointing at production.
+- **One staging environment is enough at this scale.** A third project would add cost and another set of per-project settings to keep in sync.
+
+**Trade-offs:** `db push` carries only migrations, so Edge Functions, secrets, Database Webhooks and Auth settings can drift between the two projects and must be checked by hand. The script is PowerShell (Windows-first), and `supabase link` may prompt for database passwords on every run.
+
+---
+
+## ADR-15: Local Docker stack as the first migration target (2026-09-13)
+
+**Decision:** Every migration is first replayed from an empty database on the local Supabase stack (`supabase start` / `supabase db reset`) before it goes to DEV. The local stack runs Postgres 17 to match PROD, with analytics disabled, OAuth disabled, email confirmations off, and `supabase/seed.sql` providing two email/password accounts and two matches.
+
+**Why:**
+- **Incremental pushes hide broken chains.** Until 2026-09-13 migrations had only ever been applied one at a time to cloud projects. `supabase db reset` is the only test that the full 001→latest chain still works on a fresh database.
+- **Flows are testable without cloud credentials.** The seed accounts exercise match confirmation and the 028 counters with no Google/Apple setup. The inbox confirm bug fixed on 2026-09-13 was found this way.
+- **Version parity.** Pinning `major_version = 17` keeps local SQL behaviour aligned with PROD (17.6).
+
+**Trade-offs:** Requires Docker Desktop (with WSL memory capped on Windows). There are no Database Webhooks or OAuth locally, so push, email and Google sign-in still have to be tested on DEV.
+
+---
+
+## ADR-16: Cloudflare Pages, by direct upload, for the web app
+
+**Decision:** Host the Flutter web build on Cloudflare Pages (project `ratedtennis`), published with `wrangler pages deploy build/web --branch=main`. `ratedtennis.gr` is canonical; `ratedtennis.com` 301-redirects to it.
+
+**Why:**
+- **Static bundle, free TLS and CDN.** The web app is a static Flutter build that talks to Supabase directly; Pages serves it with managed certificates and no server to maintain.
+- **DNS is already on Cloudflare** for both domains, so the custom domain and the `.com` → `.gr` Redirect Rule live in the same place.
+- **Direct upload instead of git-integrated builds**, because Cloudflare's build image has no Flutter SDK.
+- **One canonical domain** (`.gr`, single-hop 301 from `.com`) for SEO.
+
+**Trade-offs:** Deploys are manual and depend on a developer machine with the right `.env.production`. There are no per-PR preview deployments, and the live build is not tied to a commit unless releases are tagged.
+
+---
+
+## ADR-17: Played/Won counters maintained by a status trigger (migration 028)
+
+**Decision:** Maintain `profiles.matches_played` / `matches_won` with an `AFTER INSERT OR UPDATE` trigger on `match_results` (`sync_match_counters`) that reacts to a match entering or leaving `status IN ('confirmed','overridden')`. Do not maintain them inside `apply_elo_changes`.
+
+**Why:**
+- **Four confirmation paths** (opponent confirm, 48 h auto-confirm, admin approve, admin override) all end in a status change; a status trigger covers every one, including future paths.
+- **`apply_elo_changes` early-returns** for ELO-excluded friendlies and when `elo_history` rows already exist, so counting there would miss matches.
+- **Counters agree with the feed.** Every settled match counts as Played, including tournament matches and voided friendlies — the same status set the Home and Profile feeds show.
+- **Safe under concurrency.** Both profile rows are locked in `id` order, matching `apply_elo_changes`' `SELECT … FOR UPDATE`, so the two cannot deadlock.
+
+**Trade-offs:** "Played" is not the number of *rated* matches. Any new settled status must be added to the trigger and to the feed queries together.

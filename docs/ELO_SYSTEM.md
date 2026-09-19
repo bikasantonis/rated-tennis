@@ -106,24 +106,27 @@ The `seed-elo` Edge Function uses upsert on `questionnaire_responses` (keyed on 
 ## 4. Match Confirmation Flow
 
 ```
-Player A submits match result (winner + loser + score)
+Player A submits match result (winner + loser + score + format)
     ↓  INSERT into match_results (status = 'pending')
-    ↓  DB trigger: notify opponent (NF-01 push)
+    ↓  trg_match_submission_rate_limit: max 20 submissions per hour
+    ↓  trg_notify_match_submitted: notify opponent (NF-01)
 Player B taps Confirm in Match Inbox
-    ↓  Flutter POSTs to /elo-recalculate  { match_id }
-    ↓  Edge Function validates: JWT caller must be non-submitter
+    ↓  app → functions.invoke('elo-recalculate', { match_id })
+    ↓  Edge Function validates: caller is a participant but not the submitter; match still 'pending'
     ↓  UPDATE match_results SET status = 'confirmed', confirmed_at = now()
-    ↓  CALL apply_elo_changes(match_id)     ← idempotent SQL function
+    ↓      trg_match_counters: matches_played / matches_won updated
+    ↓  apply_elo_changes(match_id)     ← idempotent SQL function
     ↓  Both profiles updated atomically, elo_history rows appended
+    ↓  app invalidates feed, inbox, profile and sparkline providers
 ```
 
-If Player B **disputes** instead, the match enters `disputed` status and an admin resolves it via the Admin Panel. Admin override sets `status = 'overridden'` and also triggers `apply_elo_changes`.
+If Player B **disputes** instead, the match enters `disputed` status and an admin resolves it in the Admin Panel: **approve** sets `status = 'confirmed'`, **override** sets `status = 'overridden'`. In both cases the app then calls the `apply_elo_changes` RPC directly. If the opponent never responds, the auto-confirm job confirms the match after 48 hours (§9).
 
 ---
 
 ## 5. Rating Calculation (`apply_elo_changes`)
 
-Implemented as `public.apply_elo_changes(p_match_id uuid)` in PostgreSQL (`SECURITY DEFINER`). Called by the `elo-recalculate` Edge Function and by the auto-confirm cron job.
+Implemented as `public.apply_elo_changes(p_match_id uuid)` in PostgreSQL (`SECURITY DEFINER`, final definition in migration 019). Called by the `elo-recalculate` Edge Function, the auto-confirm cron job, and the admin dispute actions (client RPC). It does not check the match status or the caller — see [DATABASE.md §8.2](DATABASE.md#82-elo-can-be-applied-without-the-opponents-confirmation).
 
 ### K-factor
 
@@ -174,7 +177,7 @@ If `|winner_tier_floor − loser_tier_floor| > 1.5`, the match is voided:
 
 A gap of exactly 1.5 is **allowed** (strict `>` comparison). Tournament matches are **never** voided regardless of tier gap.
 
-The match result itself is still recorded and visible in both players' history — only the ELO change is suppressed. The client can preview this before submitting via `friendlyEloExcludedProvider` in `match_provider.dart`.
+The match result itself is still recorded and visible in both players' history — only the ELO change is suppressed. A voided match **does** count toward `profiles.matches_played` / `matches_won` (migration 028), so Played always agrees with the match feed. The client can preview the void before submitting via `friendlyEloExcludedProvider` in `match_provider.dart`, and both the Home feed and the profile history render a `NotRatedChip` in place of the delta once the match is settled.
 
 **Rationale:** Prevents a high-rated player from farming easy wins against much weaker opponents for ELO gain in friendly matches.
 
@@ -211,7 +214,7 @@ When a player's `elo_rating` reaches **10.0**, they enter the "RATED" tier. The 
 
 ## 9. Auto-Confirmation
 
-A pg_cron job (`match-auto-confirm`) runs every hour. It finds all `pending` match results older than 48 hours, confirms them (`auto_confirmed = true`), calls `apply_elo_changes`, and sends NF-02 notifications to both players.
+A pg_cron job (`match-auto-confirm`) runs every hour. It finds all `pending` match results whose `created_at` is more than 48 hours old, confirms them (`auto_confirmed = true`), calls `apply_elo_changes`, and sends NF-02 notifications to both players. Since migration 024, the update is guarded by `WHERE status = 'pending'` and the notification insert uses `ON CONFLICT DO NOTHING`, so overlapping runs cannot double-confirm or double-notify.
 
 This prevents indefinitely unconfirmed matches when the opponent is unresponsive.
 

@@ -1,5 +1,8 @@
 # Supabase local dev configuration
-# Run `supabase start` to spin up local stack
+# Run `supabase start` to spin up local stack, `supabase db reset` to replay all
+# migrations from empty and load supabase/seed.sql.
+
+project_id = "rated"
 
 [api]
 port = 54321
@@ -7,12 +10,20 @@ port = 54321
 [db]
 port = 54322
 shadow_port = 54320
+# Match production (Postgres 17.x) so local replays behave like prod.
+major_version = 17
 
 [studio]
 port = 54323
 
-[inbucket]
+# Local mail catcher (Mailpit) — view auth emails at http://127.0.0.1:54324
+[local_smtp]
 port = 54324
+
+# Logflare + Vector: the heaviest local services and unreliable on Windows.
+# Not needed for migration or app testing.
+[analytics]
+enabled = false
 
 [storage]
 file_size_limit = "5MiB"
@@ -23,6 +34,10 @@ additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 refresh_token_reuse_interval = 10
 
+# Local only: seeded and newly signed-up users can log in without an email link.
+[auth.email]
+enable_confirmations = false
+
 # PRD §6.1 — rate limits (local dev mirror; set matching values in Dashboard → Auth → Rate Limits for production)
 # email_sent: max OTP/magic-link emails per hour; token_refresh: per hour per user
 [auth.rate_limit]
@@ -30,12 +45,15 @@ email_sent = 10
 sms_sent = 10
 token_refresh = 150
 
+# OAuth providers are disabled locally (no client credentials on this machine).
+# Test Google/Apple sign-in against the DEV cloud project instead; use the
+# email/password seed accounts (supabase/seed.sql) locally.
 [auth.external.google]
-enabled = true
+enabled = false
 client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_SECRET)"
 
 [auth.external.apple]
-enabled = true
+enabled = false
 client_id = "env(APPLE_CLIENT_ID)"
 secret = "env(APPLE_SECRET)"

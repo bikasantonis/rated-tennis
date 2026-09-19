@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rated/l10n/app_localizations.dart';
 
 import 'package:rated/providers/locale_provider.dart';
+import 'package:rated/providers/realtime_sync_provider.dart';
 import 'package:rated/router/app_router.dart';
 import 'package:rated/services/notification_service.dart';
 import 'package:rated/theme/app_theme.dart';
@@ -15,6 +16,9 @@ class RatedApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final locale = ref.watch(localeProvider);
+    // Live cross-device updates for the signed-in user's matches, profile and
+    // challenges — see realtimeSyncProvider.
+    ref.watch(realtimeSyncProvider);
     NotificationService.instance.setRouter(router);
 
     return MaterialApp.router(

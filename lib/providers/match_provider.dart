@@ -1,4 +1,6 @@
 import 'package:rated/models/match_result.dart';
+import 'package:rated/providers/auth_provider.dart';
+import 'package:rated/providers/profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -34,7 +36,10 @@ Future<List<Map<String, dynamic>>> searchOpponents(
 // Recent matches (Home feed)
 // ---------------------------------------------------------------------------
 
-/// Last 5 confirmed matches involving the current user, newest first.
+/// Last 5 settled matches involving the current user, newest first.
+///
+/// Status set matches the one counted by `sync_match_counters` (migration 028)
+/// so the feed and the Played/Won counters on the ELO card always agree.
 @riverpod
 Future<List<Map<String, dynamic>>> recentMatches(Ref ref) async {
   final uid = _uid;
@@ -44,12 +49,13 @@ Future<List<Map<String, dynamic>>> recentMatches(Ref ref) async {
       .from('match_results')
       .select(
         'id, winner_id, loser_id, score, match_type, status, played_at, '
+        'elo_excluded, '
         'winner:profiles!winner_id(display_name), '
         'loser:profiles!loser_id(display_name), '
         'elo_history(delta)',  // RLS returns only the current user's row
       )
       .or('winner_id.eq.$uid,loser_id.eq.$uid')
-      .eq('status', 'confirmed')
+      .inFilter('status', ['confirmed', 'overridden'])
       .order('played_at', ascending: false)
       .limit(5);
 
@@ -104,13 +110,57 @@ Future<List<Map<String, dynamic>>> pendingRequests(Ref ref) async {
 }
 
 // ---------------------------------------------------------------------------
+// Cache invalidation — shared by MatchActions and realtimeSyncProvider
+// ---------------------------------------------------------------------------
+
+/// Drops every cached view of the current user's match data so the next read
+/// refetches it.
+///
+/// Home stays mounted underneath the pushed submit/inbox routes, so without
+/// this its ELO card and match feed keep serving the pre-match snapshot until
+/// a pull-to-refresh or an app restart. Called after the user's own actions
+/// ([MatchActions]) and on Realtime change signals from the opponent's side
+/// (`realtimeSyncProvider`). Invalidating an auto-dispose provider that has no
+/// listeners simply disposes it.
+void invalidateMatchViews(Ref ref, {bool includeRating = false}) {
+  ref.invalidate(recentMatchesProvider);
+  ref.invalidate(pendingResultsProvider);
+  if (!includeRating) return;
+
+  // A settled match moves matches_played / matches_won (trigger from
+  // migration 028) and, unless ELO-excluded, elo_rating too.
+  ref.invalidate(currentProfileProvider);
+  final uid = _uid;
+  if (uid != null) {
+    ref.invalidate(eloHistoryProvider(uid));
+    ref.invalidate(playerProfileProvider(uid));
+    ref.invalidate(playerMatchesProvider(uid));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Match actions notifier
 // ---------------------------------------------------------------------------
 
-@riverpod
+/// Kept alive on purpose. Actions are fired with `ref.read` and must outlive the
+/// widget that started them: as an auto-dispose notifier nothing watched it from
+/// the inbox, so it was disposed during the elo-recalculate await, `ref.mounted`
+/// turned false and `_invalidateMatchViews` was skipped — the confirmed match
+/// stayed in the inbox and the ELO card kept its pre-confirm counters until a
+/// manual refresh. The state is a single `AsyncValue<void>`, so keeping it is free.
+@Riverpod(keepAlive: true)
 class MatchActions extends _$MatchActions {
   @override
   AsyncValue<void> build() => const AsyncData(null);
+
+  /// Refreshes the same set of views as [invalidateMatchViews].
+  ///
+  /// The `ref.mounted` guard stays because an action can still outlive its
+  /// notifier in edge cases (sign-out mid-request); a disposed `ref` throws.
+  void _invalidateMatchViews({bool includeRating = false}) {
+    if (!ref.mounted) return;
+    invalidateMatchViews(ref, includeRating: includeRating);
+  }
 
   /// Submit a new friendly match result (status = 'pending', awaits opponent confirmation).
   Future<void> submitMatch({
@@ -148,6 +198,9 @@ class MatchActions extends _$MatchActions {
         rethrow;
       }
     });
+    // The row lands on 'pending' so it won't show in the feed yet, but the
+    // inbox badge and Home's view of it must not go stale.
+    if (state is AsyncData) _invalidateMatchViews();
   }
 
   /// Confirm a match result — calls the elo-recalculate Edge Function.
@@ -164,6 +217,7 @@ class MatchActions extends _$MatchActions {
         );
       }
     });
+    if (state is AsyncData) _invalidateMatchViews(includeRating: true);
   }
 
   /// Dispute a match result with a corrected score.

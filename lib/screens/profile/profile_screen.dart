@@ -12,6 +12,7 @@ import 'package:rated/router/app_router.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/utils/streak_utils.dart';
 import 'package:rated/widgets/error_state_widget.dart';
+import 'package:rated/widgets/not_rated_chip.dart';
 
 /// SCR-06 — Player profile (own or another player's public profile).
 class ProfileScreen extends ConsumerWidget {
@@ -917,7 +918,9 @@ class _MatchHistoryTile extends StatelessWidget {
     if (!showDelta) return null;
     final history = match['elo_history'] as List?;
     if (history == null || history.isEmpty) return null;
-    return (history.first as Map?)?['delta'] as double?;
+    // elo_history.delta is numeric(8,4); PostgREST decodes an integral value as
+    // int, which `as double?` would silently turn into null.
+    return ((history.first as Map?)?['delta'] as num?)?.toDouble();
   }
 
   @override
@@ -962,22 +965,7 @@ class _MatchHistoryTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (match['elo_excluded'] == true)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.outline.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Not rated',
-                  style: TextStyle(
-                    color: AppColors.outline,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 11,
-                  ),
-                ),
-              )
+              const NotRatedChip()
             else if (delta != null)
               Text(
                 '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}',

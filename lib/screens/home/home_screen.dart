@@ -16,6 +16,7 @@ import 'package:rated/utils/streak_utils.dart';
 import 'package:rated/widgets/app_bar_actions.dart';
 import 'package:rated/widgets/elo_score_card.dart';
 import 'package:rated/widgets/error_state_widget.dart';
+import 'package:rated/widgets/not_rated_chip.dart';
 
 /// SCR-04 — Home / Dashboard.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -334,7 +335,9 @@ class _MatchTile extends StatelessWidget {
   double? get _eloDelta {
     final history = match['elo_history'] as List?;
     if (history == null || history.isEmpty) return null;
-    return (history.first as Map?)?['delta'] as double?;
+    // elo_history.delta is numeric(8,4); PostgREST decodes an integral value as
+    // int, which `as double?` would silently turn into null.
+    return ((history.first as Map?)?['delta'] as num?)?.toDouble();
   }
 
   @override
@@ -372,7 +375,9 @@ class _MatchTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (delta != null)
+            if (match['elo_excluded'] == true)
+              const NotRatedChip()
+            else if (delta != null)
               Text(
                 '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}',
                 style: TextStyle(
