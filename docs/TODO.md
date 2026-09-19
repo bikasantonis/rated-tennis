@@ -1,6 +1,6 @@
 # RATED — Backlog
 
-> Updated 2026-09-14. RATED has launched: the web app is live at https://ratedtennis.gr and PROD Supabase is at migration 028. This file replaces the pre-launch scaffold task list. What shipped is summarised in §1 (details in `CHANGELOG.md`); everything below it is open.
+> Updated 2026-09-19. RATED has launched: the web app is live at https://ratedtennis.gr and PROD Supabase is at migration 029, released as `v1.0.0`. This file replaces the pre-launch scaffold task list. What shipped is summarised in §1 (details in `CHANGELOG.md`); everything below it is open.
 
 ---
 
@@ -45,7 +45,7 @@
 
 ### Release
 - [ ] 🟡 Record mobile store status (App Store / Play: build numbers, tracks) in DEPLOYMENT_CHECKLIST.md — `pubspec.yaml` is still `1.0.0+1`
-- [ ] 🟡 Tag the launch commit (`v1.0.0`) and move CHANGELOG `[Unreleased]` into a version section — there are no git tags yet
+- [x] 🟡 Tag the launch commit (`v1.0.0`) and move CHANGELOG `[Unreleased]` into a version section — done 2026-09-19
 - [ ] 🟡 Store listings: App Store privacy nutrition label, Play data-safety form
 - [ ] 🟡 Confirm the launcher icons are the final brand asset (`assets/images/` holds only `.gitkeep`)
 

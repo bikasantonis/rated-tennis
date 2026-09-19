@@ -84,7 +84,7 @@ Read-only only — schema changes never go through the SQL editor.
 ### Done
 
 - [x] Web app live on Cloudflare Pages at https://ratedtennis.gr (responding at the time of writing); `ratedtennis.com` → 301 → `.gr`
-- [x] PROD Supabase (`jkjndgcjyalmglnvvdrd`, eu-west-1) at migrations 001–028, including the `elo_history.match_id` index (023), notification dedup + cron guard (024), and the location-consent constraint (025)
+- [x] PROD Supabase (`jkjndgcjyalmglnvvdrd`, eu-west-1) at migrations 001–029, including the `elo_history.match_id` index (023), notification dedup + cron guard (024), the location-consent constraint (025), and the Realtime publication (029)
 - [x] DEV brought level with PROD and made the CLI's default link; guarded `scripts/push-prod.ps1`
 - [x] Full migration chain verified from empty on the local Postgres 17 stack
 - [x] Production CORS origins (`ratedtennis.gr`, `ratedtennis.com`), verified against the deployed functions
@@ -100,7 +100,7 @@ Read-only only — schema changes never go through the SQL editor.
 
 - [ ] **Account deletion end-to-end** — expected to fail for any player with matches ([DATABASE.md §8.1](DATABASE.md#81-account-deletion-fails-for-players-with-match-history)); GDPR Art. 17
 - [ ] **ELO integrity** — a submitter can confirm their own match or apply ELO directly ([DATABASE.md §8.2](DATABASE.md#82-elo-can-be-applied-without-the-opponents-confirmation))
-- [ ] Mobile store releases (App Store / Play) — not recorded in the repo: `pubspec.yaml` is still `1.0.0+1` and there are no git tags
+- [ ] Mobile store releases (App Store / Play) — not recorded in the repo: `pubspec.yaml` is still `1.0.0+1`. The web release is tagged `v1.0.0` (2026-09-19)
 - [ ] Every row of the PROD configuration reference above verified (secrets, webhooks, Auth providers/URLs, rate limits, cron)
 - [ ] OneSignal push end-to-end on real Android and iOS devices (NF-01 – NF-05, nearby tournament)
 - [ ] The same per-project configuration on DEV (unverified as of 2026-09-13)

@@ -2,7 +2,7 @@
 
 All schema lives in Supabase (PostgreSQL 17). Changes are applied only through numbered SQL migrations in `supabase/migrations/` — never through the Dashboard. This document covers tables, the migration log, triggers, functions, RLS policies, scheduled jobs, the local → DEV → PROD workflow, and known issues.
 
-> State as of 2026-09-14: DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) were both at migration **028**; as of 2026-09-15 DEV is at **029** (Realtime publication) and PROD is pending `./scripts/push-prod.ps1`. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
+> State as of 2026-09-19 (v1.0.0): DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) are both at migration **029** (Realtime publication), applied to PROD via `./scripts/push-prod.ps1` and verified live cross-device. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
 
 ---
 

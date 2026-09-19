@@ -1,6 +1,6 @@
 # RATED — Architecture & Developer Reference
 
-> Last updated: 2026-09-14 (post-launch). The web app is live at **https://ratedtennis.gr**; production Supabase is at migration **028**.
+> Last updated: 2026-09-19 (v1.0.0). The web app is live at **https://ratedtennis.gr**; production Supabase is at migration **029**.
 > For a new developer: read this file first, then [ELO_SYSTEM.md](ELO_SYSTEM.md) for rating logic, [DATABASE.md](DATABASE.md) for the schema and the migration workflow, [NOTIFICATIONS.md](NOTIFICATIONS.md) for the push/email pipeline, [DECISIONS.md](DECISIONS.md) for why key choices were made, and [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) before shipping anything.
 
 ---

@@ -7,7 +7,13 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-> Work in progress toward **Public Launch**.
+_Nothing yet._
+
+---
+
+## [1.0.0] — Public Launch (2026-09-19)
+
+> First public release. Web app live at [ratedtennis.gr](https://ratedtennis.gr), PROD Supabase at migration 029.
 
 ### Security / Release Hardening
 
