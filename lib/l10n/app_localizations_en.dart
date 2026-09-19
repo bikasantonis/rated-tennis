@@ -1096,6 +1096,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSectionPlayingProfile => 'Playing Profile';
 
   @override
+  String profilePlayingAge(int age) {
+    return 'Age $age';
+  }
+
+  @override
+  String profilePlayingYears(String years) {
+    return '$years yrs playing';
+  }
+
+  @override
+  String get profilePlayingGreekRecreational => 'Recreational';
+
+  @override
+  String get profilePlayingGreekNationalU200 =>
+      'National jr. · outside top 200';
+
+  @override
+  String get profilePlayingGreekNational20200 => 'National jr. · 20–200';
+
+  @override
+  String get profilePlayingGreekNationalTop20 => 'National jr. · top 20';
+
+  @override
+  String get profilePlayingIntlRecreational => 'Intl. recreational';
+
+  @override
+  String get profilePlayingIntlJunior => 'Intl. junior';
+
+  @override
+  String get profilePlayingIntlPro => 'Professional';
+
+  @override
+  String get profilePlayingIntlCollege => 'US College';
+
+  @override
+  String profilePlayingCollegeDivision(String division) {
+    return 'US College · $division';
+  }
+
+  @override
+  String profilePlayingJuniorRanking(int rank) {
+    return 'ITF Jr. career high #$rank';
+  }
+
+  @override
+  String get profilePlayingAtpWtaPoint => 'ATP/WTA point';
+
+  @override
+  String get profilePlayingRacketSports => 'Racket sports';
+
+  @override
+  String get profilePlayingOtherSport => 'Other sport';
+
+  @override
   String get profileStartQuestionnaire => 'Start';
 
   @override

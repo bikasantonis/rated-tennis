@@ -2096,6 +2096,96 @@ abstract class AppLocalizations {
   /// **'Playing Profile'**
   String get profileSectionPlayingProfile;
 
+  /// No description provided for @profilePlayingAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age {age}'**
+  String profilePlayingAge(int age);
+
+  /// No description provided for @profilePlayingYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{years} yrs playing'**
+  String profilePlayingYears(String years);
+
+  /// No description provided for @profilePlayingGreekRecreational.
+  ///
+  /// In en, this message translates to:
+  /// **'Recreational'**
+  String get profilePlayingGreekRecreational;
+
+  /// No description provided for @profilePlayingGreekNationalU200.
+  ///
+  /// In en, this message translates to:
+  /// **'National jr. · outside top 200'**
+  String get profilePlayingGreekNationalU200;
+
+  /// No description provided for @profilePlayingGreekNational20200.
+  ///
+  /// In en, this message translates to:
+  /// **'National jr. · 20–200'**
+  String get profilePlayingGreekNational20200;
+
+  /// No description provided for @profilePlayingGreekNationalTop20.
+  ///
+  /// In en, this message translates to:
+  /// **'National jr. · top 20'**
+  String get profilePlayingGreekNationalTop20;
+
+  /// No description provided for @profilePlayingIntlRecreational.
+  ///
+  /// In en, this message translates to:
+  /// **'Intl. recreational'**
+  String get profilePlayingIntlRecreational;
+
+  /// No description provided for @profilePlayingIntlJunior.
+  ///
+  /// In en, this message translates to:
+  /// **'Intl. junior'**
+  String get profilePlayingIntlJunior;
+
+  /// No description provided for @profilePlayingIntlPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional'**
+  String get profilePlayingIntlPro;
+
+  /// No description provided for @profilePlayingIntlCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'US College'**
+  String get profilePlayingIntlCollege;
+
+  /// No description provided for @profilePlayingCollegeDivision.
+  ///
+  /// In en, this message translates to:
+  /// **'US College · {division}'**
+  String profilePlayingCollegeDivision(String division);
+
+  /// No description provided for @profilePlayingJuniorRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'ITF Jr. career high #{rank}'**
+  String profilePlayingJuniorRanking(int rank);
+
+  /// No description provided for @profilePlayingAtpWtaPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'ATP/WTA point'**
+  String get profilePlayingAtpWtaPoint;
+
+  /// No description provided for @profilePlayingRacketSports.
+  ///
+  /// In en, this message translates to:
+  /// **'Racket sports'**
+  String get profilePlayingRacketSports;
+
+  /// No description provided for @profilePlayingOtherSport.
+  ///
+  /// In en, this message translates to:
+  /// **'Other sport'**
+  String get profilePlayingOtherSport;
+
   /// No description provided for @profileStartQuestionnaire.
   ///
   /// In en, this message translates to:
