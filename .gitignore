@@ -10,6 +10,7 @@ build/
 
 # Environment secrets — never commit
 .env.dev
+.env.local
 .env.staging
 .env.production
 *.env
