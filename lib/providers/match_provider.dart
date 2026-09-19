@@ -110,6 +110,35 @@ Future<List<Map<String, dynamic>>> pendingRequests(Ref ref) async {
 }
 
 // ---------------------------------------------------------------------------
+// Cache invalidation — shared by MatchActions and realtimeSyncProvider
+// ---------------------------------------------------------------------------
+
+/// Drops every cached view of the current user's match data so the next read
+/// refetches it.
+///
+/// Home stays mounted underneath the pushed submit/inbox routes, so without
+/// this its ELO card and match feed keep serving the pre-match snapshot until
+/// a pull-to-refresh or an app restart. Called after the user's own actions
+/// ([MatchActions]) and on Realtime change signals from the opponent's side
+/// (`realtimeSyncProvider`). Invalidating an auto-dispose provider that has no
+/// listeners simply disposes it.
+void invalidateMatchViews(Ref ref, {bool includeRating = false}) {
+  ref.invalidate(recentMatchesProvider);
+  ref.invalidate(pendingResultsProvider);
+  if (!includeRating) return;
+
+  // A settled match moves matches_played / matches_won (trigger from
+  // migration 028) and, unless ELO-excluded, elo_rating too.
+  ref.invalidate(currentProfileProvider);
+  final uid = _uid;
+  if (uid != null) {
+    ref.invalidate(eloHistoryProvider(uid));
+    ref.invalidate(playerProfileProvider(uid));
+    ref.invalidate(playerMatchesProvider(uid));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Match actions notifier
 // ---------------------------------------------------------------------------
 
@@ -124,28 +153,13 @@ class MatchActions extends _$MatchActions {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  /// Drops every cached view of the current user's match data.
+  /// Refreshes the same set of views as [invalidateMatchViews].
   ///
-  /// Home stays mounted underneath the pushed submit/inbox routes, so without
-  /// this its ELO card and match feed keep serving the pre-match snapshot until
-  /// a pull-to-refresh or an app restart. Centralised here so every call site
-  /// benefits — `ref.invalidate` from a notifier is safe for these auto-dispose
-  /// providers: an invalidated provider with no listeners is simply disposed.
+  /// The `ref.mounted` guard stays because an action can still outlive its
+  /// notifier in edge cases (sign-out mid-request); a disposed `ref` throws.
   void _invalidateMatchViews({bool includeRating = false}) {
     if (!ref.mounted) return;
-    ref.invalidate(recentMatchesProvider);
-    ref.invalidate(pendingResultsProvider);
-    if (!includeRating) return;
-
-    // A settled match moves matches_played / matches_won (trigger from
-    // migration 028) and, unless ELO-excluded, elo_rating too.
-    ref.invalidate(currentProfileProvider);
-    final uid = _uid;
-    if (uid != null) {
-      ref.invalidate(eloHistoryProvider(uid));
-      ref.invalidate(playerProfileProvider(uid));
-      ref.invalidate(playerMatchesProvider(uid));
-    }
+    invalidateMatchViews(ref, includeRating: includeRating);
   }
 
   /// Submit a new friendly match result (status = 'pending', awaits opponent confirmation).

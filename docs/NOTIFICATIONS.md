@@ -1,6 +1,6 @@
 # RATED — Notification System
 
-This document describes how notifications are generated, delivered to devices, and routed within the app. The implementation spans DB triggers (`supabase/migrations/010_notification_triggers.sql`), a DB webhook, the `send-notification` Edge Function, and `lib/services/notification_service.dart`.
+This document describes how notifications are generated, delivered to devices, and routed within the app. The implementation spans DB triggers (`010_notification_triggers.sql`, `016_organizer_requests.sql`, `019_numeric_tiers.sql`), the `match-auto-confirm` pg_cron job, per-project Database Webhooks, three Edge Functions (`send-notification`, `send-email`, `notify-nearby-tournament`), and `lib/services/notification_service.dart`.
 
 ---
 
@@ -10,8 +10,8 @@ This document describes how notifications are generated, delivered to devices, a
 2. [Notification Types](#2-notification-types)
 3. [In-App Notification Panel](#3-in-app-notification-panel)
 4. [Deep-Link Routing](#4-deep-link-routing)
-5. [Nearby Tournament Push (separate flow)](#5-nearby-tournament-push-separate-flow)
-6. [OneSignal Configuration](#6-onesignal-configuration)
+5. [Nearby Tournament Push](#5-nearby-tournament-push)
+6. [Configuration](#6-configuration)
 
 ---
 
@@ -20,63 +20,64 @@ This document describes how notifications are generated, delivered to devices, a
 Every notification follows the same chain:
 
 ```
-1. DB trigger  (or Edge Function / cron job)
+1. DB trigger, pg_cron job, or Edge Function
         ↓
 2. INSERT into notifications table
         ↓
-3. Supabase DB webhook fires on INSERT
-        ↓
-4. send-notification Edge Function (Deno)
-        ↓
-5. OneSignal REST API  POST /notifications
-        ↓
-6. Device receives push (iOS APNs / Android FCM via OneSignal)
+3. Database Webhooks on notifications INSERT fire:
+     ├── send-notification  → OneSignal REST API → device push (APNs / FCM)
+     └── send-email         → Resend (organizer_request_* types only)
 ```
 
 **Why a `notifications` table as the hub?**
 - Provides a persistent in-app notification panel with history
-- One DB webhook on INSERT is the single integration point — no per-trigger OneSignal calls in trigger code
+- One webhook on INSERT is the single integration point — no OneSignal calls inside trigger code
 - The `is_read` column drives the unread badge count
 - `reference_type` + `reference_id` enable deep-link routing (see §4)
-- The panel works even when push is disabled, since it reads directly from the table
+- The panel works even when push is unavailable, since it reads directly from the table
 
-**`send-notification` Edge Function** reads `title`, `body`, `reference_type`, and `reference_id` from the newly inserted row. It targets the device via OneSignal's `external_id` alias, which is set to the player's Supabase UUID at sign-in via `NotificationService.identifyUser()`.
+**`send-notification`** reads `recipient_id`, `title`, `body`, `reference_type`, and `reference_id` from the inserted row and targets the device via OneSignal's `external_id` alias, which the app sets to the player's Supabase UUID at sign-in.
+
+**Platform and environment limits:**
+- **Push is native only.** `onesignal_flutter` has no web implementation, so `main.dart` skips OneSignal on web and `identifyUser` / `clearUser` are no-ops there. Web users (ratedtennis.gr) see notifications only in the in-app panel.
+- **Webhooks are per-project Dashboard configuration**, not migrations. They must exist on each cloud project (see §6), and the local Docker stack has none, so local runs create notification rows but send no push or email.
+- A partial unique index `(recipient_id, reference_id, type) WHERE reference_id IS NOT NULL` (migration 024) de-duplicates notifications for the same entity.
 
 ---
 
 ## 2. Notification Types
 
-| Type string | NF code | Triggering event | Recipient | Notes |
+| Type string | NF code | Created by | Recipient | Email? |
 |---|---|---|---|---|
-| `match_submitted` | NF-01 | `trg_notify_match_submitted` fires on `match_results INSERT` | Non-submitting player | Prompts them to confirm or dispute |
-| `match_auto_confirmed` | NF-02 | `match-auto-confirm` cron job after 48 h | Both players | Match was confirmed automatically |
-| `match_disputed` | NF-03 | `trg_notify_match_disputed` fires when `status → 'disputed'` | Original submitter | Tells them the opponent disputes their score |
-| `match_request_received` | NF-04 | `trg_notify_match_request_received` fires on `match_requests INSERT` | Challenge recipient | |
-| `match_request_accepted` | NF-05a | `trg_notify_match_request_responded` fires when `status → 'accepted'` | Requester | |
-| `match_request_declined` | NF-05b | Same trigger, `status → 'declined'` | Requester | |
-| `match_elo_excluded` | — | `notify_match_excluded()` called from `apply_elo_changes` | Both players | Friendly match voided due to tier gap > 1.5 |
-| `nearby_tournament` | NF-06 | `notify-nearby-tournament` Edge Function when `registration_open → true` | Nearby consenting players | See §5 for this separate flow |
-| `organizer_request_submitted` | — | DB trigger on `organizer_requests INSERT` | Admin users | Admin is notified of new requests |
-| `organizer_request_approved` | — | DB trigger when request `status → 'approved'` | Requesting player | |
-| `organizer_request_denied` | — | DB trigger when request `status → 'denied'` | Requesting player | |
+| `match_submitted` | NF-01 | `trg_notify_match_submitted` on `match_results` INSERT | Non-submitting player | No |
+| `match_auto_confirmed` | NF-02 | `match-auto-confirm` pg_cron job, after 48 h | Both players | No |
+| `match_disputed` | NF-03 | `trg_notify_match_disputed` when `status → 'disputed'` | Original submitter | No |
+| `match_request_received` | NF-04 | `trg_notify_match_request_received` on `match_requests` INSERT | Challenge recipient | No |
+| `match_request_accepted` | NF-05 | `trg_notify_match_request_responded` when `status → 'accepted'` | Requester | No |
+| `match_request_declined` | NF-05 | Same trigger, `status → 'declined'` | Requester | No |
+| `match_elo_excluded` | — | `notify_match_excluded()`, called from `apply_elo_changes` | Both players | No |
+| `nearby_tournament` | — | `notify-nearby-tournament` Edge Function (see §5) | Consenting players in range | No |
+| `organizer_request_submitted` | — | `trg_organizer_request_submitted` on `organizer_requests` INSERT | All admins | Yes |
+| `organizer_request_approved` | — | `trg_organizer_request_decided` when `status → 'approved'` | Requesting player | Yes |
+| `organizer_request_denied` | — | `trg_organizer_request_decided` when `status → 'denied'` | Requesting player | Yes |
 
-NF-07 (tournament match results) and NF-08 (weekly digest) are deferred to post-Beta.
+"Challenge" is the user-facing name for a match request; table and type names still say `match_request`.
+
+**Not implemented yet** (PRD codes): NF-06 tournament registration confirmed, NF-07 tournament match scheduled, NF-08 tier promotion/demotion, NF-09 24-hour challenge-expiry warning, NF-10 weekly digest email. There are no per-type notification preferences; the only opt-in is the nearby-tournament toggle in Settings → Location. See [TODO.md](TODO.md).
 
 ---
 
 ## 3. In-App Notification Panel
 
-`notificationPanelProvider` streams from the `notifications` table filtered to `recipient_id = current_user.id`, ordered by `created_at DESC`. The stream uses Supabase Realtime so new notifications appear instantly without polling.
+`notificationPanelProvider` streams from the `notifications` table filtered to `recipient_id = current user`, ordered by `created_at DESC`. The stream uses Supabase Realtime, so new notifications appear without polling. This requires `notifications` to be in the `supabase_realtime` publication, which only happened in migration 029 — before it the stream delivered its initial snapshot only, and the bell badge changed only on a reload.
 
-`NotificationPanel` (`lib/widgets/notification_panel.dart`) renders as a popup overlay triggered by the bell icon in `AppBarActions`. It lists the most recent notifications as tiles. Opening the panel marks all unread items as read in a single batch UPDATE.
-
-The **unread count** (used for the bell badge) is derived from the same stream by counting rows where `is_read = false`.
+`NotificationPanel` (`lib/widgets/notification_panel.dart`) is a popup opened from the bell icon in `AppBarActions`. Opening it marks unread items as read (RLS allows recipients to update their own rows). The unread count for the bell badge is derived from the same stream. `match_elo_excluded` rows get a distinct `leaderboard_outlined` icon.
 
 ---
 
 ## 4. Deep-Link Routing
 
-The `notifications.reference_type` and `notifications.reference_id` columns provide a generic routing key. `NotificationService.resolveRoute()` maps them to go_router paths:
+`NotificationService.resolveRoute()` maps `reference_type` + `reference_id` to a go_router path:
 
 | `reference_type` | `reference_id` | Resolved path |
 |---|---|---|
@@ -89,77 +90,83 @@ The `notifications.reference_type` and `notifications.reference_id` columns prov
 | `organizer_request` | any | `/admin/disputes` |
 | unknown / null | — | `/home` |
 
-Both the **notification tap handler** (push notification when app is backgrounded or terminated) and the **in-app panel tile tap** call `resolveRoute()`. The resulting path is pushed via `router.push(path)`.
+Both the push tap handler (app backgrounded or terminated) and the in-app panel tile tap call `resolveRoute()` and then `router.push(path)`.
 
-The `reference_type` strings in the DB are the same strings used in both places — changing one requires updating both.
+`organizer_request` always routes to the admin panel — including the approved/denied notifications sent to the (non-admin) requesting player. The in-code comment intends those to go to Settings; this is tracked in TODO.md.
+
+The `reference_type` strings in the DB are the same strings used here — changing one requires updating both.
 
 ---
 
-## 5. Nearby Tournament Push (separate flow)
+## 5. Nearby Tournament Push
 
-When a tournament's `registration_open` is set to `true`, the `notify-nearby-tournament` Edge Function is invoked. It does not go through the standard per-event trigger chain.
+This flow is driven by a Database Webhook on the `tournaments` table rather than a SQL trigger:
 
-**Flow:**
-1. Organiser sets `registration_open = true` on a tournament
-2. Flutter calls the `notify-nearby-tournament` Edge Function with the `tournament_id`
-3. The function calls `nearby_tournament_notify_targets(tournament_id)` — a SQL function that returns player UUIDs matching all of:
+1. The organiser moves a tournament to `status = 'registration_open'` (Organiser → tournament → Status Controls).
+2. The `tournaments` UPDATE webhook calls `notify-nearby-tournament` with `record` and `old_record`.
+3. The function continues only if the status has **just** become `registration_open` and the tournament has `venue_lat` / `venue_lng`; otherwise it returns `{ skipped: true }`.
+4. It calls `nearby_tournament_notify_targets(tournament_id)`, which returns players with:
    - `location_consent = true`
    - `notify_nearby_tournaments = true`
-   - `home_lat` / `home_lng` are set
-   - Distance to `tournament.venue_lat/lng` ≤ player's `nearby_radius_km`
-   - Player is not the tournament organiser
-4. For each target, the function inserts a `nearby_tournament` notification row into `notifications`
-5. Each INSERT fires the standard DB webhook → `send-notification` → OneSignal chain
+   - `home_lat` / `home_lng` set
+   - distance to the venue ≤ their `nearby_radius_km`
+   - not the tournament organiser
+5. It inserts one `nearby_tournament` notification per target, in batches of 50 (`reference_type = 'tournament'`, so a tap opens the tournament).
+6. Each INSERT fires the standard `send-notification` webhook.
 
-**Why not use OneSignal segments for bulk targeting?**
-Player-specific consent and per-player radius preferences require per-row evaluation. OneSignal filter segments cannot express per-user radius differences.
+The function runs with the service role and never returns location data to the client. Direct invocation with a tournament row as the body also works (useful for testing).
+
+**Why not OneSignal segments?** Per-player consent and per-player radius require per-row evaluation, which OneSignal filters cannot express.
 
 ---
 
-## 6. OneSignal Configuration
+## 6. Configuration
 
-### SDK initialisation
+### SDK initialisation (native only)
 
 ```dart
-// lib/main.dart — called before runApp
-OneSignal.initialize(const String.fromEnvironment('ONESIGNAL_APP_ID'));
-OneSignal.Notifications.requestPermission(false); // false = don't force-prompt on Android
-NotificationService.instance.init();
+// lib/main.dart — inside SentryFlutter.init's appRunner
+if (!kIsWeb) {
+  OneSignal.initialize(const String.fromEnvironment('ONESIGNAL_APP_ID'));
+  OneSignal.Notifications.requestPermission(false); // iOS prompt; Android 13+ prompts on first notification
+  NotificationService.instance.init();
+}
 ```
-
-`requestPermission(false)` shows the iOS system permission dialog without force-requesting it — the user sees it once at startup.
 
 ### User identification
 
 ```dart
-// Called after Supabase sign-in succeeds
-await NotificationService.instance.identifyUser(supabaseUserId);
-// → OneSignal.login(supabaseUserId)
+await NotificationService.instance.identifyUser(supabaseUserId); // → OneSignal.login(uid)
+await NotificationService.instance.clearUser();                  // → OneSignal.logout() on sign-out
 ```
 
-This links the device's OneSignal subscription to the Supabase UUID via the `external_id` alias. The `send-notification` Edge Function targets by this `external_id`, so notifications always reach the correct device regardless of the physical device or reinstalls.
+Linking the subscription to the Supabase UUID via `external_id` means notifications reach the right device regardless of reinstalls. After logout, pushes to that UUID no longer reach the device.
 
-### User de-identification
-
-```dart
-// Called on sign-out
-await NotificationService.instance.clearUser();
-// → OneSignal.logout()
-```
-
-After logout, the device subscription is no longer associated with any user. Push notifications sent to that UUID will not reach the device.
-
-### Edge Function environment variables
-
-Set these in the Supabase Edge Function secrets panel:
+### Edge Function secrets (set on each Supabase project)
 
 | Variable | Used by | Purpose |
 |---|---|---|
 | `ONESIGNAL_APP_ID` | `send-notification` | OneSignal app UUID |
 | `ONESIGNAL_REST_API_KEY` | `send-notification` | REST API key for server-to-OneSignal calls |
+| `RESEND_API_KEY` | `send-email` | Resend API key; if unset, the function no-ops |
+| `FROM_EMAIL` | `send-email` | Sender, e.g. `RATED <noreply@yourdomain>`; defaults to `RATED <noreply@rated.app>` |
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically.
+
+### Database Webhooks (Dashboard → Database → Webhooks, per project)
+
+| Table | Event | Target function |
+|---|---|---|
+| `notifications` | INSERT | `send-notification` |
+| `notifications` | INSERT | `send-email` |
+| `tournaments` | UPDATE | `notify-nearby-tournament` |
+
+`elo-recalculate` is called directly by the app with the user's JWT and a `match_id`; it needs no webhook.
 
 ### Platform setup
 
-**Android:** Upload the FCM server key in the OneSignal dashboard (Settings → Push → Google Android). OneSignal uses this to route through FCM. No `google-services.json` is required in the Flutter app.
+**Android:** upload the FCM credentials in the OneSignal dashboard (Settings → Push → Google Android). No `google-services.json` is needed in the Flutter app.
 
-**iOS:** Upload the APNs Auth Key (p8 file) in the OneSignal dashboard (Settings → Push → Apple iOS). OneSignal handles certificate provisioning and rotation — no manual certificate management is needed.
+**iOS:** upload the APNs Auth Key (p8) in the OneSignal dashboard (Settings → Push → Apple iOS). OneSignal handles provisioning.
+
+End-to-end push on a real device has not been signed off yet — see [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md).
