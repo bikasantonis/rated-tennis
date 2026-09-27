@@ -9,6 +9,8 @@ import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/match_provider.dart';
 import 'package:rated/providers/questionnaire_prompt_provider.dart';
 import 'package:rated/router/app_router.dart';
+import 'package:rated/screens/questionnaire/questionnaire_entry.dart';
+import 'package:rated/screens/questionnaire/questionnaire_flow.dart';
 import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/providers/court_theme_provider.dart';
@@ -51,9 +53,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen<AsyncValue<Profile?>>(currentProfileProvider, (_, next) {
       if (_promptScheduled) return;
       final profile = next.asData?.value;
-      if (profile == null || profile.questionnaireDone) return;
+      // One condition covers both cases: never taken (version 0) and took an
+      // older version (2), which is due a retake.
+      if (profile == null ||
+          profile.questionnaireVersion >= kQuestionnaireVersion) {
+        return;
+      }
       _promptScheduled = true;
-      _maybeShowQuestionnairePrompt(profile.id);
+      _maybeShowQuestionnairePrompt(profile);
     });
 
     // Fire confetti once when the newest confirmed match is a win.
@@ -157,28 +164,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Future<void> _maybeShowQuestionnairePrompt(String userId) async {
+  Future<void> _maybeShowQuestionnairePrompt(Profile profile) async {
+    final prompt =
+        (userId: profile.id, version: kQuestionnaireVersion);
     final shouldShow =
-        await ref.read(questionnairePromptProvider(userId).future);
+        await ref.read(questionnairePromptProvider(prompt).future);
     if (!shouldShow || !mounted) return;
 
-    await markQuestionnairePromptShown(ref.container, userId);
+    await markQuestionnairePromptShown(ref.container, prompt);
     if (!mounted) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      final takeQuestionnaire = await _showPromptDialog();
+      final takeQuestionnaire = await _showPromptDialog(
+        isRetake: profile.questionnaireVersion > 0,
+        hasMatches: profile.matchesPlayed > 0,
+      );
       if (takeQuestionnaire == true && mounted) {
-        final completed = await showQuestionnaireDialog(context);
-        if (completed == true) ref.invalidate(currentProfileProvider);
+        final result = await showQuestionnaireDialog(context);
+        if (result != null && mounted) {
+          showSeedResultSnackBar(context, result);
+          invalidateAfterQuestionnaire(ref, profile.id);
+        }
       }
     });
   }
 
-  Future<bool?> _showPromptDialog() => showDialog<bool>(
+  Future<bool?> _showPromptDialog({
+    required bool isRetake,
+    required bool hasMatches,
+  }) =>
+      showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const _QuestionnairePromptDialog(),
+        builder: (_) => _QuestionnairePromptDialog(
+          isRetake: isRetake,
+          hasMatches: hasMatches,
+        ),
       );
 }
 
@@ -187,10 +209,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 // ---------------------------------------------------------------------------
 
 class _QuestionnairePromptDialog extends StatelessWidget {
-  const _QuestionnairePromptDialog();
+  const _QuestionnairePromptDialog({
+    required this.isRetake,
+    required this.hasMatches,
+  });
+
+  /// True when the player already completed an older questionnaire version.
+  final bool isRetake;
+
+  /// True when the player has settled matches, so their rating will not move.
+  final bool hasMatches;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    final title =
+        isRetake ? l.questionnaireRetakeTitle : l.questionnairePromptTitle;
+    final subtitle = switch ((isRetake, hasMatches)) {
+      (false, _) => l.questionnairePromptSubtitle,
+      (true, false) => l.questionnaireRetakeSubtitle,
+      (true, true) => l.questionnaireRetakeSubtitleRated,
+    };
+
     return AlertDialog(
       contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
       content: Column(
@@ -199,7 +240,7 @@ class _QuestionnairePromptDialog extends StatelessWidget {
           const Icon(Icons.sports_tennis, size: 48, color: AppColors.aoBlue),
           const SizedBox(height: 16),
           Text(
-            'Before you start your RATED journey, we would like to ask you some questions to help us set up your first rating!',
+            title,
             style: Theme.of(context)
                 .textTheme
                 .titleMedium
@@ -208,7 +249,7 @@ class _QuestionnairePromptDialog extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'It will only take 1 minute',
+            subtitle,
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -225,12 +266,14 @@ class _QuestionnairePromptDialog extends StatelessWidget {
           children: [
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Take the questionnaire'),
+              child: Text(
+                isRetake ? l.questionnaireRetakeCta : l.questionnairePromptCta,
+              ),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () => _onMaybeLater(context),
-              child: const Text('Maybe later'),
+              onPressed: () => _onMaybeLater(context, l),
+              child: Text(l.questionnairePromptLater),
             ),
           ],
         ),
@@ -238,13 +281,16 @@ class _QuestionnairePromptDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _onMaybeLater(BuildContext context) async {
+  Future<void> _onMaybeLater(BuildContext context, AppLocalizations l) async {
+    // A retaker already has a rating, so the first-time warning about starting
+    // at 5.0 would simply be untrue for them.
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: const Text(
-          'If you skip this, then you will start with a 5.0 beginner rating. '
-          'Are you sure you want to skip it?',
+        content: Text(
+          isRetake
+              ? l.questionnaireRetakeSkipConfirm
+              : l.questionnairePromptSkipConfirm,
         ),
         actionsAlignment: MainAxisAlignment.center,
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -254,14 +300,18 @@ class _QuestionnairePromptDialog extends StatelessWidget {
             children: [
               OutlinedButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text("I'll take the questionnaire now"),
+                child: Text(l.questionnairePromptSkipStay),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                style: TextButton.styleFrom(
-                    foregroundColor: AppColors.outline),
-                child: const Text('Skip questionnaire'),
+                style:
+                    TextButton.styleFrom(foregroundColor: AppColors.outline),
+                child: Text(
+                  isRetake
+                      ? l.questionnaireRetakeSkipLeave
+                      : l.questionnairePromptSkipLeave,
+                ),
               ),
             ],
           ),

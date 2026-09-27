@@ -49,10 +49,22 @@ select gen_random_uuid(), u.id, u.id::text,
                 '22222222-2222-2222-2222-222222222222');
 
 -- ── Profiles ─────────────────────────────────────────────────────────────────
--- Skip the questionnaire prompt so both accounts land straight on the home screen.
+-- Mark the questionnaire as completed at version 2, with no
+-- questionnaire_responses row, so the local stack reproduces a questionnaire-v2
+-- player and exercises the v2 → v3 retake prompt out of the box.
+--
+-- The version is set here rather than relied upon from migration 030's backfill:
+-- `db reset` applies every migration *before* running this seed, so 030's
+-- `where questionnaire_done = true` update sees no rows and these accounts would
+-- otherwise land on version 0.
+--
+-- Alice has a confirmed match, so she also covers the "retake must not overwrite
+-- a match-earned rating" path; Bob's only match is pending, so his rating is
+-- still re-seedable.
 
 update public.profiles
-   set questionnaire_done = true
+   set questionnaire_done = true,
+       questionnaire_version = 2
  where id in ('11111111-1111-1111-1111-111111111111',
               '22222222-2222-2222-2222-222222222222');
 

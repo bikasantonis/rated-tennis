@@ -61,6 +61,10 @@ Deno.serve(async (req) => {
         home_lat: null,
         home_lng: null,
         notify_nearby_tournaments: false,
+        // The questionnaire row is hard-deleted below, so leaving these set
+        // would claim answers that no longer exist.
+        questionnaire_done: false,
+        questionnaire_version: 0,
       })
       .eq("id", userId);
 

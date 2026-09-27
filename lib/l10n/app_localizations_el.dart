@@ -78,6 +78,15 @@ class AppLocalizationsEl extends AppLocalizations {
   String get actionSendRequest => 'Αποστολή πρόκλησης';
 
   @override
+  String get actionYes => 'Ναι';
+
+  @override
+  String get actionNo => 'Όχι';
+
+  @override
+  String get actionExit => 'Έξοδος';
+
+  @override
   String get errorGeneric => 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.';
 
   @override
@@ -322,6 +331,224 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get questionnaireOtherSportNoneSub =>
       'Δεν έχω αγωνιστεί ανταγωνιστικά σε άλλο άθλημα';
+
+  @override
+  String questionnaireStepCounter(int current, int total) {
+    return 'Βήμα $current από $total';
+  }
+
+  @override
+  String get questionnaireFrequencyTitle => 'Πόσο συχνά παίζετε τένις;';
+
+  @override
+  String get questionnaireFrequencyRarely => 'Σπάνια';
+
+  @override
+  String get questionnaireFrequencyRarelySub =>
+      'Λιγότερο από μία φορά τον μήνα';
+
+  @override
+  String get questionnaireFrequencyMonthly => 'Λίγες φορές τον μήνα';
+
+  @override
+  String get questionnaireFrequencyMonthlySub => 'Μία έως τρεις φορές τον μήνα';
+
+  @override
+  String get questionnaireFrequencyWeekly => 'Εβδομαδιαία';
+
+  @override
+  String get questionnaireFrequencyWeeklySub => 'Μία ή δύο φορές την εβδομάδα';
+
+  @override
+  String get questionnaireFrequencyMultipleWeekly =>
+      'Πολλές φορές την εβδομάδα';
+
+  @override
+  String get questionnaireFrequencyMultipleWeeklySub =>
+      'Τρεις ή περισσότερες φορές την εβδομάδα';
+
+  @override
+  String get questionnaireTournamentsTitle =>
+      'Έχετε συμμετάσχει σε ερασιτεχνικά τουρνουά τα τελευταία τρία χρόνια;';
+
+  @override
+  String get questionnaireTournamentsSub =>
+      'Οποιοδήποτε τουρνουά έχετε παίξει — ομίλου, ερασιτεχνικού κυκλώματος, ηλικιακής κατηγορίας ή open.';
+
+  @override
+  String get questionnaireTournamentsPerYearTitle =>
+      'Σε πόσα τουρνουά συμμετέχετε τον χρόνο;';
+
+  @override
+  String get questionnaireTournamentsPerYearHint => 'Αριθμός τουρνουά';
+
+  @override
+  String get questionnaireTournamentsPerYearUnit => 'τον χρόνο';
+
+  @override
+  String get questionnaireTournamentLevelTitle =>
+      'Σε ποιο επίπεδο συμμετέχετε συνήθως;';
+
+  @override
+  String get questionnaireLevelAmateur => 'Ερασιτεχνικό';
+
+  @override
+  String get questionnaireLevelAmateurSub =>
+      'Αρχάριες κατηγορίες ομίλων και ερασιτεχνικών τουρνουά';
+
+  @override
+  String get questionnaireLevelIntermediate => 'Μεσαίο';
+
+  @override
+  String get questionnaireLevelIntermediateSub =>
+      'Μεσαίες κατηγορίες του ερασιτεχνικού κυκλώματος';
+
+  @override
+  String get questionnaireLevelAgeCategory => 'Ηλικιακή κατηγορία';
+
+  @override
+  String get questionnaireLevelAgeCategorySub =>
+      'Ηλικιακές κατηγορίες όπως 35+, 45+ ή 55+';
+
+  @override
+  String get questionnaireLevelMaster => 'Master';
+
+  @override
+  String get questionnaireLevelMasterSub =>
+      'Η ανώτερη κατηγορία του ερασιτεχνικού κυκλώματος';
+
+  @override
+  String get questionnaireLevelOpen => 'Open';
+
+  @override
+  String get questionnaireLevelOpenSub => 'Κατηγορίες open ή εθνικού επιπέδου';
+
+  @override
+  String get questionnaireDivision1 => 'Division I';
+
+  @override
+  String get questionnaireDivision2 => 'Division II';
+
+  @override
+  String get questionnaireDivision3 => 'Division III';
+
+  @override
+  String get questionnaireDivisionNaia => 'NAIA';
+
+  @override
+  String get questionnaireDivisionNjcaa => 'NJCAA';
+
+  @override
+  String get questionnairePromptTitle =>
+      'Πριν ξεκινήσετε το ταξίδι σας στο RATED, θα θέλαμε να σας κάνουμε μερικές ερωτήσεις για να ορίσουμε την αρχική σας βαθμολογία!';
+
+  @override
+  String get questionnairePromptSubtitle => 'Θα σας πάρει μόνο ένα λεπτό';
+
+  @override
+  String get questionnairePromptCta => 'Συμπλήρωση ερωτηματολογίου';
+
+  @override
+  String get questionnairePromptLater => 'Ίσως αργότερα';
+
+  @override
+  String get questionnairePromptSkipConfirm =>
+      'Αν το παραλείψετε, θα ξεκινήσετε με βαθμολογία αρχαρίου 5.0. Είστε σίγουρος ότι θέλετε να το παραλείψετε;';
+
+  @override
+  String get questionnairePromptSkipStay => 'Θα το συμπληρώσω τώρα';
+
+  @override
+  String get questionnairePromptSkipLeave => 'Παράλειψη ερωτηματολογίου';
+
+  @override
+  String get questionnaireRetakeTitle =>
+      'Βελτιώσαμε τον τρόπο με τον οποίο το RATED αξιολογεί το τενιστικό σας υπόβαθρο.';
+
+  @override
+  String get questionnaireRetakeSubtitle =>
+      'Υπάρχουν μερικές νέες ερωτήσεις. Η συμπλήρωση παίρνει ένα λεπτό και θα ανανεώσει τη βαθμολογία σας.';
+
+  @override
+  String get questionnaireRetakeSubtitleRated =>
+      'Υπάρχουν μερικές νέες ερωτήσεις. Η βαθμολογία σας παραμένει όπως την κερδίσατε — ανανεώνεται μόνο το αγωνιστικό σας προφίλ.';
+
+  @override
+  String get questionnaireRetakeCta => 'Ενημέρωση απαντήσεων';
+
+  @override
+  String get questionnaireRetakeSkipConfirm =>
+      'Το αγωνιστικό σας προφίλ θα συνεχίσει να χρησιμοποιεί τις παλιές απαντήσεις μέχρι να τις ενημερώσετε. Παράλειψη προς το παρόν;';
+
+  @override
+  String get questionnaireRetakeSkipLeave => 'Παράλειψη προς το παρόν';
+
+  @override
+  String questionnaireRatingApplied(String elo) {
+    return 'Η βαθμολογία σας είναι $elo';
+  }
+
+  @override
+  String questionnaireRatingUnchanged(String elo) {
+    return 'Οι απαντήσεις ενημερώθηκαν. Η βαθμολογία σας παραμένει $elo — την κερδίσατε από τους αγώνες σας.';
+  }
+
+  @override
+  String get settingsRetakeQuestionnaire => 'Επανάληψη ερωτηματολογίου';
+
+  @override
+  String get settingsRetakeQuestionnaireSub =>
+      'Ενημερώστε τις απαντήσεις για το τενιστικό σας υπόβαθρο';
+
+  @override
+  String get profileQuestionnaireCtaTitle => 'Ολοκληρώστε το προφίλ σας';
+
+  @override
+  String get profileQuestionnaireCtaBody =>
+      'Απαντήστε σε μερικές ερωτήσεις για να λάβετε εξατομικευμένη αρχική βαθμολογία.';
+
+  @override
+  String get profileQuestionnaireRetakeTitle =>
+      'Ενημερώστε το αγωνιστικό σας προφίλ';
+
+  @override
+  String get profileQuestionnaireRetakeBody =>
+      'Προσθέσαμε μερικές ερωτήσεις. Η ενημέρωση των απαντήσεων ανανεώνει τη βαθμολογία σας.';
+
+  @override
+  String get profileQuestionnaireRetakeBodyRated =>
+      'Προσθέσαμε μερικές ερωτήσεις. Η βαθμολογία σας παραμένει όπως την κερδίσατε — αλλάζει μόνο το αγωνιστικό σας προφίλ.';
+
+  @override
+  String get profileUpdateQuestionnaire => 'Ενημέρωση';
+
+  @override
+  String get profileQuestionnaireLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση του αγωνιστικού προφίλ.';
+
+  @override
+  String get profilePlayingFrequencyRarely => 'Παίζει σπάνια';
+
+  @override
+  String get profilePlayingFrequencyMonthly => 'Παίζει μηνιαία';
+
+  @override
+  String get profilePlayingFrequencyWeekly => 'Παίζει εβδομαδιαία';
+
+  @override
+  String get profilePlayingFrequencyMultipleWeekly =>
+      'Παίζει πολλές φορές την εβδομάδα';
+
+  @override
+  String profilePlayingTournamentsPerYear(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count τουρνουά τον χρόνο',
+      one: '1 τουρνουά τον χρόνο',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeTitle => 'RATED';

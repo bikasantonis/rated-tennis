@@ -38,6 +38,7 @@
 - [ ] 🔴 **Lock down ELO application** — `apply_elo_changes` is callable by any user and `match_results_update` lets the submitter set `status = 'confirmed'` ([DATABASE.md §8.2](DATABASE.md#82-elo-can-be-applied-without-the-opponents-confirmation)). Restrict status transitions, revoke `EXECUTE` from `anon` / `authenticated`, and move admin approve/override server-side.
 - [ ] 🔴 **Verify PROD per-project configuration** — Edge Function secrets, the three Database Webhooks, Auth providers and redirect URLs, Auth rate limits, both cron jobs active ([DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md#prod-configuration-reference)). Remove any `match_results` → `elo-recalculate` webhook if one exists.
 - [ ] 🔴 **OneSignal end-to-end on real devices** — Android and iOS, NF-01 to NF-05 plus nearby tournament, including the tap deep links.
+- [ ] 🔴 **`profiles_update_own` lets a player write their own privileged columns** — `003_rls_policies.sql:54-57` is `USING (id = auth.uid())` with no column restriction, and Postgres RLS cannot restrict columns. Any authenticated user can `PATCH /profiles?id=eq.<self>` setting `elo_rating`, `questionnaire_done` or `questionnaire_version`, which makes the retake gate and the `matches_played = 0` re-seed guard advisory rather than enforced. Fix with a `BEFORE UPDATE` trigger that reverts those columns unless the caller is `service_role`.
 
 ---
 
@@ -97,6 +98,8 @@ Existing: `test/models/` (EloTier, match validation, Profile JSON) and `test/wid
 ### Ratings
 - [ ] 🟢 ❓Q-10 ELO decay for inactive players (`elo_history.event_type` already allows `decay`)
 - [ ] 🟢 ❓Q-03 K-factor per tier (currently a flat 0.15)
+- [ ] 🟡 **Remove the questionnaire v2 compatibility path from `seed-elo`** — `computeSeedEloV2` and the `questionnaire_version !== 3` branch exist only for clients that have not picked up the v3 bundle (cached web tabs, un-updated mobile builds). Drop them once `select count(*) from profiles where questionnaire_version = 2 and updated_at > '<030 deploy date>'` is 0. The `us_college_division` normalisation must stay regardless.
+- [ ] 🟢 Consider logging a seed in `elo_history` — an `event_type` value would have to be added (`001:68-69` constrains it). Only matters if re-seeding is ever allowed for players who already have matches.
 
 ### Profiles & Navigation
 - [ ] 🟢 Decide whether public profiles should show a player's full match and ELO history — RLS currently limits both to the viewer's own matches ([DATABASE.md §5](DATABASE.md#5-row-level-security))
@@ -120,7 +123,7 @@ Existing: `test/models/` (EloTier, match validation, Profile JSON) and `test/wid
 | ID | Question | Status |
 |---|---|---|
 | Q-01 | Tournament ELO multiplier vs friendlies? | **Resolved** — per-tournament `elo_multiplier` 1.0–1.5, K = 0.15 × multiplier (019) |
-| Q-02 | Seed-ELO formula? | **Resolved** — questionnaire v2 ([ELO_SYSTEM.md §3](ELO_SYSTEM.md#3-initial-seed-questionnaire), ADR-13) |
+| Q-02 | Seed-ELO formula? | **Resolved** — questionnaire v3 ([ELO_SYSTEM.md §3](ELO_SYSTEM.md#3-initial-seed-questionnaire-v3), ADR-18) |
 | Q-03 | K-factor per tier? | **Open** — flat K = 0.15 for every tier |
 | Q-04 | One club or several per player? | **De facto one** — `profiles.club_id` |
 | Q-05 | Challenge ELO filter fixed or adjustable? | **Resolved** — fixed ±1.5 window, plus name search |

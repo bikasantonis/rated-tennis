@@ -230,3 +230,30 @@ Key choices made during design and development, with rationale and trade-offs. A
 - **Safe under concurrency.** Both profile rows are locked in `id` order, matching `apply_elo_changes`' `SELECT … FOR UPDATE`, so the two cannot deadlock.
 
 **Trade-offs:** "Played" is not the number of *rated* matches. Any new settled status must be added to the trigger and to the feed queries together.
+
+---
+
+## ADR-18: Questionnaire v3 — routed questions, base + modifier seeding, retakes (migration 030)
+
+**Decision:** Add a universal tournament-activity block (`tournaments_last_3y`, `tournaments_per_year`, `tournament_level`) and `play_frequency`; route every question so nobody answers one that cannot change their result; replace the v2 decision tree with a two-cohort base + modifier model; and ask existing players to retake, re-seeding only those with no settled matches.
+
+**Why:**
+- **v2 collapsed the majority into three values.** Every player without competitive history landed on exactly 5.5, 6.0 or 6.5 — the clustering ADR-13 predicted and accepted at launch. v3 spreads that cohort across 5.0–7.5 in 0.1 steps.
+- **Credentials never went stale.** A national top-20 player aged 30 seeded 8.5 whether they last competed in 2024 or 2009. Tournament activity now carries that decay directly: identical credential and age, 1.3 apart on whether they still compete.
+- **This reinforces ADR-13 rather than amending it.** The new signals are all objective and verifiable — tournaments entered, how many, at what standard. No self-assessed level was reintroduced; migration 021's removal of `self_assessed_level` stands.
+- **Age bands were flattened** to physical decline only (steps at 40/50/60/70). Keeping v2's steep per-credential bands *and* adding an activity signal would penalise an older but still-active competitor twice, making v3 worse than v2 for exactly the players it should reward.
+- **`us_college` moved into the credentialed cohort.** v2 scored it on the recreational path (7.0/6.5). A Division III college player is not a recreational club player, and a lapsed ex-D1 player is precisely the decay case this release exists to fix.
+- **Typed columns, not JSONB.** Consistent with migration 021, keeps the CHECK constraints as the authoritative value list, and keeps the Playing Profile card's column select and any SQL reporting straightforward. The cost is a migration per future question, which is acceptable at this cadence.
+- **`profiles.questionnaire_version`, not `questionnaire_responses.schema_version`.** The retake gate is decided from `currentProfileProvider`, which already selects from `profiles`; one more column there is free. `questionnaire_responses` is a different table the home screen never queries, so a version column there would cost a second query on every home render for every user. The responses row is self-describing anyway (`play_frequency IS NOT NULL` ⟺ v3), and the profile card needs no version at all — it builds its chips from independent null checks, so a v2 row simply renders fewer.
+- **Retakes never overwrite an earned rating.** The rating update is filtered on `matches_played = 0`, which closes the read-then-write race and doubles as the "did it apply" signal returned to the client.
+- **The algorithm moved to a testable module.** `seed.ts` is pure (no `supabase-js`, no `Deno.env`), so `deno test` covers it with no database and no permissions — `computeSeedElo` had never had a test. It also runs in integer hundredths, because float arithmetic on 0.05-step modifiers silently rounds the wrong way.
+- **The engine is data-driven.** `questionnaire_flow.dart` is Flutter-free and derives the step list from the answers, replacing eleven hard-coded page indices. Adding a question no longer renumbers anything.
+
+**Trade-offs:**
+- **Lapsed credentialed players drop** (an ex-pro 9.0 → 8.5, a lapsed national top-20 7.5 → 7.0, a national u200 who stopped competing 7.5 → 6.5), and active older ones rise (7.5 → 8.3). Intended, and limited to players with no matches.
+- **The cohorts overlap on 6.0–7.5.** At a 7.5 recreational ceiling, an active master-level amateur can tie a former `national_u200`. Lowering the ceiling is a one-constant change in `seed.ts`.
+- **A recreational player who never enters a tournament drops** from 6.5 to 6.0–6.2. Tournament entry is now the main recreational signal; the no-tournament base was softened from 5.5 to 6.0 to keep this from being a full point.
+- **Two implementations of the routing rules** (Dart for the UI, TypeScript for validation) must stay in step. Both test files cover the same eight cases and point at each other.
+- **A v2 compatibility path** stays in `seed-elo` until no v2 submissions remain (tracked in `docs/TODO.md`).
+- **The `us_college_division` slug normalisation is not usefully reversible:** an older function comparing `=== 'Division I'` would score every college player as non-D1.
+- **No `elo_history` row is written for a seed,** so a re-seed is invisible to the sparkline. Safe only because re-seeding is restricted to players with no matches.

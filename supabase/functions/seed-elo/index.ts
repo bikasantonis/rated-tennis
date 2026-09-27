@@ -1,186 +1,83 @@
 // seed-elo — Edge Function (Deno)
-// Called once after the onboarding questionnaire.
-// Computes the initial seed ELO from the player's tennis history,
-// writes a questionnaire_responses row, updates profiles.elo_rating,
-// and sets questionnaire_done = true.
+// Called after the onboarding questionnaire, and again on every retake.
+//
+// Computes the seed rating, upserts the questionnaire_responses row, and marks
+// the profile done at the current questionnaire version. The rating itself is
+// only written for a player with no confirmed matches — see the guard below.
+//
+// The algorithm lives in ./seed.ts so it can be unit-tested (`deno test
+// supabase/functions/seed-elo/`). This file is transport, validation and
+// persistence only.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  computeSeedEloV2,
+  computeSeedEloV3,
+  normaliseCollegeDivision,
+  pruneOffBranch,
+  validate,
+  type V3Answers,
+} from "./seed.ts";
 
-// ── ELO seed algorithm ────────────────────────────────────────────────────────
-//
-// Inputs
-//   dateOfBirth            ISO date string (YYYY-MM-DD)
-//   yearsPlaying           integer ≥ 0
-//   greekExperience        'recreational' | 'national_u200' | 'national_20_200' | 'national_top20'
-//   internationalExperience 'none' | 'recreational_intl' | 'junior_intl' | 'professional_adult' | 'us_college'
-//   juniorCareerHighRanking integer > 0  (required when internationalExperience == 'junior_intl')
-//   receivedAtpWtaPoint    boolean       (required when internationalExperience == 'professional_adult')
-//   usCollegeDivision      string        (required when internationalExperience == 'us_college')
-//   otherSport             'racket_sports' | 'other_sports' | 'none' | null
-//                          (only supplied when greekExperience == 'recreational')
-//
-// Ranking note
-//   "ranked >300"          in the spec means career high ranking NUMBER < 300
-//                          (i.e. the player achieved a position better than 300th)
-//   "ranked 300 or lower"  means career high ranking NUMBER ≥ 300
-//                          (i.e. the player's best ranking was 300 or worse)
-//
-// Output: numeric rating on the [5.0, 10.0] scale (1 decimal place)
-
-function ageFromDob(dateOfBirth: string): number {
-  const today = new Date();
-  const dob = new Date(dateOfBirth);
-  let age = today.getFullYear() - dob.getFullYear();
-  const m = today.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-  return age;
-}
-
-function computeSeedElo(params: {
-  dateOfBirth: string;
-  yearsPlaying: number;
-  greekExperience: string;
-  internationalExperience: string;
-  juniorCareerHighRanking?: number | null;
-  receivedAtpWtaPoint?: boolean | null;
-  usCollegeDivision?: string | null;
-  otherSport?: string | null;
-}): number {
-  const age = ageFromDob(params.dateOfBirth);
-  const {
-    greekExperience,
-    internationalExperience,
-    yearsPlaying,
-    otherSport,
-  } = params;
-
-  // ── Priority 1: Professional international ────────────────────────────────
-  if (internationalExperience === "professional_adult") {
-    if (params.receivedAtpWtaPoint === true) {
-      return age <= 39 ? 10.0 : 9.0;
-    }
-    return 9.0; // competed professionally but never received a point
-  }
-
-  // ── Priority 2: Junior international ─────────────────────────────────────
-  // ranking < 300  → "ranked >300" in spec  → more accomplished junior
-  // ranking ≥ 300  → "ranked 300 or lower"  → less accomplished junior
-  if (internationalExperience === "junior_intl") {
-    const ranking = params.juniorCareerHighRanking ?? 9999;
-    if (ranking < 300) {
-      // top-300 junior: better historical ranking
-      return age <= 39 ? 8.5 : 8.0;
-    } else {
-      // outside top 300
-      return age <= 39 ? 8.0 : 7.5;
-    }
-  }
-
-  // ── Priority 3: National Greek competitive experience ─────────────────────
-  if (greekExperience === "national_top20") {
-    if (age <= 30) return 8.5;
-    if (age <= 45) return 8.0;
-    if (age <= 55) return 7.5;
-    return 7.0; // 56+
-  }
-
-  if (greekExperience === "national_20_200") {
-    if (age <= 35) return 8.0;
-    if (age <= 45) return 7.5;
-    return 7.0; // 46+
-  }
-
-  if (greekExperience === "national_u200") {
-    return age <= 30 ? 7.5 : 7.0;
-  }
-
-  // ── Priority 4: Recreational path ────────────────────────────────────────
-  // (greekExperience == 'recreational')
-
-  if (internationalExperience === "recreational_intl") return 6.5;
-
-  if (internationalExperience === "us_college") {
-    // Division I is competitive; other divisions treated as recreational-level
-    return params.usCollegeDivision === "Division I" ? 7.0 : 6.5;
-  }
-
-  // Other competitive sport (Q5 — only present when greekExperience == 'recreational')
-  if (otherSport === "racket_sports") return 6.5;
-  if (otherSport === "other_sports") return 6.0;
-
-  // Pure recreational — based purely on years playing
-  if (yearsPlaying < 2) return 5.5;
-  if (yearsPlaying <= 5) return 6.0;
-  return 6.5; // > 5 years
-}
-
-// ── Handler ───────────────────────────────────────────────────────────────────
+/** Must match `kQuestionnaireVersion` in questionnaire_flow.dart. */
+const CURRENT_VERSION = 3;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders(req) });
   }
 
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
+    });
+
   try {
     const body = await req.json();
-    const {
-      date_of_birth: dateOfBirth,
-      years_playing: yearsPlaying,
-      greek_experience: greekExperience,
-      international_experience: internationalExperience,
-      junior_career_high_ranking: juniorCareerHighRanking,
-      received_atp_wta_point: receivedAtpWtaPoint,
-      us_college_division: usCollegeDivision,
-      other_sport: otherSport,
-    } = body;
 
-    if (
-      !dateOfBirth ||
-      yearsPlaying === undefined ||
-      yearsPlaying === null ||
-      !greekExperience ||
-      !internationalExperience
-    ) {
-      return new Response(
-        JSON.stringify({ error: "Missing required questionnaire fields" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-        },
-      );
-    }
+    // Version dispatch is explicit rather than sniffed: a body without
+    // `questionnaire_version` comes from a client that has not picked up the v3
+    // bundle. Cloudflare Pages serves a hashed bundle so open tabs keep running
+    // old JS, and the mobile builds are not force-updatable, so this path has to
+    // keep working for a while. See docs/TODO.md for its removal.
+    const version: 2 | 3 = body.questionnaire_version === CURRENT_VERSION ? 3 : 2;
 
-    // Age bounds — minimum 16 to participate, maximum 90 to reject nonsensical dates
-    const age = ageFromDob(dateOfBirth);
-    if (age < 16 || age > 90) {
-      return new Response(
-        JSON.stringify({ error: "You must be at least 16 years old to participate" }),
-        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
-      );
-    }
+    const answers: Partial<V3Answers> = {
+      dateOfBirth: body.date_of_birth,
+      yearsPlaying: body.years_playing != null
+        ? Number(body.years_playing)
+        : undefined,
+      playFrequency: body.play_frequency,
+      greekExperience: body.greek_experience,
+      internationalExperience: body.international_experience,
+      juniorCareerHighRanking: body.junior_career_high_ranking != null
+        ? Number(body.junior_career_high_ranking)
+        : null,
+      receivedAtpWtaPoint: body.received_atp_wta_point != null
+        ? Boolean(body.received_atp_wta_point)
+        : null,
+      // Unconditional, for both versions: a v2 client still posts the display
+      // string, which would now violate qr_us_college_division_check.
+      usCollegeDivision: normaliseCollegeDivision(body.us_college_division),
+      tournamentsLast3y: typeof body.tournaments_last_3y === "boolean"
+        ? body.tournaments_last_3y
+        : undefined,
+      tournamentsPerYear: body.tournaments_per_year != null
+        ? Number(body.tournaments_per_year)
+        : null,
+      tournamentLevel: body.tournament_level,
+      otherSport: body.other_sport,
+    };
 
-    // Conditional sub-field validation
-    if (internationalExperience === "junior_intl" &&
-        (juniorCareerHighRanking == null || Number(juniorCareerHighRanking) <= 0)) {
-      return new Response(
-        JSON.stringify({ error: "junior_career_high_ranking required for junior_intl" }),
-        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
-      );
-    }
-    if (internationalExperience === "professional_adult" && receivedAtpWtaPoint == null) {
-      return new Response(
-        JSON.stringify({ error: "received_atp_wta_point required for professional_adult" }),
-        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
-      );
-    }
-    if (internationalExperience === "us_college" &&
-        (!usCollegeDivision || typeof usCollegeDivision !== "string")) {
-      return new Response(
-        JSON.stringify({ error: "us_college_division required for us_college" }),
-        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
-      );
-    }
+    const invalid = validate(answers, version);
+    if (invalid) return json({ error: invalid }, 400);
+
+    // Clear anything the routing did not ask for, so a stale or hand-crafted
+    // body cannot land a value in a column the player never saw — and so a
+    // retaker who changed cohort does not keep their old branch's answers.
+    pruneOffBranch(answers);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -188,56 +85,37 @@ Deno.serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-      });
-    }
+    if (!authHeader) return json({ error: "Not authenticated" }, 401);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-      });
-    }
+    const { data: { user }, error: userError } = await supabase.auth.getUser(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (userError || !user) return json({ error: "Invalid token" }, 401);
 
     const playerId = user.id;
 
-    const seedElo = computeSeedElo({
-      dateOfBirth,
-      yearsPlaying: Number(yearsPlaying),
-      greekExperience,
-      internationalExperience,
-      juniorCareerHighRanking: juniorCareerHighRanking != null
-        ? Number(juniorCareerHighRanking)
-        : null,
-      receivedAtpWtaPoint: receivedAtpWtaPoint != null
-        ? Boolean(receivedAtpWtaPoint)
-        : null,
-      usCollegeDivision: usCollegeDivision ?? null,
-      otherSport: otherSport ?? null,
-    });
+    const seedElo = version === 3
+      ? computeSeedEloV3(answers as V3Answers)
+      : computeSeedEloV2(answers as V3Answers);
 
-    // Persist questionnaire responses (upsert for retry safety)
+    // ── Persist the answers (upsert keeps retries and retakes idempotent) ─────
     const { error: insertError } = await supabase
       .from("questionnaire_responses")
       .upsert(
         {
           player_id: playerId,
-          date_of_birth: dateOfBirth,
-          years_playing: Number(yearsPlaying),
-          greek_experience: greekExperience,
-          international_experience: internationalExperience,
-          junior_career_high_ranking: juniorCareerHighRanking ?? null,
-          received_atp_wta_point: receivedAtpWtaPoint ?? null,
-          us_college_division: usCollegeDivision ?? null,
-          other_sport: otherSport ?? null,
+          date_of_birth: answers.dateOfBirth,
+          years_playing: answers.yearsPlaying,
+          play_frequency: answers.playFrequency ?? null,
+          greek_experience: answers.greekExperience,
+          international_experience: answers.internationalExperience,
+          junior_career_high_ranking: answers.juniorCareerHighRanking ?? null,
+          received_atp_wta_point: answers.receivedAtpWtaPoint ?? null,
+          us_college_division: answers.usCollegeDivision ?? null,
+          tournaments_last_3y: answers.tournamentsLast3y ?? null,
+          tournaments_per_year: answers.tournamentsPerYear ?? null,
+          tournament_level: answers.tournamentLevel ?? null,
+          other_sport: answers.otherSport ?? null,
           seed_elo: seedElo,
         },
         { onConflict: "player_id" },
@@ -245,38 +123,62 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error("questionnaire_responses upsert error:", insertError);
-      return new Response(JSON.stringify({ error: insertError.message }), {
-        status: 500,
-        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-      });
+      return json({ error: insertError.message }, 500);
     }
 
-    // Update profile
+    // ── Mark the questionnaire done at this version ───────────────────────────
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({ elo_rating: seedElo, questionnaire_done: true })
+      .update({ questionnaire_done: true, questionnaire_version: version })
       .eq("id", playerId);
 
     if (profileError) {
       console.error("profiles update error:", profileError);
-      return new Response(JSON.stringify({ error: profileError.message }), {
-        status: 500,
-        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-      });
+      return json({ error: profileError.message }, 500);
     }
 
-    return new Response(JSON.stringify({ seed_elo: seedElo }), {
-      status: 200,
-      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
+    // ── Apply the rating, but never over a match-earned one ───────────────────
+    // Filtering on matches_played = 0 instead of reading it first closes the
+    // read-then-write race and doubles as the "did it apply" signal.
+    // matches_played is maintained by trg_match_counters (028) over
+    // status in ('confirmed','overridden') — i.e. exactly settled matches.
+    const { data: applied, error: eloError } = await supabase
+      .from("profiles")
+      .update({ elo_rating: seedElo })
+      .eq("id", playerId)
+      .eq("matches_played", 0)
+      .select("id");
+
+    if (eloError) {
+      console.error("elo_rating update error:", eloError);
+      return json({ error: eloError.message }, 500);
+    }
+
+    const ratingApplied = (applied?.length ?? 0) > 0;
+
+    // The client explains the outcome to the player, so it needs the live
+    // rating whenever the seed was not the thing that took effect.
+    let currentElo = seedElo;
+    let matchesPlayed = 0;
+    if (!ratingApplied) {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("elo_rating, matches_played")
+        .eq("id", playerId)
+        .maybeSingle();
+      currentElo = Number(p?.elo_rating ?? seedElo);
+      matchesPlayed = Number(p?.matches_played ?? 0);
+    }
+
+    return json({
+      seed_elo: seedElo,
+      rating_applied: ratingApplied,
+      current_elo: currentElo,
+      matches_played: matchesPlayed,
+      questionnaire_version: version,
     });
   } catch (err) {
     console.error("seed-elo error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
-      },
-    );
+    return json({ error: "Internal server error" }, 500);
   }
 });

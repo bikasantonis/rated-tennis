@@ -9,6 +9,8 @@ import 'package:rated/providers/locale_provider.dart';
 import 'package:rated/providers/location_provider.dart';
 import 'package:rated/providers/organizer_request_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
+import 'package:rated/screens/questionnaire/questionnaire_entry.dart';
+import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/utils/legal_urls.dart';
 import 'package:rated/widgets/court_painter.dart';
@@ -80,6 +82,18 @@ class SettingsScreen extends ConsumerWidget {
 
             // ── Account ─────────────────────────────────────────────────
             _SectionHeader(title: l.settingsSectionAccount),
+            // The permanent way back into the questionnaire. Once everyone is
+            // on the current version the home prompt and the profile CTA both
+            // disappear, and without this there would be no way to correct a
+            // mis-answer. Re-seeding is still guarded server-side by
+            // matches_played = 0, so this cannot move an earned rating.
+            ListTile(
+              leading: const Icon(Icons.assignment_outlined,
+                  color: AppColors.primary),
+              title: Text(l.settingsRetakeQuestionnaire),
+              subtitle: Text(l.settingsRetakeQuestionnaireSub),
+              onTap: () => _retakeQuestionnaire(context, ref, profile?.id),
+            ),
             ListTile(
               leading: const Icon(Icons.lock_outline, color: AppColors.primary),
               title: Text(l.settingsChangePassword),
@@ -101,6 +115,15 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _retakeQuestionnaire(
+      BuildContext context, WidgetRef ref, String? playerId) async {
+    if (playerId == null) return;
+    final result = await showQuestionnaireDialog(context);
+    if (result == null || !context.mounted) return;
+    showSeedResultSnackBar(context, result);
+    invalidateAfterQuestionnaire(ref, playerId);
   }
 
   Future<void> _changePassword(BuildContext context, WidgetRef ref) async {

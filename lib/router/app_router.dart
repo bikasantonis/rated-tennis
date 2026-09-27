@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/screens/admin/dispute_resolution_screen.dart';
 import 'package:rated/screens/auth/login_screen.dart';
@@ -16,6 +18,7 @@ import 'package:rated/screens/onboarding/onboarding_screen.dart';
 import 'package:rated/screens/organizer/organizer_dashboard_screen.dart';
 import 'package:rated/screens/organizer/organizer_tournament_detail_screen.dart';
 import 'package:rated/screens/profile/profile_screen.dart';
+import 'package:rated/screens/questionnaire/questionnaire_entry.dart';
 import 'package:rated/screens/questionnaire/questionnaire_screen.dart';
 import 'package:rated/screens/settings/settings_screen.dart';
 import 'package:rated/screens/tournament/tournament_detail_screen.dart';
@@ -241,21 +244,36 @@ CustomTransitionPage<void> _fade(GoRouterState state, Widget child) =>
 // Opens the questionnaire dialog immediately, then pops when done.
 // ---------------------------------------------------------------------------
 
-class _QuestionnaireRoute extends StatefulWidget {
+class _QuestionnaireRoute extends ConsumerStatefulWidget {
   const _QuestionnaireRoute();
 
   @override
-  State<_QuestionnaireRoute> createState() => _QuestionnaireRouteState();
+  ConsumerState<_QuestionnaireRoute> createState() =>
+      _QuestionnaireRouteState();
 }
 
-class _QuestionnaireRouteState extends State<_QuestionnaireRoute> {
+class _QuestionnaireRouteState extends ConsumerState<_QuestionnaireRoute> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      await showQuestionnaireDialog(context);
+
+      // Captured before popping: this route's Scaffold is gone by the time the
+      // snackbar is shown, and the message needs a live BuildContext.
+      final messenger = ScaffoldMessenger.of(context);
+      final l = AppLocalizations.of(context)!;
+
+      final result = await showQuestionnaireDialog(context);
+      final playerId = ref.read(currentProfileProvider).asData?.value?.id;
+
       if (mounted) context.pop();
+      if (result == null) return;
+
+      messenger.showSnackBar(
+        seedResultSnackBar(seedResultMessage(l, result)),
+      );
+      if (playerId != null) invalidateAfterQuestionnaire(ref, playerId);
     });
   }
 

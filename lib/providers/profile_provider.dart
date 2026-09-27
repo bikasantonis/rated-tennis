@@ -15,7 +15,8 @@ Future<Map<String, dynamic>?> playerProfile(Ref ref, String playerId) async {
       .select(
         'id, display_name, avatar_url, club_id, elo_rating, elo_tier, role, '
         'matches_played, matches_won, preferred_language, is_public, '
-        'questionnaire_done, peak_elo, home_city, location_consent, '
+        'questionnaire_done, questionnaire_version, peak_elo, home_city, '
+        'location_consent, '
         'created_at, updated_at',
       )
       .eq('id', playerId)
@@ -61,19 +62,31 @@ Future<List<Map<String, dynamic>>> playerMatches(
 
 /// Questionnaire answers for a player.
 ///
-/// RLS (`questionnaire_select_own`) restricts this row to its owner and to
-/// admins, so the playing profile only ever renders on your own profile.
-/// Columns follow the v2 questionnaire (migration 021) — `date_of_birth` is
-/// fetched to derive an age, never rendered verbatim.
+/// Two RLS policies apply and they are OR'd: `questionnaire_select_own` covers
+/// the owner and admins, and `questionnaire_select_public_profile` (migration
+/// 018) additionally exposes the row for any public profile that has completed
+/// the questionnaire. The playing profile therefore renders on other players'
+/// profiles too, not only your own.
+///
+/// Columns span questionnaire v2 (021) and v3 (030). A v2 row simply has nulls
+/// in the v3 columns and renders fewer chips. `date_of_birth` is fetched to
+/// derive an age and is never rendered verbatim.
+///
+/// Every column named here must exist in the environment being queried —
+/// PostgREST rejects the whole request with a 400 otherwise, which is how this
+/// card silently disappeared after migration 021. Do not add a column to this
+/// list before its migration has landed.
 @riverpod
 Future<Map<String, dynamic>?> playerQuestionnaire(
     Ref ref, String playerId) async {
   final data = await _db
       .from('questionnaire_responses')
       .select(
-        'date_of_birth, years_playing, greek_experience, '
+        'date_of_birth, years_playing, play_frequency, greek_experience, '
         'international_experience, junior_career_high_ranking, '
-        'received_atp_wta_point, us_college_division, other_sport',
+        'received_atp_wta_point, us_college_division, '
+        'tournaments_last_3y, tournaments_per_year, tournament_level, '
+        'other_sport',
       )
       .eq('player_id', playerId)
       .maybeSingle();

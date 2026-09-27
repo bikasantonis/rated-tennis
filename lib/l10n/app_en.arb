@@ -26,6 +26,9 @@
   "actionSignIn": "Sign In",
   "actionCreateAccount": "Create Account",
   "actionSendRequest": "Send challenge",
+  "actionYes": "Yes",
+  "actionNo": "No",
+  "actionExit": "Exit",
 
   "errorGeneric": "Something went wrong. Please try again.",
   "actionRetry": "Try again",
@@ -108,6 +111,89 @@
   "questionnaireOtherSportOtherSub": "Any other competitive sport",
   "questionnaireOtherSportNone": "No competitive sport",
   "questionnaireOtherSportNoneSub": "I have not played any other sport competitively",
+
+  "questionnaireStepCounter": "Step {current} of {total}",
+  "@questionnaireStepCounter": {
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+
+  "questionnaireFrequencyTitle": "How often do you play tennis?",
+  "questionnaireFrequencyRarely": "Rarely",
+  "questionnaireFrequencyRarelySub": "Less than once a month",
+  "questionnaireFrequencyMonthly": "A few times a month",
+  "questionnaireFrequencyMonthlySub": "One to three times a month",
+  "questionnaireFrequencyWeekly": "Weekly",
+  "questionnaireFrequencyWeeklySub": "One or two times a week",
+  "questionnaireFrequencyMultipleWeekly": "Several times a week",
+  "questionnaireFrequencyMultipleWeeklySub": "Three or more times a week",
+
+  "questionnaireTournamentsTitle": "Have you participated in recreational tournaments in the past three years?",
+  "questionnaireTournamentsSub": "Any tournament you have entered — club, amateur circuit, age-group or open draws.",
+
+  "questionnaireTournamentsPerYearTitle": "How many tournaments do you play in a year?",
+  "questionnaireTournamentsPerYearHint": "Number of tournaments",
+  "questionnaireTournamentsPerYearUnit": "per year",
+
+  "questionnaireTournamentLevelTitle": "What level do you usually play at?",
+  "questionnaireLevelAmateur": "Amateur",
+  "questionnaireLevelAmateurSub": "Entry-level club and amateur draws",
+  "questionnaireLevelIntermediate": "Intermediate",
+  "questionnaireLevelIntermediateSub": "Mid-tier draws on the amateur circuit",
+  "questionnaireLevelAgeCategory": "Age category",
+  "questionnaireLevelAgeCategorySub": "Age-group draws such as 35+, 45+ or 55+",
+  "questionnaireLevelMaster": "Master",
+  "questionnaireLevelMasterSub": "The top draw on the amateur circuit",
+  "questionnaireLevelOpen": "Open",
+  "questionnaireLevelOpenSub": "Open or national-level draws",
+
+  "questionnaireDivision1": "Division I",
+  "questionnaireDivision2": "Division II",
+  "questionnaireDivision3": "Division III",
+  "questionnaireDivisionNaia": "NAIA",
+  "questionnaireDivisionNjcaa": "NJCAA",
+
+  "questionnairePromptTitle": "Before you start your RATED journey, we would like to ask you some questions to help us set up your first rating!",
+  "questionnairePromptSubtitle": "It will only take a minute",
+  "questionnairePromptCta": "Take the questionnaire",
+  "questionnairePromptLater": "Maybe later",
+  "questionnairePromptSkipConfirm": "If you skip this, then you will start with a 5.0 beginner rating. Are you sure you want to skip it?",
+  "questionnairePromptSkipStay": "I'll take the questionnaire now",
+  "questionnairePromptSkipLeave": "Skip questionnaire",
+
+  "questionnaireRetakeTitle": "We've improved how RATED reads your tennis background.",
+  "questionnaireRetakeSubtitle": "There are a few new questions. Retaking takes a minute and will refresh your rating.",
+  "questionnaireRetakeSubtitleRated": "There are a few new questions. Your rating stays as you earned it — only your playing profile is refreshed.",
+  "questionnaireRetakeCta": "Update my answers",
+  "questionnaireRetakeSkipConfirm": "Your playing profile will keep using your old answers until you update them. Skip for now?",
+  "questionnaireRetakeSkipLeave": "Skip for now",
+
+  "questionnaireRatingApplied": "Your rating is {elo}",
+  "@questionnaireRatingApplied": {
+    "placeholders": { "elo": { "type": "String" } }
+  },
+  "questionnaireRatingUnchanged": "Answers updated. Your rating stays at {elo} — you earned it from your matches.",
+  "@questionnaireRatingUnchanged": {
+    "placeholders": { "elo": { "type": "String" } }
+  },
+
+  "settingsRetakeQuestionnaire": "Retake questionnaire",
+  "settingsRetakeQuestionnaireSub": "Update your tennis background answers",
+
+  "profileQuestionnaireCtaTitle": "Complete your profile",
+  "profileQuestionnaireCtaBody": "Answer a few questions to get a personalised starting rating.",
+  "profileQuestionnaireRetakeTitle": "Update your playing profile",
+  "profileQuestionnaireRetakeBody": "We've added a few questions. Updating your answers refreshes your rating.",
+  "profileQuestionnaireRetakeBodyRated": "We've added a few questions. Your rating stays as you earned it — only your playing profile changes.",
+  "profileUpdateQuestionnaire": "Update",
+  "profileQuestionnaireLoadFailed": "Couldn't load the playing profile.",
+  "profilePlayingFrequencyRarely": "Plays rarely",
+  "profilePlayingFrequencyMonthly": "Plays monthly",
+  "profilePlayingFrequencyWeekly": "Plays weekly",
+  "profilePlayingFrequencyMultipleWeekly": "Plays several times a week",
+  "profilePlayingTournamentsPerYear": "{count, plural, =1{1 tournament a year} other{{count} tournaments a year}}",
+  "@profilePlayingTournamentsPerYear": {
+    "placeholders": { "count": { "type": "int" } }
+  },
 
   "homeTitle": "RATED",
   "homeRecentMatches": "Recent Matches",
