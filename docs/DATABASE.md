@@ -2,7 +2,7 @@
 
 All schema lives in Supabase (PostgreSQL 17). Changes are applied only through numbered SQL migrations in `supabase/migrations/` — never through the Dashboard. This document covers tables, the migration log, triggers, functions, RLS policies, scheduled jobs, the local → DEV → PROD workflow, and known issues.
 
-> State as of 2026-09-27: DEV and PROD are both at migration **029** (Realtime publication); **030** (questionnaire v3) is written and pending on both. DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) reached 029, applied to PROD via `./scripts/push-prod.ps1` and verified live cross-device. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
+> State as of 2026-09-27: DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) are both at migration **030** (questionnaire v3), applied to PROD via `./scripts/push-prod.ps1` with the v3 `seed-elo` deployed alongside it. The 030 backfill was verified on PROD: every profile sits at `questionnaire_version` 0 or 2, with no row marked done but left at 0. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
 
 ---
 
@@ -392,7 +392,7 @@ supabase db push
 `push-prod.ps1` refuses to run with uncommitted changes, warns (and asks) when not on `main`, shows `migration list` and a dry run, requires typing `prod`, and relinks DEV in a `finally` block even on failure or Ctrl+C. `supabase link` may prompt for each project's database password.
 
 **Adding a migration:**
-1. Create `supabase/migrations/029_<description>.sql` — the next number.
+1. Create `supabase/migrations/031_<description>.sql` — the next number.
 2. `supabase db reset` until it replays cleanly, then exercise the affected flows in the app against `.env.local`.
 3. `supabase db push` to DEV and verify there.
 4. Commit, merge to `main`, then run `./scripts/push-prod.ps1`.

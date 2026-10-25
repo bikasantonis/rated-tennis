@@ -1,6 +1,6 @@
 # RATED — Architecture & Developer Reference
 
-> Last updated: 2026-09-19 (v1.0.0). The web app is live at **https://ratedtennis.gr**; production Supabase is at migration **029**.
+> Last updated: 2026-09-27. The web app is live at **https://ratedtennis.gr**; production Supabase is at migration **030** (questionnaire v3).
 > For a new developer: read this file first, then [ELO_SYSTEM.md](ELO_SYSTEM.md) for rating logic, [DATABASE.md](DATABASE.md) for the schema and the migration workflow, [NOTIFICATIONS.md](NOTIFICATIONS.md) for the push/email pipeline, [DECISIONS.md](DECISIONS.md) for why key choices were made, and [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) before shipping anything.
 
 ---
@@ -123,7 +123,8 @@ rated/
 │   │   ├── questionnaire_provider.dart      Questionnaire submit → seed-elo Edge Function
 │   │   ├── questionnaire_prompt_provider.dart One-time questionnaire prompt flag (shared_preferences)
 │   │   ├── court_theme_provider.dart        Current CourtTheme derived from the profile
-│   │   ├── locale_provider.dart             Language switching (EN/EL)
+│   │   ├── locale_provider.dart             Language switching (EN/EL), device-language default
+│   │   ├── locale_sync_provider.dart        Language preference ↔ profiles.preferred_language (cross-device)
 │   │   ├── realtime_sync_provider.dart      Per-user Realtime channel → refreshes match / profile / inbox providers
 │   │   └── notification_panel_provider.dart Real-time notification stream + mark-read
 │   ├── services/
@@ -135,8 +136,8 @@ rated/
 │   ├── widgets/                             Shared widgets — see §5.6
 │   ├── screens/
 │   │   ├── splash/                          Branded splash (session restore)
-│   │   ├── onboarding/                      SCR-01 — intro slides with the login/register panel embedded
-│   │   ├── auth/                            SCR-02 — Login + Register (email, Google, Apple)
+│   │   ├── onboarding/                      SCR-01 — intro slides with the login/register panel embedded + language toggle
+│   │   ├── auth/                            SCR-02 — Login + Register (email, Google, Apple) + language toggle
 │   │   ├── questionnaire/                   SCR-03 — Sport-history questionnaire (shown as dialog)
 │   │   ├── home/                            SCR-04 — Dashboard + recent matches
 │   │   ├── leaderboard/                     SCR-05 — Global rankings + club filter + Near Me
@@ -150,7 +151,7 @@ rated/
 │   └── gen/                                 flutter_gen generated assets (gitignored)
 ├── supabase/
 │   ├── config.toml                          Local Docker stack config (ports, Postgres 17, auth)
-│   ├── migrations/                          28 SQL migrations, 001–029 (012 intentionally missing)
+│   ├── migrations/                          29 SQL migrations, 001–030 (012 intentionally missing)
 │   ├── seed.sql                             Local-only seed: 2 test accounts + 2 matches
 │   └── functions/                           6 Deno Edge Functions + _shared/cors.ts
 ├── scripts/
@@ -244,7 +245,7 @@ Initialisation order:
 2. Authenticated, arriving at `/splash`, `/onboarding`, or `/login` → `/home`
 3. Unauthenticated, not on `/onboarding` or `/login` → `/onboarding`
 
-The questionnaire is **not a redirect gate** — it appears as a dialog from `HomeScreen` when `questionnaire_done = false` (once per user, tracked by `questionnaire_prompt_provider`). The `/questionnaire` route still exists for deep-link compatibility.
+The questionnaire is **not a redirect gate** — it appears as a dialog from `HomeScreen` when `profiles.questionnaire_version` is below the app's `kQuestionnaireVersion`, which covers both "never taken" and "took an older version" (prompted once per version, tracked by `questionnaire_prompt_provider`). The `/questionnaire` route still exists for deep-link compatibility and is what the profile CTA and the Settings retake row push; it reports the outcome and invalidates the profile providers on return.
 
 **`ShellRoute`** — wraps the four bottom-nav destinations (`/home`, `/leaderboard`, `/matches`, `/tournaments`) so `BottomNavShell` persists across tabs. Nested routes push on top of the shell: `/leaderboard/:id` (another player's profile) and `/tournaments/:id`.
 
@@ -319,9 +320,10 @@ All table models use **Freezed** for immutability, `copyWith`, equality, and `fr
 | `location_provider.dart` | `locationPrefs` (consent + radius) and `LocationActions` (GDPR consent flow, ~1 km rounding, Nominatim) |
 | `organizer_request_provider.dart` | Own request, `pendingOrganizerRequests`, `OrganizerRequestActions` |
 | `questionnaire_provider.dart` | `QuestionnaireActions` → `seed-elo` Edge Function |
-| `questionnaire_prompt_provider.dart` | Plain `FutureProvider.family` — whether the one-time questionnaire prompt was already shown for a user |
+| `questionnaire_prompt_provider.dart` | Plain `FutureProvider.family` keyed on `(userId, version)` — whether the prompt for that questionnaire version was already shown. Version-scoped so a new question set re-prompts players who dismissed the previous one |
 | `court_theme_provider.dart` | Plain `Provider<CourtTheme>` derived from `currentProfile.courtTheme` |
-| `locale_provider.dart` | `savedLocale` + `LocaleNotifier`, persisted to `profiles.preferred_language` |
+| `locale_provider.dart` | `savedLocale` + `LocaleNotifier`, persisted to `shared_preferences`. With no stored choice, `deviceLocale()` resolves the first device/browser language RATED ships (`en`, `el`) and falls back to English, so a Greek phone opens in Greek. Read through `WidgetsBinding.instance.platformDispatcher` so tests can override the platform list |
+| `locale_sync_provider.dart` | `localeSync` (`keepAlive`, watched from `RatedApp`): listens to `currentProfile` and reconciles the app language with `profiles.preferred_language`. An explicit pick on this device wins and is pushed up (best effort); with no local pick the profile's language is adopted — state only, never persisted, so the profile stays the source of truth |
 | `notification_panel_provider.dart` | Realtime notification stream + `NotificationActions` (mark-as-read) |
 | `realtime_sync_provider.dart` | `realtimeSync` (`keepAlive`, rebuilt on sign-in / sign-out): one `user-sync:<uid>` channel with Postgres Changes on the user's own `profiles` row, `match_results` as winner and as loser (filters cannot OR), and `match_requests` as recipient. Events are signals only — payloads are ignored; a 300 ms debounce coalesces a burst (one confirmation fires three events) into one `invalidateMatchViews` / `pendingRequests` refresh, and every re-subscribe after a disconnect refetches everything because missed events are not replayed. Needs migration 029 |
 
@@ -343,7 +345,8 @@ After a match is submitted, confirmed, or a dispute resolved, the actions invali
 | `win_streak_badge.dart` | Flame 🔥 + count pill for streaks ≥ 2. |
 | `not_rated_chip.dart` | "Not rated" chip (with long-press reason) shown in place of the ELO delta for ELO-excluded friendlies. |
 | `error_state_widget.dart` | Shared error state (icon, localised message, optional retry). Used instead of raw `Text('Error: $e')`. |
-| `app_bar_actions.dart` | App-bar icons: settings, notifications (unread badge), organiser trophy / admin shield (role-dependent, with pending counts), profile. |
+| `app_bar_actions.dart` | App-bar icons: settings, notifications (unread badge), organiser trophy / admin shield (role-dependent, with pending counts), profile. Deliberately carries no language button — see `language_toggle.dart`. |
+| `language_toggle.dart` | Compact `EN │ ΕΛ` segmented switch for the pre-auth screens (SCR-01, SCR-02), where Settings is unreachable. Writes through `localeProvider`; the profile row is updated by `locale_sync_provider.dart` once a profile is in hand. |
 | `notification_panel.dart` | Popup notification list with realtime updates; tile tap routes via `NotificationService.resolveRoute`. |
 | `tournament_bracket_viewer.dart` | Horizontally scrollable single-elimination bracket. |
 | `pending_badge.dart` | `CountChip` and `TabWithBadge` for pending-action counts. |
@@ -355,8 +358,8 @@ After a match is submitted, confirmed, or a dispute resolved, the actions invali
 | Screen | File | PRD | Access | Notes |
 |---|---|---|---|---|
 | Splash | `splash/splash_screen.dart` | — | Public | Session restore |
-| Onboarding + Auth | `onboarding/onboarding_screen.dart` | SCR-01 | Public | Slides with the login/register panel always visible |
-| Login / Register | `auth/login_screen.dart` | SCR-02 | Public | Email + Google + Apple (native); consent checkbox with legal links; Google data-disclosure sheet; forgot password |
+| Onboarding + Auth | `onboarding/onboarding_screen.dart` | SCR-01 | Public | Slides with the login/register panel always visible; `EN │ ΕΛ` toggle top-right |
+| Login / Register | `auth/login_screen.dart` | SCR-02 | Public | Email + Google + Apple (native); consent checkbox with legal links; Google data-disclosure sheet; forgot password; `EN │ ΕΛ` toggle in the app bar |
 | Questionnaire | `questionnaire/questionnaire_screen.dart` | SCR-03 | Signed in | Dialog; calls `seed-elo` |
 | Home / Dashboard | `home/home_screen.dart` | SCR-04 | Signed in | EloScoreCard + last 5 settled matches with ELO delta / Not rated chip |
 | Leaderboard | `leaderboard/leaderboard_screen.dart` | SCR-05 | Signed in | Paginated RPC, club filter, Near Me; row tap → `/leaderboard/:id` |
@@ -395,7 +398,7 @@ See [DATABASE.md](DATABASE.md) for the full schema, migration log, triggers, hel
 | Function | Invoked by | Purpose |
 |---|---|---|
 | `elo-recalculate` | Flutter `functions.invoke` when the opponent taps Confirm (user JWT) | Verifies the caller is the non-submitting participant and the match is `pending`; sets `confirmed`; calls `apply_elo_changes` |
-| `seed-elo` | Flutter, on questionnaire submit | Validates input (age 16–90, conditional sub-fields), computes the seed rating, upserts `questionnaire_responses`, updates the profile |
+| `seed-elo` | Flutter, on questionnaire submit and on every retake | Validates input (age 16–90, routed conditional fields), nulls off-branch answers, computes the seed rating (`seed.ts`; v3, or the frozen v2 path for legacy bodies), upserts `questionnaire_responses`, sets `questionnaire_done` / `questionnaire_version`, and applies `elo_rating` only when `matches_played = 0` so a retake cannot overwrite a match-earned rating |
 | `anonymise-account` | Flutter, Settings → Delete account | Scrubs profile PII and location, deletes `questionnaire_responses`, deletes the auth user. **Known issue:** see [DATABASE.md §8](DATABASE.md#8-known-issues) |
 | `send-notification` | Database Webhook: `notifications` INSERT | Pushes via the OneSignal REST API, targeting the recipient's `external_id` |
 | `send-email` | Database Webhook: `notifications` INSERT | Resend email for `organizer_request_*` types only; no-op without `RESEND_API_KEY` |
@@ -433,7 +436,7 @@ Flutter App (Android / iOS / Web)
 Supabase (DEV: eu-central-1 · PROD: eu-west-1)
 │
 ├── PostgreSQL 17
-│   ├── Migrations 001–029 (schema, indexes, RLS, triggers, functions, Realtime publication)
+│   ├── Migrations 001–030 (schema, indexes, RLS, triggers, functions, Realtime publication, questionnaire v3)
 │   ├── pg_cron: match-auto-confirm, request-expiry (hourly)
 │   └── Database Webhooks (per project, Dashboard config)
 │       ├── notifications INSERT → send-notification, send-email

@@ -1,6 +1,6 @@
 # RATED — Backlog
 
-> Updated 2026-09-19. RATED has launched: the web app is live at https://ratedtennis.gr and PROD Supabase is at migration 029, released as `v1.0.0`. This file replaces the pre-launch scaffold task list. What shipped is summarised in §1 (details in `CHANGELOG.md`); everything below it is open.
+> Updated 2026-09-27. RATED has launched: the web app is live at https://ratedtennis.gr and PROD Supabase is at migration 030 (questionnaire v3). `v1.0.0` was the launch release; the questionnaire v3 work is committed and shipped but not yet moved out of the CHANGELOG's `[Unreleased]` section or tagged. This file replaces the pre-launch scaffold task list. What shipped is summarised in §1 (details in `CHANGELOG.md`); everything below it is open.
 
 ---
 
@@ -18,7 +18,7 @@
 ## 1. Shipped at Launch
 
 - **Auth** — email/password (≥ 8 chars, one uppercase letter, one digit), GDPR consent checkbox with Privacy Policy / Terms links (timestamp in auth metadata), Google OAuth with a data-disclosure sheet, Apple Sign-In (native), forgot password, change password, session restore with branded splash.
-- **Onboarding** — combined intro + login screen; sport-history questionnaire v2 as a one-time dialog → `seed-elo` (age gate 16–90, conditional sub-field validation).
+- **Onboarding** — combined intro + login screen; sport-history questionnaire (v2 at launch, **v3** since migration 030) as a dialog → `seed-elo` (age gate 16–90, answer-driven routing, retakes guarded by `matches_played = 0`).
 - **Home** — ELO card with sparkline, tier progress, win streak, tier-path hint, five court themes; last 5 settled matches with ELO delta or "Not rated" chip; confetti on a new win.
 - **Leaderboard** — `get_leaderboard_page` RPC (50 per page, RATED prestige ordering), club filter, Near Me; row tap opens the player's profile.
 - **Profile** — avatar upload/remove, rank, peak ELO, losses, streak, match and tournament history, questionnaire answers.
@@ -63,9 +63,9 @@
 - [ ] 🟡 Release workflow for signed AAB / IPA (Fastlane), with signing secrets in GitHub Actions secrets
 
 ### Testing
-Existing: `test/models/` (EloTier, match validation, Profile JSON) and `test/widget_test.dart`. There is no database test harness.
+Existing: `test/models/` (EloTier, match validation, Profile JSON, questionnaire routing), `test/screens/` (questionnaire dialog, pre-auth language switch), `test/widgets/` (language toggle, locale resolution) and `test/widget_test.dart`, plus `deno test supabase/functions/seed-elo/` for the seed algorithm. There is still no database test harness.
 - [ ] 🟡 SQL tests (pgTAP via `supabase test db`) for `apply_elo_changes` (clamp, friendly void, prestige, idempotency), `sync_match_counters`, and the RLS policies
-- [ ] 🟡 Edge Function tests: `elo-recalculate` authorisation, the `seed-elo` rule table
+- [ ] 🟡 Edge Function tests: `elo-recalculate` authorisation (the `seed-elo` rule table is done — `seed_test.ts`, incl. a property sweep over the full answer space)
 - [ ] 🟡 Integration tests against the local stack with the seed accounts: onboarding, submit + confirm, dispute + admin resolution, challenge flow, tournament registration + bracket, role-gated routes
 - [ ] 🟡 Unit tests for `tier_path_calculator.dart` and `streak_utils.dart`
 - [ ] 🟡 Accessibility pass at 1.5× font scale (icon-button tooltips are done)
