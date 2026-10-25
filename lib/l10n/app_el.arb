@@ -26,6 +26,9 @@
   "actionSignIn": "Σύνδεση",
   "actionCreateAccount": "Δημιουργία Λογαριασμού",
   "actionSendRequest": "Αποστολή πρόκλησης",
+  "actionYes": "Ναι",
+  "actionNo": "Όχι",
+  "actionExit": "Έξοδος",
 
   "errorGeneric": "Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.",
   "actionRetry": "Δοκιμάστε ξανά",
@@ -108,6 +111,89 @@
   "questionnaireOtherSportOtherSub": "Οποιοδήποτε άλλο ανταγωνιστικό άθλημα",
   "questionnaireOtherSportNone": "Κανένα ανταγωνιστικό άθλημα",
   "questionnaireOtherSportNoneSub": "Δεν έχω αγωνιστεί ανταγωνιστικά σε άλλο άθλημα",
+
+  "questionnaireStepCounter": "Βήμα {current} από {total}",
+  "@questionnaireStepCounter": {
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+
+  "questionnaireFrequencyTitle": "Πόσο συχνά παίζετε τένις;",
+  "questionnaireFrequencyRarely": "Σπάνια",
+  "questionnaireFrequencyRarelySub": "Λιγότερο από μία φορά τον μήνα",
+  "questionnaireFrequencyMonthly": "Λίγες φορές τον μήνα",
+  "questionnaireFrequencyMonthlySub": "Μία έως τρεις φορές τον μήνα",
+  "questionnaireFrequencyWeekly": "Εβδομαδιαία",
+  "questionnaireFrequencyWeeklySub": "Μία ή δύο φορές την εβδομάδα",
+  "questionnaireFrequencyMultipleWeekly": "Πολλές φορές την εβδομάδα",
+  "questionnaireFrequencyMultipleWeeklySub": "Τρεις ή περισσότερες φορές την εβδομάδα",
+
+  "questionnaireTournamentsTitle": "Έχετε συμμετάσχει σε ερασιτεχνικά τουρνουά τα τελευταία τρία χρόνια;",
+  "questionnaireTournamentsSub": "Οποιοδήποτε τουρνουά έχετε παίξει — ομίλου, ερασιτεχνικού κυκλώματος, ηλικιακής κατηγορίας ή open.",
+
+  "questionnaireTournamentsPerYearTitle": "Σε πόσα τουρνουά συμμετέχετε τον χρόνο;",
+  "questionnaireTournamentsPerYearHint": "Αριθμός τουρνουά",
+  "questionnaireTournamentsPerYearUnit": "τον χρόνο",
+
+  "questionnaireTournamentLevelTitle": "Σε ποιο επίπεδο συμμετέχετε συνήθως;",
+  "questionnaireLevelAmateur": "Ερασιτεχνικό",
+  "questionnaireLevelAmateurSub": "Αρχάριες κατηγορίες ομίλων και ερασιτεχνικών τουρνουά",
+  "questionnaireLevelIntermediate": "Μεσαίο",
+  "questionnaireLevelIntermediateSub": "Μεσαίες κατηγορίες του ερασιτεχνικού κυκλώματος",
+  "questionnaireLevelAgeCategory": "Ηλικιακή κατηγορία",
+  "questionnaireLevelAgeCategorySub": "Ηλικιακές κατηγορίες όπως 35+, 45+ ή 55+",
+  "questionnaireLevelMaster": "Master",
+  "questionnaireLevelMasterSub": "Η ανώτερη κατηγορία του ερασιτεχνικού κυκλώματος",
+  "questionnaireLevelOpen": "Open",
+  "questionnaireLevelOpenSub": "Κατηγορίες open ή εθνικού επιπέδου",
+
+  "questionnaireDivision1": "Division I",
+  "questionnaireDivision2": "Division II",
+  "questionnaireDivision3": "Division III",
+  "questionnaireDivisionNaia": "NAIA",
+  "questionnaireDivisionNjcaa": "NJCAA",
+
+  "questionnairePromptTitle": "Πριν ξεκινήσετε το ταξίδι σας στο RATED, θα θέλαμε να σας κάνουμε μερικές ερωτήσεις για να ορίσουμε την αρχική σας βαθμολογία!",
+  "questionnairePromptSubtitle": "Θα σας πάρει μόνο ένα λεπτό",
+  "questionnairePromptCta": "Συμπλήρωση ερωτηματολογίου",
+  "questionnairePromptLater": "Ίσως αργότερα",
+  "questionnairePromptSkipConfirm": "Αν το παραλείψετε, θα ξεκινήσετε με βαθμολογία αρχαρίου 5.0. Είστε σίγουρος ότι θέλετε να το παραλείψετε;",
+  "questionnairePromptSkipStay": "Θα το συμπληρώσω τώρα",
+  "questionnairePromptSkipLeave": "Παράλειψη ερωτηματολογίου",
+
+  "questionnaireRetakeTitle": "Βελτιώσαμε τον τρόπο με τον οποίο το RATED αξιολογεί το τενιστικό σας υπόβαθρο.",
+  "questionnaireRetakeSubtitle": "Υπάρχουν μερικές νέες ερωτήσεις. Η συμπλήρωση παίρνει ένα λεπτό και θα ανανεώσει τη βαθμολογία σας.",
+  "questionnaireRetakeSubtitleRated": "Υπάρχουν μερικές νέες ερωτήσεις. Η βαθμολογία σας παραμένει όπως την κερδίσατε — ανανεώνεται μόνο το αγωνιστικό σας προφίλ.",
+  "questionnaireRetakeCta": "Ενημέρωση απαντήσεων",
+  "questionnaireRetakeSkipConfirm": "Το αγωνιστικό σας προφίλ θα συνεχίσει να χρησιμοποιεί τις παλιές απαντήσεις μέχρι να τις ενημερώσετε. Παράλειψη προς το παρόν;",
+  "questionnaireRetakeSkipLeave": "Παράλειψη προς το παρόν",
+
+  "questionnaireRatingApplied": "Η βαθμολογία σας είναι {elo}",
+  "@questionnaireRatingApplied": {
+    "placeholders": { "elo": { "type": "String" } }
+  },
+  "questionnaireRatingUnchanged": "Οι απαντήσεις ενημερώθηκαν. Η βαθμολογία σας παραμένει {elo} — την κερδίσατε από τους αγώνες σας.",
+  "@questionnaireRatingUnchanged": {
+    "placeholders": { "elo": { "type": "String" } }
+  },
+
+  "settingsRetakeQuestionnaire": "Επανάληψη ερωτηματολογίου",
+  "settingsRetakeQuestionnaireSub": "Ενημερώστε τις απαντήσεις για το τενιστικό σας υπόβαθρο",
+
+  "profileQuestionnaireCtaTitle": "Ολοκληρώστε το προφίλ σας",
+  "profileQuestionnaireCtaBody": "Απαντήστε σε μερικές ερωτήσεις για να λάβετε εξατομικευμένη αρχική βαθμολογία.",
+  "profileQuestionnaireRetakeTitle": "Ενημερώστε το αγωνιστικό σας προφίλ",
+  "profileQuestionnaireRetakeBody": "Προσθέσαμε μερικές ερωτήσεις. Η ενημέρωση των απαντήσεων ανανεώνει τη βαθμολογία σας.",
+  "profileQuestionnaireRetakeBodyRated": "Προσθέσαμε μερικές ερωτήσεις. Η βαθμολογία σας παραμένει όπως την κερδίσατε — αλλάζει μόνο το αγωνιστικό σας προφίλ.",
+  "profileUpdateQuestionnaire": "Ενημέρωση",
+  "profileQuestionnaireLoadFailed": "Δεν ήταν δυνατή η φόρτωση του αγωνιστικού προφίλ.",
+  "profilePlayingFrequencyRarely": "Παίζει σπάνια",
+  "profilePlayingFrequencyMonthly": "Παίζει μηνιαία",
+  "profilePlayingFrequencyWeekly": "Παίζει εβδομαδιαία",
+  "profilePlayingFrequencyMultipleWeekly": "Παίζει πολλές φορές την εβδομάδα",
+  "profilePlayingTournamentsPerYear": "{count, plural, =1{1 τουρνουά τον χρόνο} other{{count} τουρνουά τον χρόνο}}",
+  "@profilePlayingTournamentsPerYear": {
+    "placeholders": { "count": { "type": "int" } }
+  },
 
   "homeTitle": "RATED",
   "homeRecentMatches": "Πρόσφατοι Αγώνες",

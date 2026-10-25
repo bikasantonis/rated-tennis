@@ -78,6 +78,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionSendRequest => 'Send challenge';
 
   @override
+  String get actionYes => 'Yes';
+
+  @override
+  String get actionNo => 'No';
+
+  @override
+  String get actionExit => 'Exit';
+
+  @override
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
@@ -320,6 +329,221 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get questionnaireOtherSportNoneSub =>
       'I have not played any other sport competitively';
+
+  @override
+  String questionnaireStepCounter(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get questionnaireFrequencyTitle => 'How often do you play tennis?';
+
+  @override
+  String get questionnaireFrequencyRarely => 'Rarely';
+
+  @override
+  String get questionnaireFrequencyRarelySub => 'Less than once a month';
+
+  @override
+  String get questionnaireFrequencyMonthly => 'A few times a month';
+
+  @override
+  String get questionnaireFrequencyMonthlySub => 'One to three times a month';
+
+  @override
+  String get questionnaireFrequencyWeekly => 'Weekly';
+
+  @override
+  String get questionnaireFrequencyWeeklySub => 'One or two times a week';
+
+  @override
+  String get questionnaireFrequencyMultipleWeekly => 'Several times a week';
+
+  @override
+  String get questionnaireFrequencyMultipleWeeklySub =>
+      'Three or more times a week';
+
+  @override
+  String get questionnaireTournamentsTitle =>
+      'Have you participated in recreational tournaments in the past three years?';
+
+  @override
+  String get questionnaireTournamentsSub =>
+      'Any tournament you have entered — club, amateur circuit, age-group or open draws.';
+
+  @override
+  String get questionnaireTournamentsPerYearTitle =>
+      'How many tournaments do you play in a year?';
+
+  @override
+  String get questionnaireTournamentsPerYearHint => 'Number of tournaments';
+
+  @override
+  String get questionnaireTournamentsPerYearUnit => 'per year';
+
+  @override
+  String get questionnaireTournamentLevelTitle =>
+      'What level do you usually play at?';
+
+  @override
+  String get questionnaireLevelAmateur => 'Amateur';
+
+  @override
+  String get questionnaireLevelAmateurSub =>
+      'Entry-level club and amateur draws';
+
+  @override
+  String get questionnaireLevelIntermediate => 'Intermediate';
+
+  @override
+  String get questionnaireLevelIntermediateSub =>
+      'Mid-tier draws on the amateur circuit';
+
+  @override
+  String get questionnaireLevelAgeCategory => 'Age category';
+
+  @override
+  String get questionnaireLevelAgeCategorySub =>
+      'Age-group draws such as 35+, 45+ or 55+';
+
+  @override
+  String get questionnaireLevelMaster => 'Master';
+
+  @override
+  String get questionnaireLevelMasterSub =>
+      'The top draw on the amateur circuit';
+
+  @override
+  String get questionnaireLevelOpen => 'Open';
+
+  @override
+  String get questionnaireLevelOpenSub => 'Open or national-level draws';
+
+  @override
+  String get questionnaireDivision1 => 'Division I';
+
+  @override
+  String get questionnaireDivision2 => 'Division II';
+
+  @override
+  String get questionnaireDivision3 => 'Division III';
+
+  @override
+  String get questionnaireDivisionNaia => 'NAIA';
+
+  @override
+  String get questionnaireDivisionNjcaa => 'NJCAA';
+
+  @override
+  String get questionnairePromptTitle =>
+      'Before you start your RATED journey, we would like to ask you some questions to help us set up your first rating!';
+
+  @override
+  String get questionnairePromptSubtitle => 'It will only take a minute';
+
+  @override
+  String get questionnairePromptCta => 'Take the questionnaire';
+
+  @override
+  String get questionnairePromptLater => 'Maybe later';
+
+  @override
+  String get questionnairePromptSkipConfirm =>
+      'If you skip this, then you will start with a 5.0 beginner rating. Are you sure you want to skip it?';
+
+  @override
+  String get questionnairePromptSkipStay => 'I\'ll take the questionnaire now';
+
+  @override
+  String get questionnairePromptSkipLeave => 'Skip questionnaire';
+
+  @override
+  String get questionnaireRetakeTitle =>
+      'We\'ve improved how RATED reads your tennis background.';
+
+  @override
+  String get questionnaireRetakeSubtitle =>
+      'There are a few new questions. Retaking takes a minute and will refresh your rating.';
+
+  @override
+  String get questionnaireRetakeSubtitleRated =>
+      'There are a few new questions. Your rating stays as you earned it — only your playing profile is refreshed.';
+
+  @override
+  String get questionnaireRetakeCta => 'Update my answers';
+
+  @override
+  String get questionnaireRetakeSkipConfirm =>
+      'Your playing profile will keep using your old answers until you update them. Skip for now?';
+
+  @override
+  String get questionnaireRetakeSkipLeave => 'Skip for now';
+
+  @override
+  String questionnaireRatingApplied(String elo) {
+    return 'Your rating is $elo';
+  }
+
+  @override
+  String questionnaireRatingUnchanged(String elo) {
+    return 'Answers updated. Your rating stays at $elo — you earned it from your matches.';
+  }
+
+  @override
+  String get settingsRetakeQuestionnaire => 'Retake questionnaire';
+
+  @override
+  String get settingsRetakeQuestionnaireSub =>
+      'Update your tennis background answers';
+
+  @override
+  String get profileQuestionnaireCtaTitle => 'Complete your profile';
+
+  @override
+  String get profileQuestionnaireCtaBody =>
+      'Answer a few questions to get a personalised starting rating.';
+
+  @override
+  String get profileQuestionnaireRetakeTitle => 'Update your playing profile';
+
+  @override
+  String get profileQuestionnaireRetakeBody =>
+      'We\'ve added a few questions. Updating your answers refreshes your rating.';
+
+  @override
+  String get profileQuestionnaireRetakeBodyRated =>
+      'We\'ve added a few questions. Your rating stays as you earned it — only your playing profile changes.';
+
+  @override
+  String get profileUpdateQuestionnaire => 'Update';
+
+  @override
+  String get profileQuestionnaireLoadFailed =>
+      'Couldn\'t load the playing profile.';
+
+  @override
+  String get profilePlayingFrequencyRarely => 'Plays rarely';
+
+  @override
+  String get profilePlayingFrequencyMonthly => 'Plays monthly';
+
+  @override
+  String get profilePlayingFrequencyWeekly => 'Plays weekly';
+
+  @override
+  String get profilePlayingFrequencyMultipleWeekly =>
+      'Plays several times a week';
+
+  @override
+  String profilePlayingTournamentsPerYear(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tournaments a year',
+      one: '1 tournament a year',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeTitle => 'RATED';

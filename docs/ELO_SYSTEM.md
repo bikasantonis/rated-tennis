@@ -58,48 +58,127 @@ Tier badge colours are defined in `lib/theme/app_colors.dart`.
 
 ---
 
-## 3. Initial Seed (Questionnaire)
+## 3. Initial Seed (Questionnaire v3)
 
-New players complete a sport-history questionnaire after registration. The answers are sent to the `seed-elo` Edge Function, which computes an initial rating, writes a `questionnaire_responses` row, and sets `questionnaire_done = true` on the profile.
+New players complete a sport-history questionnaire after registration, and are asked to retake it whenever the question set changes. The answers go to the `seed-elo` Edge Function, which computes a seed rating, upserts a `questionnaire_responses` row, and sets `questionnaire_done = true` and `questionnaire_version` on the profile.
+
+The algorithm lives in `supabase/functions/seed-elo/seed.ts` (pure, unit-tested by `seed_test.ts`); `index.ts` is transport, validation and persistence only. Question routing is mirrored in `lib/screens/questionnaire/questionnaire_flow.dart` — a question routed away there must not be required by `requiredFields` here.
+
+**Arithmetic:** every base and modifier is a multiple of 0.05, and the whole computation runs in **integer hundredths**, converting to a decimal only at the end. In binary floating point `6.0 + 0.15` is `6.149999999999999`, which would round down to 6.1 instead of 6.2.
 
 ### Inputs
 
-| Field | Type | Description |
+Nine questions, of which any one player sees six to nine. Two routing predicates decide:
+
+```
+tournamentsActive  = tournaments_last_3y = true
+recreationalCohort = greek_experience = 'recreational'
+                  AND international_experience IN ('none', 'recreational_intl')
+credentialed       = NOT recreationalCohort
+```
+
+`credentialed` is the exact complement of `recreationalCohort`, so no answer combination falls through both branches or neither.
+
+| Field | Type | Asked of |
 |---|---|---|
-| `date_of_birth` | ISO date | Used to compute current age |
-| `years_playing` | integer 0–80 | Years of tennis experience |
-| `greek_experience` | enum | `recreational` / `national_u200` / `national_20_200` / `national_top20` |
-| `international_experience` | enum | `none` / `recreational_intl` / `junior_intl` / `professional_adult` / `us_college` |
-| `junior_career_high_ranking` | integer? | Required when `junior_intl` — career high ranking number |
-| `received_atp_wta_point` | boolean? | Required when `professional_adult` |
-| `us_college_division` | string? | Required when `us_college` |
-| `other_sport` | enum? | `racket_sports` / `other_sports` / `none` — only collected when `greek_experience = recreational` |
+| `date_of_birth` | ISO date | everyone — age gate 16–90 |
+| `years_playing` | integer 0–80 | everyone |
+| `play_frequency` | `rarely` / `monthly` / `weekly` / `multiple_weekly` | everyone |
+| `greek_experience` | `recreational` / `national_u200` / `national_20_200` / `national_top20` | everyone |
+| `international_experience` | `none` / `recreational_intl` / `junior_intl` / `professional_adult` / `us_college` | everyone |
+| `junior_career_high_ranking` | integer > 0 | when `junior_intl` |
+| `received_atp_wta_point` | boolean | when `professional_adult` |
+| `us_college_division` | `division_1` / `division_2` / `division_3` / `naia` / `njcaa` | when `us_college` |
+| `tournaments_last_3y` | boolean | everyone |
+| `tournaments_per_year` | integer 1–100 | when `tournaments_last_3y` |
+| `tournament_level` | `amateur` / `intermediate` / `age_category` / `master` / `open` (ascending) | when `tournaments_last_3y` |
+| `other_sport` | `racket_sports` / `other_sports` / `none` | when `recreationalCohort` |
 
-### Seed Algorithm (evaluated in priority order)
+Fields the routing did not ask are nulled server-side (`pruneOffBranch`) before the upsert, so a stale client cannot write an answer to a question the player never saw, and a retaker who changed cohort does not keep their old branch's answers.
 
-**Priority 1 — Professional international**
-- Received ATP/WTA point AND age ≤ 39 → **10.0**
-- Professional, no ATP/WTA point (or age > 39) → **9.0**
+### Cohort A — credentialed
 
-**Priority 2 — Junior international**
-- Career high ranking < 300 AND age ≤ 39 → **8.5**
-- Career high ranking < 300 AND age > 39 → **8.0**
-- Career high ranking ≥ 300 AND age ≤ 39 → **8.0**
-- Career high ranking ≥ 300 AND age > 39 → **7.5**
+**Base credential.** When a player holds both a Greek and an international credential, the **higher base** wins. (v2's priority tree silently discarded the Greek answer for anyone with `junior_intl` or `professional_adult`.)
 
-**Priority 3 — Greek national competitive**
-- `national_top20`: age ≤ 30 → **8.5** / age ≤ 45 → **8.0** / age ≤ 55 → **7.5** / 56+ → **7.0**
-- `national_20_200`: age ≤ 35 → **8.0** / age ≤ 45 → **7.5** / 46+ → **7.0**
-- `national_u200`: age ≤ 30 → **7.5** / 31+ → **7.0**
+| Credential | Base |
+|---|---|
+| `professional_adult` + ATP/WTA point | 10.0 |
+| `professional_adult`, no point | 9.0 |
+| `junior_intl`, career high < 300 | 8.5 |
+| `national_top20` | 8.5 |
+| `junior_intl`, career high ≥ 300 | 8.0 |
+| `national_20_200` | 8.0 |
+| `us_college` `division_1` | 8.0 |
+| `national_u200` | 7.5 |
+| `us_college` `division_2` | 7.5 |
+| `us_college` `division_3` / `naia` / `njcaa` | 7.0 |
 
-**Priority 4 — Recreational path** (reached when `greek_experience = recreational`)
-- `recreational_intl` international experience → **6.5**
-- US College Division I → **7.0**; other divisions → **6.5**
-- Background in racket sports → **6.5**
-- Background in other sport → **6.0**
-- Pure recreational, years < 2 → **5.5**; years 2–5 → **6.0**; years > 5 → **6.5**
+**Age** — physical decline only. v2's steep per-credential bands are gone, because inactivity is now measured directly rather than proxied by age:
 
-The `seed-elo` Edge Function uses upsert on `questionnaire_responses` (keyed on `player_id`), making the call safe to retry without creating duplicate rows.
+| Age | ≤ 39 | 40–49 | 50–59 | 60–69 | 70+ |
+|---|---|---|---|---|---|
+| Adj | 0 | −0.20 | −0.50 | −0.80 | −1.10 |
+
+**Tournament activity.** `tournaments_last_3y = false` → **−1.00**. Otherwise volume + level:
+
+| Per year | 1–2 | 3–5 | 6–11 | 12+ | | Level | amateur | intermediate | age_category | master | open |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Adj | −0.30 | −0.10 | +0.10 | +0.20 | | Adj | −0.30 | −0.10 | +0.10 | +0.20 | +0.40 |
+
+**Frequency:** `rarely` −0.30 · `monthly` −0.15 · `weekly` 0 · `multiple_weekly` +0.15
+
+**Bounds:** `clamp(result, max(6.0, base − 1.5), min(10.0, base + 0.3))`. The floor stops a lapsed credential sinking below an active lesser one; the ceiling stops activity alone promoting a player past the next credential tier.
+
+### Cohort B — recreational
+
+Capped at **7.5** overall. Two sub-branches, because what separates a non-competitor (longevity, how often they play) differs from what separates a competitor (standard, volume).
+
+**B-i — `tournaments_last_3y = false`.** Base **6.00**, capped at **6.8**.
+
+| Signal | Values |
+|---|---|
+| `years_playing` | <1 −0.60 · 1–2 −0.40 · 3–9 0 · 10–19 +0.15 · 20+ +0.25 |
+| `play_frequency` | `rarely` −0.50 · `monthly` −0.25 · `weekly` 0 · `multiple_weekly` +0.20 |
+
+**B-ii — `tournaments_last_3y = true`.** Base by level: `amateur` 6.30 · `intermediate` 6.60 · `age_category` 6.80 · `master` 7.00 · `open` 7.20.
+
+| Signal | Values |
+|---|---|
+| `tournaments_per_year` | 1–2 0 · 3–5 +0.15 · 6–11 +0.30 · 12+ +0.40 |
+| `years_playing` | <1 −0.40 · 1–2 −0.20 · 3–9 0 · 10–19 +0.10 · 20+ +0.20 |
+| `play_frequency` | `rarely` −0.30 · `monthly` −0.15 · `weekly` 0 · `multiple_weekly` +0.15 |
+
+Both sub-branches then add `other_sport` (`racket_sports` +0.20 · `other_sports` +0.10) and, for `recreational_intl`, **+0.30**.
+
+**Cross-check ceilings** on B-ii, applied before the band clamp. Both are level-independent on purpose — capping only the upper rungs would let `intermediate` out-score `age_category` at the same volume:
+- `years_playing < 2` → cap **6.0**
+- `tournaments_per_year ≤ 2` → cap **6.8**
+
+**Entering tournaments can never score below not entering them.** B-ii takes `max(itself, B-i)` for the same answers, which makes that structural rather than a coincidence the caps have to be tuned around: the absolute `years < 2` cap would otherwise put a beginner who competes below a beginner who does not.
+
+**Finish (both cohorts):** `clamp(round(x, 1), 5.0, 10.0)`.
+
+Ranges: cohort B spans **5.0–7.5** in 0.1 steps (v2 produced only 5.5, 6.0 and 6.5); cohort A spans **6.0–10.0**. They deliberately overlap on 6.0–7.5 — an active master-level amateur can tie a former `national_u200`, and a long-lapsed ex-college player can sit below both.
+
+### Re-seeding and the match guard
+
+`seed-elo` upserts on `player_id`, so retries and retakes never duplicate rows. The **rating** is applied with a filtered update:
+
+```
+UPDATE profiles SET elo_rating = <seed> WHERE id = <player> AND matches_played = 0
+```
+
+This closes the read-then-write race and doubles as the "did it apply" signal. A player with settled matches keeps their earned rating; their answers and `seed_elo` still update. `matches_played` is maintained by `trg_match_counters` (028) over `status IN ('confirmed','overridden')`.
+
+Response: `{ seed_elo, rating_applied, current_elo, matches_played, questionnaire_version }`.
+
+No `elo_history` row is written for a seed (`event_type` has no value for it, and v2 did not either). That is safe because a re-seed can only move the rating of a player with no matches, who therefore has no ledger and a null `peak_elo` — so a downward re-seed cannot leave a stale inflated peak.
+
+### v2 request bodies (legacy)
+
+A body without `questionnaire_version: 3` is treated as v2 and scored by `computeSeedEloV2`, a frozen verbatim copy of the pre-030 algorithm, writing `questionnaire_version = 2`. Cloudflare Pages serves a hashed bundle so open tabs keep running old JS, and the mobile builds are not force-updatable. `us_college_division` is normalised from the old display strings (`'Division I'` → `division_1`) on **every** path — without that, the first legacy submission after migration 030 would violate `qr_us_college_division_check`. See `docs/TODO.md` for the removal of this path.
+
+The v2 algorithm, for reference: professional (+point, age ≤ 39 → 10.0, else 9.0) → junior international (ranking < 300: 8.5/8.0 by age ≤ 39; else 8.0/7.5) → Greek national (`national_top20` 8.5/8.0/7.5/7.0 at ages 30/45/55/56+; `national_20_200` 8.0/7.5/7.0 at 35/45/46+; `national_u200` 7.5/7.0 at 30/31+) → recreational (`recreational_intl` 6.5; college D1 7.0 else 6.5; racket sports 6.5; other sport 6.0; else years < 2 → 5.5, 2–5 → 6.0, > 5 → 6.5).
 
 ---
 

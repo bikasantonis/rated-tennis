@@ -7,6 +7,7 @@ import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/utils/legal_urls.dart';
+import 'package:rated/widgets/language_toggle.dart';
 
 /// SCR-02 — Login / Sign-Up (tabbed).
 /// Email+password, Google OAuth, Apple Sign-In.
@@ -23,6 +24,9 @@ class LoginScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(l.appTitle),
           centerTitle: true,
+          // Language switch lives here too: Settings is unreachable until the
+          // player is signed in.
+          actions: const [LanguageToggle(), SizedBox(width: 12)],
           bottom: TabBar(
             tabs: [Tab(text: l.loginTabLogin), Tab(text: l.loginTabRegister)],
           ),

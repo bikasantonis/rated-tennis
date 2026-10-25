@@ -9,6 +9,7 @@ import 'package:rated/models/profile.dart';
 import 'package:rated/providers/auth_provider.dart';
 import 'package:rated/providers/profile_provider.dart';
 import 'package:rated/router/app_router.dart';
+import 'package:rated/screens/questionnaire/questionnaire_entry.dart';
 import 'package:rated/theme/app_colors.dart';
 import 'package:rated/utils/streak_utils.dart';
 import 'package:rated/widgets/error_state_widget.dart';
@@ -289,8 +290,10 @@ class _ProfileBody extends ConsumerWidget {
     final locationConsent = profile['location_consent'] as bool? ?? false;
     final createdAt = DateTime.tryParse(
         (profile['created_at'] ?? '').toString());
-    final questionnaireDone =
-        profile['questionnaire_done'] as bool? ?? false;
+    // The version, not the boolean, decides whether the CTA shows: it covers
+    // both "never taken" (0) and "took an older version" (2).
+    final questionnaireVersion =
+        (profile['questionnaire_version'] as num?)?.toInt() ?? 0;
 
     final historyAsync = ref.watch(eloHistoryProvider(targetId));
     final matchesAsync = ref.watch(playerMatchesProvider(targetId));
@@ -460,14 +463,31 @@ class _ProfileBody extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // ── Questionnaire CTA ────────────────────────────────────────────
-            if (isOwn && !questionnaireDone && played == 0)
+            // No `played == 0` clause: a player with matches still benefits from
+            // retaking, since it refreshes their playing profile. Only their
+            // rating is left alone, which the card's copy says.
+            if (isOwn && needsQuestionnaire(questionnaireVersion))
               _QuestionnaireCta(
-                  onTap: () => context.push(AppRoutes.questionnaire)),
+                isRetake: questionnaireVersion > 0,
+                ratingWillChange: played == 0,
+                onTap: () => context.push(AppRoutes.questionnaire),
+              ),
 
             // ── Playing profile ──────────────────────────────────────────────
             questionnaireAsync.when(
               loading: () => const SizedBox.shrink(),
-              error: (e, _) => const SizedBox.shrink(),
+              // Surfacing this instead of shrinking: an `error` branch that
+              // rendered nothing is what hid this card for weeks after migration
+              // 021 dropped columns the select list still named.
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  l.profileQuestionnaireLoadFailed,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.onSurface.withValues(alpha: 0.6),
+                      ),
+                ),
+              ),
               data: (q) => q == null
                   ? const SizedBox.shrink()
                   : Padding(
@@ -673,6 +693,29 @@ class _PlayingProfileSection extends StatelessWidget {
       ));
     }
 
+    // ── v3 columns (migration 030) ───────────────────────────────────────────
+    // Each is an independent null check, so a v2 row renders exactly the chips
+    // it did before and needs no version branch.
+
+    final frequency = _frequencyLabel(questionnaire['play_frequency'] as String?, l);
+    if (frequency != null) {
+      chips.add(_InfoChip(
+          icon: Icons.calendar_month_outlined, label: frequency));
+    }
+
+    final perYear = (questionnaire['tournaments_per_year'] as num?)?.toInt();
+    if (perYear != null) {
+      chips.add(_InfoChip(
+        icon: Icons.emoji_events_outlined,
+        label: l.profilePlayingTournamentsPerYear(perYear),
+      ));
+    }
+
+    final level = _levelLabel(questionnaire['tournament_level'] as String?, l);
+    if (level != null) {
+      chips.add(_InfoChip(icon: Icons.military_tech_outlined, label: level));
+    }
+
     if (chips.isEmpty) return const SizedBox.shrink();
 
     return Card(
@@ -724,8 +767,39 @@ class _PlayingProfileSection extends StatelessWidget {
         'junior_intl' => l.profilePlayingIntlJunior,
         'professional_adult' => l.profilePlayingIntlPro,
         'us_college' => division != null
-            ? l.profilePlayingCollegeDivision(division)
+            ? l.profilePlayingCollegeDivision(_divisionLabel(division, l))
             : l.profilePlayingIntlCollege,
+        _ => null,
+      };
+
+  /// Division slugs became the stored value in migration 030; before that the
+  /// column held the rendered English label. An unrecognised value is passed
+  /// through so a row that escaped the backfill still shows something.
+  static String _divisionLabel(String slug, AppLocalizations l) =>
+      switch (slug) {
+        'division_1' => l.questionnaireDivision1,
+        'division_2' => l.questionnaireDivision2,
+        'division_3' => l.questionnaireDivision3,
+        'naia' => l.questionnaireDivisionNaia,
+        'njcaa' => l.questionnaireDivisionNjcaa,
+        _ => slug,
+      };
+
+  static String? _frequencyLabel(String? v, AppLocalizations l) =>
+      switch (v) {
+        'rarely' => l.profilePlayingFrequencyRarely,
+        'monthly' => l.profilePlayingFrequencyMonthly,
+        'weekly' => l.profilePlayingFrequencyWeekly,
+        'multiple_weekly' => l.profilePlayingFrequencyMultipleWeekly,
+        _ => null,
+      };
+
+  static String? _levelLabel(String? v, AppLocalizations l) => switch (v) {
+        'amateur' => l.questionnaireLevelAmateur,
+        'intermediate' => l.questionnaireLevelIntermediate,
+        'age_category' => l.questionnaireLevelAgeCategory,
+        'master' => l.questionnaireLevelMaster,
+        'open' => l.questionnaireLevelOpen,
         _ => null,
       };
 }
@@ -1040,11 +1114,32 @@ class _MatchHistoryTile extends StatelessWidget {
 // ── Questionnaire CTA card ────────────────────────────────────────────────────
 
 class _QuestionnaireCta extends StatelessWidget {
-  const _QuestionnaireCta({required this.onTap});
+  const _QuestionnaireCta({
+    required this.isRetake,
+    required this.ratingWillChange,
+    required this.onTap,
+  });
+
+  /// True when an older questionnaire version was already completed.
+  final bool isRetake;
+
+  /// False once the player has settled matches — their rating is then left
+  /// alone and only the playing profile is refreshed.
+  final bool ratingWillChange;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final title = isRetake
+        ? l.profileQuestionnaireRetakeTitle
+        : l.profileQuestionnaireCtaTitle;
+    final body = switch ((isRetake, ratingWillChange)) {
+      (false, _) => l.profileQuestionnaireCtaBody,
+      (true, true) => l.profileQuestionnaireRetakeBody,
+      (true, false) => l.profileQuestionnaireRetakeBodyRated,
+    };
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Card(
@@ -1061,7 +1156,7 @@ class _QuestionnaireCta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Complete your profile',
+                      title,
                       style: Theme.of(context)
                           .textTheme
                           .titleSmall
@@ -1072,7 +1167,7 @@ class _QuestionnaireCta extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Answer a few questions to get a personalised starting rating.',
+                      body,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -1080,12 +1175,15 @@ class _QuestionnaireCta extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                width: 72,
+                width: 84,
                 child: FilledButton(
                   onPressed: onTap,
-                  style:
-                      FilledButton.styleFrom(padding: EdgeInsets.zero),
-                  child: Text(AppLocalizations.of(context)!.profileStartQuestionnaire),
+                  style: FilledButton.styleFrom(padding: EdgeInsets.zero),
+                  child: Text(
+                    isRetake
+                        ? l.profileUpdateQuestionnaire
+                        : l.profileStartQuestionnaire,
+                  ),
                 ),
               ),
             ],

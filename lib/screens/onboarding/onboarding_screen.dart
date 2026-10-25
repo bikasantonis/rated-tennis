@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/screens/auth/login_screen.dart';
+import 'package:rated/widgets/language_toggle.dart';
 
 /// SCR-01 — shown on every launch when unauthenticated.
 /// Combines onboarding slides with an embedded login/register panel so
@@ -30,58 +31,73 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 600;
+        child: Column(
+          children: [
+            // First screen a new player sees, and Settings is still out of
+            // reach — so the language switch sits above the slides.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: const [LanguageToggle()],
+              ),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 600;
 
-            final slidesPanel = _SlidesPanel(
-              controller: _controller,
-              page: _page,
-              slides: slides,
-              slideCount: _slideCount,
-              onPageChanged: (i) => setState(() => _page = i),
-              onNext: _page < _slideCount - 1
-                  ? () => _controller.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      )
-                  : null,
-              nextLabel: l.actionNext,
-            );
+                  final slidesPanel = _SlidesPanel(
+                    controller: _controller,
+                    page: _page,
+                    slides: slides,
+                    slideCount: _slideCount,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    onNext: _page < _slideCount - 1
+                        ? () => _controller.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            )
+                        : null,
+                    nextLabel: l.actionNext,
+                  );
 
-            final authPanel = _AuthPanel(l: l);
+                  final authPanel = _AuthPanel(l: l);
 
-            if (isWide) {
-              return Row(
-                children: [
-                  Expanded(flex: 3, child: slidesPanel),
-                  SizedBox(
-                    width: 360,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: authPanel,
-                    ),
-                  ),
-                ],
-              );
-            }
+                  if (isWide) {
+                    return Row(
+                      children: [
+                        Expanded(flex: 3, child: slidesPanel),
+                        SizedBox(
+                          width: 360,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: authPanel,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
 
-            // Narrow (phone): onboarding on top, auth card below
-            return Column(
-              children: [
-                SizedBox(
-                  height: constraints.maxHeight * 0.38,
-                  child: slidesPanel,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: authPanel,
-                  ),
-                ),
-              ],
-            );
-          },
+                  // Narrow (phone): onboarding on top, auth card below
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: constraints.maxHeight * 0.38,
+                        child: slidesPanel,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: authPanel,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -215,18 +231,35 @@ class _SlideView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(slide.icon, size: 80, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(height: 24),
-          Text(slide.title, style: tt.headlineMedium, textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          Text(slide.body, style: tt.bodyLarge, textAlign: TextAlign.center),
-        ],
-      ),
+    // On a phone the slides get 38% of the screen, which is not enough for an
+    // 80 px icon plus a title and a body paragraph — this column overflowed at
+    // every phone height. The icon gives way first; the text scrolls only as a
+    // last resort, so a long translation can still be read in full.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final iconSize = (constraints.maxHeight * 0.3).clamp(40.0, 80.0);
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  slide.icon,
+                  size: iconSize,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(height: 20),
+                Text(slide.title,
+                    style: tt.headlineMedium, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                Text(slide.body,
+                    style: tt.bodyLarge, textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

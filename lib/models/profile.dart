@@ -114,6 +114,11 @@ abstract class Profile with _$Profile {
     @Default('en') String preferredLanguage,
     @Default(true) bool isPublic,
     @Default(false) bool questionnaireDone,
+
+    /// Questionnaire version this player last completed (migration 030).
+    /// 0 = never taken, 2 = v2, 3 = v3. Anything below
+    /// `kQuestionnaireVersion` means a retake is due.
+    @Default(0) int questionnaireVersion,
     // ── Stats ────────────────────────────────────────────────────────────────
     double? peakElo,
     // ── Location (GDPR Art. 6(1)(a) — explicit consent required) ────────────

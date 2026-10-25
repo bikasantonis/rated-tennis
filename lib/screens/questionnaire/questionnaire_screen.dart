@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:rated/l10n/app_localizations.dart';
 import 'package:rated/providers/questionnaire_provider.dart';
+import 'package:rated/screens/questionnaire/questionnaire_flow.dart';
 import 'package:rated/theme/app_colors.dart';
 
 /// Opens the questionnaire as a full-screen dialog.
-/// Returns true when the user completes it, false/null if dismissed.
-Future<bool?> showQuestionnaireDialog(BuildContext context) =>
-    showDialog<bool>(
+/// Returns the [SeedResult] when the user completes it, null if dismissed.
+Future<SeedResult?> showQuestionnaireDialog(BuildContext context) =>
+    showDialog<SeedResult>(
       context: context,
       barrierDismissible: false,
       builder: (_) => const QuestionnaireDialog(),
@@ -26,137 +27,62 @@ class QuestionnaireDialog extends ConsumerStatefulWidget {
 }
 
 class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
-  final _pageController = PageController();
-  int _currentPage = 0;
+  /// All answers live in one bag; the routing rules that read it are pure and
+  /// unit-tested in `questionnaire_flow.dart`.
+  final _a = QuestionnaireAnswers();
 
-  // Q1 — date of birth
-  DateTime? _dateOfBirth;
+  /// Index into [_steps] — never a fixed page number. The step list is derived
+  /// from the answers, so a branch can appear or disappear without any index
+  /// arithmetic elsewhere in this file.
+  int _index = 0;
 
-  // Q2 — years playing
-  int? _yearsPlaying;
   final _yearsController = TextEditingController();
-
-  // Q3 — competitive experience in Greece
-  // 'recreational' | 'national_u200' | 'national_20_200' | 'national_top20'
-  String? _greekExperience;
-
-  // Q4 — international experience + sub-fields
-  // 'none' | 'recreational_intl' | 'junior_intl' | 'professional_adult' | 'us_college'
-  String? _internationalExperience;
-  int? _juniorCareerHighRanking;
   final _rankingController = TextEditingController();
-  bool? _receivedAtpWtaPoint;
-  String? _usCollegeDivision;
+  final _tournamentsController = TextEditingController();
 
-  // Q5 — other sport (only when Q3 == 'recreational')
-  // 'racket_sports' | 'other_sports' | 'none'
-  String? _otherSport;
+  List<QStep> get _steps => activeSteps(_a);
+  QStep get _current => _steps[_index];
+  bool get _currentAnswered => isStepValid(_current, _a);
+  bool get _isLastStep => _index == _steps.length - 1;
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
-
-  bool get _q5Active => _greekExperience == 'recreational';
-  int get _totalPages => _q5Active ? 5 : 4;
-  bool get _isLastPage => _currentPage == _totalPages - 1;
-
-  bool get _q4Valid {
-    switch (_internationalExperience) {
-      case null:
-        return false;
-      case 'junior_intl':
-        return _juniorCareerHighRanking != null;
-      case 'professional_adult':
-        return _receivedAtpWtaPoint != null;
-      case 'us_college':
-        return _usCollegeDivision != null;
-      default:
-        return true; // 'none' or 'recreational_intl'
-    }
+  /// The single mutation path. Prunes answers that the new routing has made
+  /// unreachable, then keeps [_index] inside the recomputed list.
+  void _answer(VoidCallback mutate) {
+    setState(() {
+      mutate();
+      pruneInactive(_a);
+      if (_a.juniorCareerHighRanking == null) _rankingController.clear();
+      if (_a.tournamentsPerYear == null) _tournamentsController.clear();
+      final last = _steps.length - 1;
+      if (_index > last) _index = last;
+    });
   }
-
-  bool get _currentAnswered => switch (_currentPage) {
-        0 => _dateOfBirth != null,
-        1 => _yearsPlaying != null,
-        2 => _greekExperience != null,
-        3 => _q4Valid,
-        4 => _otherSport != null,
-        _ => false,
-      };
-
-  bool _isPageCompleted(int page) => switch (page) {
-        0 => _dateOfBirth != null,
-        1 => _yearsPlaying != null,
-        2 => _greekExperience != null,
-        3 => _q4Valid,
-        4 => _otherSport != null,
-        _ => false,
-      };
-
-  // ── Navigation ───────────────────────────────────────────────────────────────
 
   void _next() {
     if (!_currentAnswered) return;
-    if (_isLastPage) {
+    if (_isLastStep) {
       _submit();
     } else {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      setState(() => _index++);
     }
   }
 
-  void _back() => _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+  void _back() => setState(() => _index = (_index - 1).clamp(0, _steps.length - 1));
 
   Future<void> _submit() async {
-    await ref.read(questionnaireActionsProvider.notifier).submit(
-          dateOfBirth: _dateOfBirth!,
-          yearsPlaying: _yearsPlaying!,
-          greekExperience: _greekExperience!,
-          internationalExperience: _internationalExperience!,
-          juniorCareerHighRanking: _juniorCareerHighRanking,
-          receivedAtpWtaPoint: _receivedAtpWtaPoint,
-          usCollegeDivision: _usCollegeDivision,
-          otherSport: _q5Active ? _otherSport : null,
-        );
+    await ref.read(questionnaireActionsProvider.notifier).submit(_a);
     if (!mounted) return;
     final st = ref.read(questionnaireActionsProvider);
-    if (st is AsyncData) Navigator.of(context).pop(true);
-  }
-
-  // ── Greek experience change — reset Q5 if no longer applicable ───────────────
-
-  void _onGreekChanged(String v) {
-    setState(() {
-      _greekExperience = v;
-      _otherSport = null;
-      // If the user was on page 4 (Q5) and it is now hidden, jump back.
-      if (v != 'recreational' && _currentPage == 4) {
-        _currentPage = 3;
-        _pageController.jumpToPage(3);
-      }
-    });
-  }
-
-  // ── International experience change — reset sub-fields ───────────────────────
-
-  void _onIntlChanged(String v) {
-    setState(() {
-      _internationalExperience = v;
-      _juniorCareerHighRanking = null;
-      _rankingController.clear();
-      _receivedAtpWtaPoint = null;
-      _usCollegeDivision = null;
-    });
+    if (st is AsyncData<SeedResult?> && st.value != null) {
+      Navigator.of(context).pop(st.value);
+    }
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     _yearsController.dispose();
     _rankingController.dispose();
+    _tournamentsController.dispose();
     super.dispose();
   }
 
@@ -170,10 +96,12 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
     final hasError = qState is AsyncError;
     final errorMessage = qState is AsyncError ? qState.error.toString() : null;
 
+    final steps = _steps;
+    final total = steps.length;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
         child: Padding(
@@ -195,53 +123,34 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    tooltip: 'Exit',
-                    onPressed: () => Navigator.of(context).pop(false),
+                    tooltip: l.actionExit,
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
               const Divider(height: 16),
 
-              // ── Pages ───────────────────────────────────────────────────────
+              // ── Steps ───────────────────────────────────────────────────────
+              // An AnimatedSwitcher rather than a PageView: the step list is
+              // variable-length, and a PageController has to be reconciled
+              // against a list that can shrink underneath it.
               Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (p) => setState(() => _currentPage = p),
-                  children: [
-                    _DobStep(
-                      selected: _dateOfBirth,
-                      onChanged: (d) => setState(() => _dateOfBirth = d),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.06, 0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
                     ),
-                    _YearsStep(
-                      controller: _yearsController,
-                      onChanged: (v) => setState(() => _yearsPlaying = v),
-                    ),
-                    _GreekExperienceStep(
-                      selected: _greekExperience,
-                      onChanged: _onGreekChanged,
-                    ),
-                    _InternationalStep(
-                      selected: _internationalExperience,
-                      careerHighRanking: _juniorCareerHighRanking,
-                      rankingController: _rankingController,
-                      receivedAtpWtaPoint: _receivedAtpWtaPoint,
-                      usCollegeDivision: _usCollegeDivision,
-                      onExperienceChanged: _onIntlChanged,
-                      onRankingChanged: (v) =>
-                          setState(() => _juniorCareerHighRanking = v),
-                      onAtpWtaChanged: (v) =>
-                          setState(() => _receivedAtpWtaPoint = v),
-                      onDivisionChanged: (v) =>
-                          setState(() => _usCollegeDivision = v),
-                    ),
-                    // Q5 is always included in the PageView but only reachable
-                    // when _q5Active — navigation logic enforces this.
-                    _OtherSportStep(
-                      selected: _otherSport,
-                      onChanged: (v) => setState(() => _otherSport = v),
-                    ),
-                  ],
+                  ),
+                  child: KeyedSubtree(
+                    key: ValueKey(_current),
+                    child: _buildStep(_current, l),
+                  ),
                 ),
               ),
 
@@ -262,9 +171,8 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
               // ── Navigation ─────────────────────────────────────────────────
               Row(
                 children: [
-                  if (_currentPage > 0) ...[
+                  if (_index > 0) ...[
                     Expanded(
-                      flex: 1,
                       child: OutlinedButton(
                         onPressed: isLoading ? null : _back,
                         child: Text(l.actionBack),
@@ -286,7 +194,7 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
                               ),
                             )
                           : Text(
-                              _isLastPage
+                              _isLastStep
                                   ? l.questionnaireGetMyRating
                                   : l.actionNext,
                             ),
@@ -296,27 +204,29 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
               ),
               const SizedBox(height: 16),
 
-              // ── Dot progress indicators ─────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_totalPages, (i) {
-                  final completed = _isPageCompleted(i);
-                  final isCurrent = i == _currentPage;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isCurrent ? 22 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color: completed
-                          ? AppColors.primary
-                          : isCurrent
-                              ? AppColors.primary.withValues(alpha: 0.45)
-                              : AppColors.outline,
+              // ── Progress ────────────────────────────────────────────────────
+              // A bar, not dots: the total varies from six to nine depending on
+              // the answers, and a reflowing dot row reads worse than a label.
+              Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: (_index + 1) / total,
+                      minHeight: 6,
+                      backgroundColor: AppColors.outline,
+                      valueColor:
+                          const AlwaysStoppedAnimation(AppColors.primary),
                     ),
-                  );
-                }),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l.questionnaireStepCounter(_index + 1, total),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurface.withValues(alpha: 0.6),
+                        ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -324,6 +234,109 @@ class _QuestionnaireDialogState extends ConsumerState<QuestionnaireDialog> {
       ),
     );
   }
+
+  Widget _buildStep(QStep step, AppLocalizations l) => switch (step) {
+        QStep.dob => _DobStep(
+            selected: _a.dateOfBirth,
+            onChanged: (d) => _answer(() => _a.dateOfBirth = d),
+          ),
+        QStep.years => _NumberStep(
+            question: l.questionnaireYearsTitle,
+            controller: _yearsController,
+            hintText: l.questionnaireYearsHint,
+            suffixText: l.questionnaireYearsUnit,
+            maxDigits: 2,
+            onChanged: (v) => _answer(() => _a.yearsPlaying = v),
+          ),
+        QStep.frequency => _ChoiceStep(
+            question: l.questionnaireFrequencyTitle,
+            options: [
+              _Option('rarely', l.questionnaireFrequencyRarely,
+                  l.questionnaireFrequencyRarelySub),
+              _Option('monthly', l.questionnaireFrequencyMonthly,
+                  l.questionnaireFrequencyMonthlySub),
+              _Option('weekly', l.questionnaireFrequencyWeekly,
+                  l.questionnaireFrequencyWeeklySub),
+              _Option('multiple_weekly', l.questionnaireFrequencyMultipleWeekly,
+                  l.questionnaireFrequencyMultipleWeeklySub),
+            ],
+            selected: _a.playFrequency,
+            onChanged: (v) => _answer(() => _a.playFrequency = v),
+          ),
+        QStep.greek => _ChoiceStep(
+            question: l.questionnaireGreekTitle,
+            options: [
+              _Option('recreational', l.questionnaireGreekRecreational,
+                  l.questionnaireGreekRecreationalSub),
+              _Option('national_u200', l.questionnaireGreekNationalU200,
+                  l.questionnaireGreekNationalU200Sub),
+              _Option('national_20_200', l.questionnaireGreekNational20200,
+                  l.questionnaireGreekNational20200Sub),
+              _Option('national_top20', l.questionnaireGreekNationalTop20,
+                  l.questionnaireGreekNationalTop20Sub),
+            ],
+            selected: _a.greekExperience,
+            onChanged: (v) => _answer(() => _a.greekExperience = v),
+          ),
+        QStep.international => _InternationalStep(
+            selected: _a.internationalExperience,
+            rankingController: _rankingController,
+            receivedAtpWtaPoint: _a.receivedAtpWtaPoint,
+            usCollegeDivision: _a.usCollegeDivision,
+            onExperienceChanged: (v) =>
+                _answer(() => _a.internationalExperience = v),
+            onRankingChanged: (v) =>
+                _answer(() => _a.juniorCareerHighRanking = v),
+            onAtpWtaChanged: (v) => _answer(() => _a.receivedAtpWtaPoint = v),
+            onDivisionChanged: (v) => _answer(() => _a.usCollegeDivision = v),
+          ),
+        QStep.tournaments3y => _YesNoStep(
+            question: l.questionnaireTournamentsTitle,
+            subtitle: l.questionnaireTournamentsSub,
+            yesLabel: l.actionYes,
+            noLabel: l.actionNo,
+            selected: _a.tournamentsLast3y,
+            onChanged: (v) => _answer(() => _a.tournamentsLast3y = v),
+          ),
+        QStep.tournamentsPerYear => _NumberStep(
+            question: l.questionnaireTournamentsPerYearTitle,
+            controller: _tournamentsController,
+            hintText: l.questionnaireTournamentsPerYearHint,
+            suffixText: l.questionnaireTournamentsPerYearUnit,
+            maxDigits: 3,
+            onChanged: (v) => _answer(() => _a.tournamentsPerYear = v),
+          ),
+        QStep.tournamentLevel => _ChoiceStep(
+            question: l.questionnaireTournamentLevelTitle,
+            options: [
+              _Option('amateur', l.questionnaireLevelAmateur,
+                  l.questionnaireLevelAmateurSub),
+              _Option('intermediate', l.questionnaireLevelIntermediate,
+                  l.questionnaireLevelIntermediateSub),
+              _Option('age_category', l.questionnaireLevelAgeCategory,
+                  l.questionnaireLevelAgeCategorySub),
+              _Option('master', l.questionnaireLevelMaster,
+                  l.questionnaireLevelMasterSub),
+              _Option('open', l.questionnaireLevelOpen,
+                  l.questionnaireLevelOpenSub),
+            ],
+            selected: _a.tournamentLevel,
+            onChanged: (v) => _answer(() => _a.tournamentLevel = v),
+          ),
+        QStep.otherSport => _ChoiceStep(
+            question: l.questionnaireOtherSportTitle,
+            options: [
+              _Option('racket_sports', l.questionnaireOtherSportRacket,
+                  l.questionnaireOtherSportRacketSub),
+              _Option('other_sports', l.questionnaireOtherSportOther,
+                  l.questionnaireOtherSportOtherSub),
+              _Option('none', l.questionnaireOtherSportNone,
+                  l.questionnaireOtherSportNoneSub),
+            ],
+            selected: _a.otherSport,
+            onChanged: (v) => _answer(() => _a.otherSport = v),
+          ),
+      };
 }
 
 // ── Step: date of birth ───────────────────────────────────────────────────────
@@ -336,6 +349,12 @@ class _DobStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    // The picker range mirrors the 16–90 gate in seed-elo, so an ineligible date
+    // cannot be chosen at all rather than failing after the whole questionnaire.
+    final now = DateTime.now();
+    final latest = DateTime(now.year - kMinAge, now.month, now.day);
+    final earliest = DateTime(now.year - kMaxAge, now.month, now.day);
+
     return _StepScaffoldCustom(
       question: l.questionnaireDobTitle,
       child: InkWell(
@@ -343,8 +362,8 @@ class _DobStep extends StatelessWidget {
           final picked = await showDatePicker(
             context: context,
             initialDate: selected ?? DateTime(1990),
-            firstDate: DateTime(1930),
-            lastDate: DateTime.now(),
+            firstDate: earliest,
+            lastDate: latest,
           );
           if (picked != null) onChanged(picked);
         },
@@ -397,73 +416,85 @@ class _DobStep extends StatelessWidget {
   }
 }
 
-// ── Step: years playing ───────────────────────────────────────────────────────
+// ── Step: a bounded whole number ──────────────────────────────────────────────
 
-class _YearsStep extends StatelessWidget {
-  const _YearsStep({
+class _NumberStep extends StatelessWidget {
+  const _NumberStep({
+    required this.question,
     required this.controller,
+    required this.hintText,
+    required this.suffixText,
+    required this.maxDigits,
     required this.onChanged,
   });
+  final String question;
   final TextEditingController controller;
+  final String hintText;
+  final String suffixText;
+  final int maxDigits;
   final ValueChanged<int?> onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return _StepScaffoldCustom(
-      question: l.questionnaireYearsTitle,
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(2),
-        ],
-        decoration: InputDecoration(
-          hintText: l.questionnaireYearsHint,
-          suffixText: l.questionnaireYearsUnit,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget build(BuildContext context) => _StepScaffoldCustom(
+        question: question,
+        child: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(maxDigits),
+          ],
+          decoration: InputDecoration(
+            hintText: hintText,
+            suffixText: suffixText,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          onChanged: (v) => onChanged(int.tryParse(v)),
         ),
-        onChanged: (v) {
-          final n = int.tryParse(v);
-          onChanged((n != null && n >= 0) ? n : null);
-        },
-      ),
-    );
-  }
+      );
 }
 
-// ── Step: Greek competitive experience ───────────────────────────────────────
+// ── Step: yes / no ────────────────────────────────────────────────────────────
 
-class _GreekExperienceStep extends StatelessWidget {
-  const _GreekExperienceStep(
-      {required this.selected, required this.onChanged});
-  final String? selected;
-  final ValueChanged<String> onChanged;
+class _YesNoStep extends StatelessWidget {
+  const _YesNoStep({
+    required this.question,
+    required this.subtitle,
+    required this.yesLabel,
+    required this.noLabel,
+    required this.selected,
+    required this.onChanged,
+  });
+  final String question;
+  final String subtitle;
+  final String yesLabel;
+  final String noLabel;
+  final bool? selected;
+  final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return _StepScaffold(
-      question: l.questionnaireGreekTitle,
-      options: [
-        _Option('recreational', l.questionnaireGreekRecreational,
-            l.questionnaireGreekRecreationalSub),
-        _Option('national_u200', l.questionnaireGreekNationalU200,
-            l.questionnaireGreekNationalU200Sub),
-        _Option('national_20_200', l.questionnaireGreekNational20200,
-            l.questionnaireGreekNational20200Sub),
-        _Option('national_top20', l.questionnaireGreekNationalTop20,
-            l.questionnaireGreekNationalTop20Sub),
-      ],
-      selected: selected,
-      onChanged: onChanged,
-    );
-  }
+  Widget build(BuildContext context) => _StepScaffoldCustom(
+        question: question,
+        subtitle: subtitle,
+        child: Column(
+          children: [
+            _OptionTile(
+              label: yesLabel,
+              subtitle: '',
+              selected: selected == true,
+              onTap: () => onChanged(true),
+            ),
+            _OptionTile(
+              label: noLabel,
+              subtitle: '',
+              selected: selected == false,
+              onTap: () => onChanged(false),
+            ),
+          ],
+        ),
+      );
 }
 
 // ── Step: international experience (with inline sub-questions) ───────────────
@@ -471,7 +502,6 @@ class _GreekExperienceStep extends StatelessWidget {
 class _InternationalStep extends StatelessWidget {
   const _InternationalStep({
     required this.selected,
-    required this.careerHighRanking,
     required this.rankingController,
     required this.receivedAtpWtaPoint,
     required this.usCollegeDivision,
@@ -482,7 +512,6 @@ class _InternationalStep extends StatelessWidget {
   });
 
   final String? selected;
-  final int? careerHighRanking;
   final TextEditingController rankingController;
   final bool? receivedAtpWtaPoint;
   final String? usCollegeDivision;
@@ -494,6 +523,18 @@ class _InternationalStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+
+    // (slug, label) pairs: the stored value is a slug, the label is localised.
+    // v2 stored the rendered English string as the value, which made the UI copy
+    // and the scoring key the same thing — migration 030 normalises those rows.
+    final divisions = <(String, String)>[
+      ('division_1', l.questionnaireDivision1),
+      ('division_2', l.questionnaireDivision2),
+      ('division_3', l.questionnaireDivision3),
+      ('naia', l.questionnaireDivisionNaia),
+      ('njcaa', l.questionnaireDivisionNjcaa),
+    ];
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
       child: Column(
@@ -508,7 +549,6 @@ class _InternationalStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // None
           _OptionTile(
             label: l.questionnaireIntlNone,
             subtitle: l.questionnaireIntlNoneSub,
@@ -516,7 +556,6 @@ class _InternationalStep extends StatelessWidget {
             onTap: () => onExperienceChanged('none'),
           ),
 
-          // Recreational international
           _OptionTile(
             label: l.questionnaireIntlRecreational,
             subtitle: l.questionnaireIntlRecreationalSub,
@@ -524,7 +563,6 @@ class _InternationalStep extends StatelessWidget {
             onTap: () => onExperienceChanged('recreational_intl'),
           ),
 
-          // Junior international
           _OptionTile(
             label: l.questionnaireIntlJunior,
             subtitle: l.questionnaireIntlJuniorSub,
@@ -544,9 +582,8 @@ class _InternationalStep extends StatelessWidget {
                   hintText: l.questionnaireIntlCareerHighHint,
                   prefixText: '# ',
                   helperText: l.questionnaireIntlCareerHighHelper,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border:
+                      OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
@@ -559,7 +596,6 @@ class _InternationalStep extends StatelessWidget {
             const SizedBox(height: 8),
           ],
 
-          // Professional international
           _OptionTile(
             label: l.questionnaireIntlProfessional,
             subtitle: l.questionnaireIntlProfessionalSub,
@@ -584,13 +620,13 @@ class _InternationalStep extends StatelessWidget {
                   Row(
                     children: [
                       _PillOption(
-                        label: 'Yes',
+                        label: l.actionYes,
                         selected: receivedAtpWtaPoint == true,
                         onTap: () => onAtpWtaChanged(true),
                       ),
                       const SizedBox(width: 8),
                       _PillOption(
-                        label: 'No',
+                        label: l.actionNo,
                         selected: receivedAtpWtaPoint == false,
                         onTap: () => onAtpWtaChanged(false),
                       ),
@@ -602,7 +638,6 @@ class _InternationalStep extends StatelessWidget {
             const SizedBox(height: 8),
           ],
 
-          // US College
           _OptionTile(
             label: l.questionnaireIntlCollege,
             subtitle: l.questionnaireIntlCollegeSub,
@@ -627,18 +662,12 @@ class _InternationalStep extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [
-                      'Division I',
-                      'Division II',
-                      'Division III',
-                      'NAIA',
-                      'NJCAA',
-                    ]
+                    children: divisions
                         .map(
                           (d) => _PillOption(
-                            label: d,
-                            selected: usCollegeDivision == d,
-                            onTap: () => onDivisionChanged(d),
+                            label: d.$2,
+                            selected: usCollegeDivision == d.$1,
+                            onTap: () => onDivisionChanged(d.$1),
                           ),
                         )
                         .toList(),
@@ -654,32 +683,6 @@ class _InternationalStep extends StatelessWidget {
   }
 }
 
-// ── Step: other sport ─────────────────────────────────────────────────────────
-
-class _OtherSportStep extends StatelessWidget {
-  const _OtherSportStep({required this.selected, required this.onChanged});
-  final String? selected;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return _StepScaffold(
-      question: l.questionnaireOtherSportTitle,
-      options: [
-        _Option('racket_sports', l.questionnaireOtherSportRacket,
-            l.questionnaireOtherSportRacketSub),
-        _Option('other_sports', l.questionnaireOtherSportOther,
-            l.questionnaireOtherSportOtherSub),
-        _Option('none', l.questionnaireOtherSportNone,
-            l.questionnaireOtherSportNoneSub),
-      ],
-      selected: selected,
-      onChanged: onChanged,
-    );
-  }
-}
-
 // ── Reusable layout ───────────────────────────────────────────────────────────
 
 class _Option {
@@ -689,8 +692,11 @@ class _Option {
   final String subtitle;
 }
 
-class _StepScaffold extends StatelessWidget {
-  const _StepScaffold({
+/// A question answered by picking one of a list of options. Serves every
+/// single-choice step; only date-of-birth, the two numeric steps and the
+/// international step (inline sub-questions) need bespoke layouts.
+class _ChoiceStep extends StatelessWidget {
+  const _ChoiceStep({
     required this.question,
     required this.options,
     required this.selected,
@@ -720,8 +726,13 @@ class _StepScaffold extends StatelessWidget {
 }
 
 class _StepScaffoldCustom extends StatelessWidget {
-  const _StepScaffoldCustom({required this.question, required this.child});
+  const _StepScaffoldCustom({
+    required this.question,
+    required this.child,
+    this.subtitle,
+  });
   final String question;
+  final String? subtitle;
   final Widget child;
 
   @override
@@ -737,6 +748,15 @@ class _StepScaffoldCustom extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.onSurface.withValues(alpha: 0.65),
+                    ),
+              ),
+            ],
             const SizedBox(height: 20),
             child,
           ],
@@ -764,8 +784,7 @@ class _OptionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -789,17 +808,16 @@ class _OptionTile extends StatelessWidget {
                                   : AppColors.onSurface,
                             ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              color:
-                                  AppColors.onSurface.withValues(alpha: 0.65),
-                            ),
-                      ),
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.onSurface
+                                    .withValues(alpha: 0.65),
+                              ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -830,23 +848,20 @@ class _PillOption extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? AppColors.primary : AppColors.outline,
               width: selected ? 2 : 1,
             ),
-            color:
-                selected ? AppColors.primaryContainer : AppColors.surface,
+            color: selected ? AppColors.primaryContainer : AppColors.surface,
           ),
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color:
-                      selected ? AppColors.primary : AppColors.onSurface,
+                  color: selected ? AppColors.primary : AppColors.onSurface,
                 ),
           ),
         ),

@@ -2,7 +2,7 @@
 
 All schema lives in Supabase (PostgreSQL 17). Changes are applied only through numbered SQL migrations in `supabase/migrations/` — never through the Dashboard. This document covers tables, the migration log, triggers, functions, RLS policies, scheduled jobs, the local → DEV → PROD workflow, and known issues.
 
-> State as of 2026-09-19 (v1.0.0): DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) are both at migration **029** (Realtime publication), applied to PROD via `./scripts/push-prod.ps1` and verified live cross-device. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
+> State as of 2026-09-27: DEV (`ikjdfsjflzwkhlbootbx`) and PROD (`jkjndgcjyalmglnvvdrd`) are both at migration **030** (questionnaire v3), applied to PROD via `./scripts/push-prod.ps1` with the v3 `seed-elo` deployed alongside it. The 030 backfill was verified on PROD: every profile sits at `questionnaire_version` 0 or 2, with no row marked done but left at 0. The full chain replays cleanly on an empty Postgres 17 database (`supabase start` / `supabase db reset`).
 
 ---
 
@@ -52,6 +52,7 @@ One row per authenticated user. Auto-created by `handle_new_user` when a row is 
 | `preferred_language` | char(2) | `en` / `el` |
 | `is_public` | boolean | Default true; drives leaderboard and profile visibility |
 | `questionnaire_done` | boolean | Default false; set to true by `seed-elo` |
+| `questionnaire_version` | smallint | Default 0; questionnaire version last completed (0 never, 2 = v2, 3 = v3). Below the app's `kQuestionnaireVersion` means a retake is due (030) |
 | `peak_elo` | numeric(4,1)? | Career-high rating; maintained by `trg_update_peak_elo` |
 | `prestige_score` | numeric(10,4)? | Non-null only for RATED (10.0) players; never returned by `get_leaderboard_page` |
 | `location_consent` | boolean | Default false; GDPR Art. 6(1)(a) explicit consent |
@@ -77,14 +78,21 @@ One row per player (unique on `player_id`). Written by `seed-elo` via upsert wit
 | `player_id` | uuid unique FK → `profiles` | `ON DELETE CASCADE` |
 | `date_of_birth` | date? | Added in 021 |
 | `years_playing` | integer | 0–80 |
+| `play_frequency` | varchar(20)? | `rarely` / `monthly` / `weekly` / `multiple_weekly` (030) |
 | `greek_experience` | varchar(20)? | `recreational` / `national_u200` / `national_20_200` / `national_top20` |
 | `international_experience` | varchar(25)? | `none` / `recreational_intl` / `junior_intl` / `professional_adult` / `us_college` |
 | `junior_career_high_ranking` | integer? | Required when `junior_intl` |
 | `received_atp_wta_point` | boolean? | Required when `professional_adult` |
-| `us_college_division` | varchar(30)? | Required when `us_college` |
-| `other_sport` | varchar(20)? | `racket_sports` / `other_sports` / `none` |
+| `us_college_division` | varchar(30)? | Required when `us_college`. Slugs since 030 (`division_1` … `njcaa`); held the English display string before that |
+| `tournaments_last_3y` | boolean? | Asked of everyone (030); null on v2 rows |
+| `tournaments_per_year` | integer? | 1–100; required when `tournaments_last_3y` (030) |
+| `tournament_level` | varchar(20)? | `amateur` / `intermediate` / `age_category` / `master` / `open`, ascending; required when `tournaments_last_3y` (030) |
+| `other_sport` | varchar(20)? | `racket_sports` / `other_sports` / `none`; asked only of the recreational cohort |
 | `seed_elo` | numeric(8,4) | 5.0–10.0; computed by the seed algorithm |
 | `created_at` | timestamptz | |
+| `updated_at` | timestamptz? | Set by `trg_questionnaire_responses_updated_at` on a retake; null if never retaken (030) |
+
+A v2 row simply has nulls in the 030 columns. `qr_tournament_block_check` requires `tournaments_per_year` and `tournament_level` exactly when `tournaments_last_3y` is true, and is written as `is not true` so v2 rows satisfy it untouched.
 
 ---
 
@@ -275,6 +283,7 @@ Each file is named `NNN_description.sql` and applied in filename order.
 | 027 | `027_court_theme.sql` | `profiles.court_theme` | Court background syncs across devices |
 | 028 | `028_match_counters.sql` | `sync_match_counters()` / `trg_match_counters` + one-shot backfill | Played/Won had no writer. A status trigger covers all four confirmation paths (ADR-17) |
 | 029 | `029_realtime_publication.sql` | Adds `profiles`, `match_results`, `match_requests`, `notifications` to the `supabase_realtime` publication (idempotent — each table only if missing) | The publication was empty, so no Postgres Changes ever fired and the notification stream was never live. Replica identity is left DEFAULT on purpose: Realtime skips RLS on DELETE events, and DEFAULT sends only the primary key |
+| 030 | `030_questionnaire_v3.sql` | Adds `play_frequency`, `tournaments_last_3y`, `tournaments_per_year`, `tournament_level`, `updated_at` to `questionnaire_responses` (+ CHECKs and an `updated_at` trigger); normalises `us_college_division` to slugs and constrains it; adds `profiles.questionnaire_version` with a backfill to 2 for anyone who had completed v2 | Questionnaire v3: routed questions, base + modifier seeding, and a retake prompt driven by the version column (ADR-18). Purely additive and nullable, so it applies while the v2 app is still live |
 
 Migration 012 is missing from the sequence (deleted during development); the gap is intentional.
 
@@ -284,7 +293,7 @@ Migration 012 is missing from the sequence (deleted during development); the gap
 
 | Trigger | Table | Event | Function | Purpose |
 |---|---|---|---|---|
-| `trg_profiles_updated_at`, `trg_match_results_updated_at`, `trg_match_requests_updated_at`, `trg_tournaments_updated_at` | as named | BEFORE UPDATE | `set_updated_at()` | Server-authoritative `updated_at` |
+| `trg_profiles_updated_at`, `trg_match_results_updated_at`, `trg_match_requests_updated_at`, `trg_tournaments_updated_at`, `trg_questionnaire_responses_updated_at` (030) | as named | BEFORE UPDATE | `set_updated_at()` | Server-authoritative `updated_at` |
 | `trg_on_auth_user_created` | `auth.users` | AFTER INSERT | `handle_new_user()` | Creates the `profiles` row from signup/OAuth metadata |
 | `trg_profiles_sync_elo_tier` | `profiles` | BEFORE INSERT OR UPDATE OF `elo_rating` | `sync_elo_tier()` | Writes the tier string in the same transaction |
 | `trg_update_peak_elo` | `elo_history` | AFTER INSERT | `update_peak_elo()` | Keeps `profiles.peak_elo` at the career high |
@@ -383,7 +392,7 @@ supabase db push
 `push-prod.ps1` refuses to run with uncommitted changes, warns (and asks) when not on `main`, shows `migration list` and a dry run, requires typing `prod`, and relinks DEV in a `finally` block even on failure or Ctrl+C. `supabase link` may prompt for each project's database password.
 
 **Adding a migration:**
-1. Create `supabase/migrations/029_<description>.sql` — the next number.
+1. Create `supabase/migrations/031_<description>.sql` — the next number.
 2. `supabase db reset` until it replays cleanly, then exercise the affected flows in the app against `.env.local`.
 3. `supabase db push` to DEV and verify there.
 4. Commit, merge to `main`, then run `./scripts/push-prod.ps1`.

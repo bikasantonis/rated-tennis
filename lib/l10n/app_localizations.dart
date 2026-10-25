@@ -236,6 +236,24 @@ abstract class AppLocalizations {
   /// **'Send challenge'**
   String get actionSendRequest;
 
+  /// No description provided for @actionYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get actionYes;
+
+  /// No description provided for @actionNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get actionNo;
+
+  /// No description provided for @actionExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get actionExit;
+
   /// No description provided for @errorGeneric.
   ///
   /// In en, this message translates to:
@@ -673,6 +691,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'I have not played any other sport competitively'**
   String get questionnaireOtherSportNoneSub;
+
+  /// No description provided for @questionnaireStepCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String questionnaireStepCounter(int current, int total);
+
+  /// No description provided for @questionnaireFrequencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How often do you play tennis?'**
+  String get questionnaireFrequencyTitle;
+
+  /// No description provided for @questionnaireFrequencyRarely.
+  ///
+  /// In en, this message translates to:
+  /// **'Rarely'**
+  String get questionnaireFrequencyRarely;
+
+  /// No description provided for @questionnaireFrequencyRarelySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than once a month'**
+  String get questionnaireFrequencyRarelySub;
+
+  /// No description provided for @questionnaireFrequencyMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'A few times a month'**
+  String get questionnaireFrequencyMonthly;
+
+  /// No description provided for @questionnaireFrequencyMonthlySub.
+  ///
+  /// In en, this message translates to:
+  /// **'One to three times a month'**
+  String get questionnaireFrequencyMonthlySub;
+
+  /// No description provided for @questionnaireFrequencyWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get questionnaireFrequencyWeekly;
+
+  /// No description provided for @questionnaireFrequencyWeeklySub.
+  ///
+  /// In en, this message translates to:
+  /// **'One or two times a week'**
+  String get questionnaireFrequencyWeeklySub;
+
+  /// No description provided for @questionnaireFrequencyMultipleWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Several times a week'**
+  String get questionnaireFrequencyMultipleWeekly;
+
+  /// No description provided for @questionnaireFrequencyMultipleWeeklySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Three or more times a week'**
+  String get questionnaireFrequencyMultipleWeeklySub;
+
+  /// No description provided for @questionnaireTournamentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you participated in recreational tournaments in the past three years?'**
+  String get questionnaireTournamentsTitle;
+
+  /// No description provided for @questionnaireTournamentsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Any tournament you have entered — club, amateur circuit, age-group or open draws.'**
+  String get questionnaireTournamentsSub;
+
+  /// No description provided for @questionnaireTournamentsPerYearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How many tournaments do you play in a year?'**
+  String get questionnaireTournamentsPerYearTitle;
+
+  /// No description provided for @questionnaireTournamentsPerYearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of tournaments'**
+  String get questionnaireTournamentsPerYearHint;
+
+  /// No description provided for @questionnaireTournamentsPerYearUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get questionnaireTournamentsPerYearUnit;
+
+  /// No description provided for @questionnaireTournamentLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What level do you usually play at?'**
+  String get questionnaireTournamentLevelTitle;
+
+  /// No description provided for @questionnaireLevelAmateur.
+  ///
+  /// In en, this message translates to:
+  /// **'Amateur'**
+  String get questionnaireLevelAmateur;
+
+  /// No description provided for @questionnaireLevelAmateurSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry-level club and amateur draws'**
+  String get questionnaireLevelAmateurSub;
+
+  /// No description provided for @questionnaireLevelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get questionnaireLevelIntermediate;
+
+  /// No description provided for @questionnaireLevelIntermediateSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Mid-tier draws on the amateur circuit'**
+  String get questionnaireLevelIntermediateSub;
+
+  /// No description provided for @questionnaireLevelAgeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Age category'**
+  String get questionnaireLevelAgeCategory;
+
+  /// No description provided for @questionnaireLevelAgeCategorySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Age-group draws such as 35+, 45+ or 55+'**
+  String get questionnaireLevelAgeCategorySub;
+
+  /// No description provided for @questionnaireLevelMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get questionnaireLevelMaster;
+
+  /// No description provided for @questionnaireLevelMasterSub.
+  ///
+  /// In en, this message translates to:
+  /// **'The top draw on the amateur circuit'**
+  String get questionnaireLevelMasterSub;
+
+  /// No description provided for @questionnaireLevelOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get questionnaireLevelOpen;
+
+  /// No description provided for @questionnaireLevelOpenSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Open or national-level draws'**
+  String get questionnaireLevelOpenSub;
+
+  /// No description provided for @questionnaireDivision1.
+  ///
+  /// In en, this message translates to:
+  /// **'Division I'**
+  String get questionnaireDivision1;
+
+  /// No description provided for @questionnaireDivision2.
+  ///
+  /// In en, this message translates to:
+  /// **'Division II'**
+  String get questionnaireDivision2;
+
+  /// No description provided for @questionnaireDivision3.
+  ///
+  /// In en, this message translates to:
+  /// **'Division III'**
+  String get questionnaireDivision3;
+
+  /// No description provided for @questionnaireDivisionNaia.
+  ///
+  /// In en, this message translates to:
+  /// **'NAIA'**
+  String get questionnaireDivisionNaia;
+
+  /// No description provided for @questionnaireDivisionNjcaa.
+  ///
+  /// In en, this message translates to:
+  /// **'NJCAA'**
+  String get questionnaireDivisionNjcaa;
+
+  /// No description provided for @questionnairePromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you start your RATED journey, we would like to ask you some questions to help us set up your first rating!'**
+  String get questionnairePromptTitle;
+
+  /// No description provided for @questionnairePromptSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'It will only take a minute'**
+  String get questionnairePromptSubtitle;
+
+  /// No description provided for @questionnairePromptCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the questionnaire'**
+  String get questionnairePromptCta;
+
+  /// No description provided for @questionnairePromptLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get questionnairePromptLater;
+
+  /// No description provided for @questionnairePromptSkipConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'If you skip this, then you will start with a 5.0 beginner rating. Are you sure you want to skip it?'**
+  String get questionnairePromptSkipConfirm;
+
+  /// No description provided for @questionnairePromptSkipStay.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll take the questionnaire now'**
+  String get questionnairePromptSkipStay;
+
+  /// No description provided for @questionnairePromptSkipLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip questionnaire'**
+  String get questionnairePromptSkipLeave;
+
+  /// No description provided for @questionnaireRetakeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve improved how RATED reads your tennis background.'**
+  String get questionnaireRetakeTitle;
+
+  /// No description provided for @questionnaireRetakeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'There are a few new questions. Retaking takes a minute and will refresh your rating.'**
+  String get questionnaireRetakeSubtitle;
+
+  /// No description provided for @questionnaireRetakeSubtitleRated.
+  ///
+  /// In en, this message translates to:
+  /// **'There are a few new questions. Your rating stays as you earned it — only your playing profile is refreshed.'**
+  String get questionnaireRetakeSubtitleRated;
+
+  /// No description provided for @questionnaireRetakeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Update my answers'**
+  String get questionnaireRetakeCta;
+
+  /// No description provided for @questionnaireRetakeSkipConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Your playing profile will keep using your old answers until you update them. Skip for now?'**
+  String get questionnaireRetakeSkipConfirm;
+
+  /// No description provided for @questionnaireRetakeSkipLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get questionnaireRetakeSkipLeave;
+
+  /// No description provided for @questionnaireRatingApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rating is {elo}'**
+  String questionnaireRatingApplied(String elo);
+
+  /// No description provided for @questionnaireRatingUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers updated. Your rating stays at {elo} — you earned it from your matches.'**
+  String questionnaireRatingUnchanged(String elo);
+
+  /// No description provided for @settingsRetakeQuestionnaire.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake questionnaire'**
+  String get settingsRetakeQuestionnaire;
+
+  /// No description provided for @settingsRetakeQuestionnaireSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your tennis background answers'**
+  String get settingsRetakeQuestionnaireSub;
+
+  /// No description provided for @profileQuestionnaireCtaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile'**
+  String get profileQuestionnaireCtaTitle;
+
+  /// No description provided for @profileQuestionnaireCtaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer a few questions to get a personalised starting rating.'**
+  String get profileQuestionnaireCtaBody;
+
+  /// No description provided for @profileQuestionnaireRetakeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your playing profile'**
+  String get profileQuestionnaireRetakeTitle;
+
+  /// No description provided for @profileQuestionnaireRetakeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve added a few questions. Updating your answers refreshes your rating.'**
+  String get profileQuestionnaireRetakeBody;
+
+  /// No description provided for @profileQuestionnaireRetakeBodyRated.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve added a few questions. Your rating stays as you earned it — only your playing profile changes.'**
+  String get profileQuestionnaireRetakeBodyRated;
+
+  /// No description provided for @profileUpdateQuestionnaire.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get profileUpdateQuestionnaire;
+
+  /// No description provided for @profileQuestionnaireLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the playing profile.'**
+  String get profileQuestionnaireLoadFailed;
+
+  /// No description provided for @profilePlayingFrequencyRarely.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays rarely'**
+  String get profilePlayingFrequencyRarely;
+
+  /// No description provided for @profilePlayingFrequencyMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays monthly'**
+  String get profilePlayingFrequencyMonthly;
+
+  /// No description provided for @profilePlayingFrequencyWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays weekly'**
+  String get profilePlayingFrequencyWeekly;
+
+  /// No description provided for @profilePlayingFrequencyMultipleWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays several times a week'**
+  String get profilePlayingFrequencyMultipleWeekly;
+
+  /// No description provided for @profilePlayingTournamentsPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tournament a year} other{{count} tournaments a year}}'**
+  String profilePlayingTournamentsPerYear(int count);
 
   /// No description provided for @homeTitle.
   ///

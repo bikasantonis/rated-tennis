@@ -47,8 +47,21 @@ jobs:
         run: flutter analyze --fatal-warnings
 
       # ── Unit tests ───────────────────────────────────────────────────────────
+      # The whole suite, not just test/models/: the questionnaire dialog's widget
+      # tests live in test/screens/ and are the only check that the step engine
+      # actually renders.
       - name: Unit tests
-        run: flutter test test/models/ --reporter=github
+        run: flutter test --reporter=github
+
+      # ── Edge Function logic ──────────────────────────────────────────────────
+      # The seed-ELO algorithm is plain TypeScript with no imports, so it tests
+      # without a database or any Deno permissions.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Edge Function unit tests
+        run: deno test supabase/functions/seed-elo/
 
       # ── Build (Android debug, compile-only smoke test) ────────────────────────
       # No signing needed for a debug APK; this confirms the app compiles end-to-end.

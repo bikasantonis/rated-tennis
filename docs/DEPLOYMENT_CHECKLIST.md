@@ -84,7 +84,7 @@ Read-only only — schema changes never go through the SQL editor.
 ### Done
 
 - [x] Web app live on Cloudflare Pages at https://ratedtennis.gr (responding at the time of writing); `ratedtennis.com` → 301 → `.gr`
-- [x] PROD Supabase (`jkjndgcjyalmglnvvdrd`, eu-west-1) at migrations 001–029, including the `elo_history.match_id` index (023), notification dedup + cron guard (024), the location-consent constraint (025), and the Realtime publication (029)
+- [x] PROD Supabase (`jkjndgcjyalmglnvvdrd`, eu-west-1) at migrations 001–030, including the `elo_history.match_id` index (023), notification dedup + cron guard (024), the location-consent constraint (025), the Realtime publication (029), and questionnaire v3 (030)
 - [x] DEV brought level with PROD and made the CLI's default link; guarded `scripts/push-prod.ps1`
 - [x] Full migration chain verified from empty on the local Postgres 17 stack
 - [x] Production CORS origins (`ratedtennis.gr`, `ratedtennis.com`), verified against the deployed functions
